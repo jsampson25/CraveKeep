@@ -24,3 +24,12 @@ describe('link capture rules', () => {
     expect(result.warnings).toHaveLength(1);
   });
 });
+
+describe('photo capture rules', () => {
+  it('routes images to honest manual review without inventing extraction results', () => {
+    const result = extractDeterministically({ host: 'Photo import', title: 'recipe-card.jpg', mediaType: 'image', localUri: 'file:///recipe-card.jpg' });
+    expect(result.status).toBe('needs_review');
+    expect(result.draft?.ingredients).toEqual([]);
+    expect(result.recoveryCode).toBe('missing_recipe_data');
+  });
+});

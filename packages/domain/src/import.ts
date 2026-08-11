@@ -5,11 +5,13 @@ export type ImportStage = (typeof IMPORT_STAGES)[number];
 export type ImportStatus = 'queued' | 'processing' | 'needs_review' | 'completed' | 'failed';
 
 export type SourcePreview = {
-  url: string;
+  url?: string;
+  localUri?: string;
+  storagePath?: string;
   host: string;
   title: string;
   creator?: string;
-  mediaType: 'webpage' | 'video' | 'social';
+  mediaType: 'webpage' | 'video' | 'social' | 'image' | 'document';
 };
 
 export type CaptureJob = {
@@ -65,7 +67,15 @@ export function createCaptureJob(source: SourcePreview, now = new Date()): Captu
 }
 
 export function extractDeterministically(source: SourcePreview): Pick<CaptureJob, 'status' | 'draft' | 'warnings' | 'recoveryCode'> {
-  if (source.host === 'cravekeep.com' && new URL(source.url).pathname === '/samples/lemon-herb-chicken') {
+  if (source.mediaType === 'image' || source.mediaType === 'document') {
+    return {
+      status: 'needs_review',
+      draft: { title: source.title.replace(/\.[^.]+$/, ''), description: '', servings: 1, prepMinutes: 0, cookMinutes: 0, ingredients: [], steps: [] },
+      warnings: ['Text extraction is not connected yet. Use the image as your reference while completing the recipe details.'],
+      recoveryCode: 'missing_recipe_data'
+    };
+  }
+  if (source.host === 'cravekeep.com' && source.url && new URL(source.url).pathname === '/samples/lemon-herb-chicken') {
     return {
       status: 'needs_review',
       draft: {

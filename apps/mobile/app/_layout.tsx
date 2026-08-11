@@ -17,6 +17,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
           <Stack.Screen name="capture/link" />
+          <Stack.Screen name="capture/media" />
           <Stack.Screen name="capture/preview" />
           <Stack.Screen name="capture/processing" />
           <Stack.Screen name="capture/review" />

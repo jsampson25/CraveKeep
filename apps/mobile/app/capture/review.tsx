@@ -2,7 +2,7 @@ import { createImportedRecipe, validateRecipeDraft, type Ingredient, type Recipe
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useImportStore } from '@/data/import-store';
 import { useRecipeStore } from '@/data/recipe-store';
@@ -29,7 +29,8 @@ export default function RecipeReviewScreen() {
   const save = async () => { setSubmitted(true); if (validateRecipeDraft(draft).length) return; const recipe = createImportedRecipe(draft, { url: job.source.url, label: job.source.host, creator: job.source.creator }); const saved = await addRecipe(recipe); await updateJob(job.id, { status: 'completed', recipeId: saved.id, recoveryCode: undefined }); router.replace(`/recipes/${saved.id}`); };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <View style={styles.header}><Pressable accessibilityLabel="Close review" onPress={() => router.replace('/imports')}><Ionicons name="close" size={27} /></Pressable><Text style={styles.private}><Ionicons name="lock-closed" /> Private import</Text></View><Text style={styles.kicker}>RECIPE REVIEW</Text><Title>Check the details.</Title>
-    <Card><Text style={styles.sourceLabel}>ORIGINAL SOURCE</Text><Text style={styles.source}>{job.source.host}</Text><Text numberOfLines={2} style={styles.url}>{job.source.url}</Text></Card>
+    <Card><Text style={styles.sourceLabel}>ORIGINAL SOURCE</Text><Text style={styles.source}>{job.source.host}</Text>{job.source.url ? <Text numberOfLines={2} style={styles.url}>{job.source.url}</Text> : <Text style={styles.url}>{job.source.storagePath ? 'Private cloud image attached' : 'Image kept on this device'}</Text>}</Card>
+    {job.source.localUri ? <Image accessibilityLabel="Captured recipe reference" resizeMode="contain" source={{ uri: job.source.localUri }} style={styles.referenceImage} /> : null}
     {job.warnings.map((warning) => <View accessibilityRole="alert" key={warning} style={styles.warning}><Ionicons color={colors.citrus} name="alert-circle" size={22} /><Text style={styles.warningText}>{warning}</Text></View>)}
     <Field label="Recipe name" value={title} onChangeText={setTitle} error={errorFor('title')} />
     <Field label="Servings" keyboardType="number-pad" value={servings} onChangeText={setServings} error={errorFor('servings')} />
@@ -38,4 +39,4 @@ export default function RecipeReviewScreen() {
     <Button label="Save original" onPress={save} /><Button label="Keep for later" variant="secondary" onPress={() => router.replace('/imports')} />
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
-const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, center: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, header: { flexDirection: 'row', justifyContent: 'space-between' }, private: { color: colors.herb, fontWeight: '800' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, sourceLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '900', letterSpacing: 1 }, source: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, url: { color: colors.muted }, warning: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, padding: spacing.md, borderRadius: radii.medium, borderWidth: 1, borderColor: colors.citrus, backgroundColor: '#FFF8E5' }, warningText: { flex: 1, color: colors.charcoal, lineHeight: 20 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, center: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, header: { flexDirection: 'row', justifyContent: 'space-between' }, private: { color: colors.herb, fontWeight: '800' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, sourceLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '900', letterSpacing: 1 }, source: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, url: { color: colors.muted }, referenceImage: { width: '100%', height: 260, borderRadius: radii.medium, backgroundColor: colors.paperRaised }, warning: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, padding: spacing.md, borderRadius: radii.medium, borderWidth: 1, borderColor: colors.citrus, backgroundColor: '#FFF8E5' }, warningText: { flex: 1, color: colors.charcoal, lineHeight: 20 } });

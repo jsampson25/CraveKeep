@@ -7,8 +7,8 @@ import { colors, radii, spacing } from '@/theme';
 const paths = [
   { icon: 'share-outline', title: 'From another app', detail: 'Instagram, TikTok, YouTube, and more', ready: false },
   { icon: 'link-outline', title: 'Paste a link', detail: 'From a website or any recipe page', ready: true, route: '/capture/link' },
-  { icon: 'camera-outline', title: 'Scan a recipe', detail: 'Use the camera for cards and cookbooks', ready: false },
-  { icon: 'images-outline', title: 'Choose photos or a file', detail: 'Screenshots, images, and PDFs', ready: false },
+  { icon: 'camera-outline', title: 'Scan a recipe', detail: 'Use the camera for cards and cookbooks', ready: true, route: '/capture/media?mode=camera' },
+  { icon: 'images-outline', title: 'Choose a photo', detail: 'Screenshots and images from your library', ready: true, route: '/capture/media?mode=library' },
   { icon: 'create-outline', title: 'Create it myself', detail: 'Write your own recipe from scratch', ready: true, route: '/recipes/new' }
 ] as const;
 

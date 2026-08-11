@@ -86,7 +86,7 @@ export function createManualRecipe(draft: RecipeDraft, now = new Date()): Recipe
   };
 }
 
-export function createImportedRecipe(draft: RecipeDraft, source: { url: string; label: string; creator?: string }, now = new Date()): Recipe {
+export function createImportedRecipe(draft: RecipeDraft, source: { url?: string; label: string; creator?: string }, now = new Date()): Recipe {
   const recipe = createManualRecipe(draft, now);
   return {
     ...recipe,
