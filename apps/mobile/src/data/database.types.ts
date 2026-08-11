@@ -16,6 +16,12 @@ export type Database = {
         Update: { created_at?: string; display_name?: string | null; id?: string; updated_at?: string };
         Relationships: [];
       };
+      nutrition_provider_cache: {
+        Row: { expires_at: string; fetched_at: string; payload: Json; provider: string; query_key: string };
+        Insert: { expires_at: string; fetched_at?: string; payload: Json; provider: string; query_key: string };
+        Update: { expires_at?: string; fetched_at?: string; payload?: Json; provider?: string; query_key?: string };
+        Relationships: [];
+      };
       recipe_ingredients: {
         Row: { id: string; name: string; position: number; quantity: string; recipe_id: string };
         Insert: { id?: string; name: string; position: number; quantity?: string; recipe_id: string };
