@@ -25,3 +25,5 @@ export async function saveCloudMeal(ownerId: string, meal: PlannedMeal): Promise
 }
 
 export async function setCloudMealStatus(id: string, status: PlannedMeal['status']) { if (!supabase) return; const { error } = await supabase.from('planned_meals').update({ status }).eq('id', id); if (error) throw error; }
+export async function setCloudMealServings(id: string, servings: number) { if (!supabase) return; const { error } = await supabase.from('planned_meals').update({ servings }).eq('id', id); if (error) throw error; }
+export async function deleteCloudMeal(id: string) { if (!supabase) return; const { error } = await supabase.from('planned_meals').delete().eq('id', id); if (error) throw error; }
