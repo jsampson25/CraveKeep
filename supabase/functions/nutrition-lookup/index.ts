@@ -5,6 +5,8 @@ const numberValue = (value: number | string | undefined) => { const parsed = typ
 type OffProduct = { code?: string; product_name?: string; brands?: string; serving_quantity?: number; serving_size?: string; nutriments?: Record<string, number | string | undefined> };
 type FatServing = { serving_id?: string; serving_description?: string; metric_serving_amount?: string; metric_serving_unit?: string; calories?: string; protein?: string; carbohydrate?: string; fat?: string; sodium?: string };
 type FatFood = { food_id?: string; food_name?: string; brand_name?: string; food_url?: string; servings?: { serving?: FatServing | FatServing[] } };
+type UsdaNutrient = { nutrientName?: string; nutrientNumber?: string; unitName?: string; value?: number };
+type UsdaFood = { fdcId?: number; description?: string; dataType?: string; brandOwner?: string; servingSize?: number; servingSizeUnit?: string; foodNutrients?: UsdaNutrient[] };
 let fatSecretToken: { value: string; expiresAt: number } | null = null;
 
 const normalizeOff = (product: OffProduct) => {
@@ -16,6 +18,11 @@ const normalizeFatSecret = (food: FatFood) => {
   const rawServing = food.servings?.serving; const servings = Array.isArray(rawServing) ? rawServing : rawServing ? [rawServing] : [];
   const serving = servings.find((item) => item.metric_serving_unit === 'g' && numberValue(item.metric_serving_amount) === 100) ?? servings[0];
   return { provider: 'fatsecret', providerId: food.food_id ?? null, servingId: serving?.serving_id ?? null, name: food.food_name?.trim() || 'Unnamed food', brand: food.brand_name?.trim() || null, basis: 'per_serving', servingQuantityGrams: serving?.metric_serving_unit === 'g' ? numberValue(serving.metric_serving_amount) : null, servingLabel: serving?.serving_description ?? null, nutrients: { calories: numberValue(serving?.calories), proteinGrams: numberValue(serving?.protein), carbohydrateGrams: numberValue(serving?.carbohydrate), fatGrams: numberValue(serving?.fat), sodiumMilligrams: numberValue(serving?.sodium) }, confidence: food.food_id && serving ? 'medium' : 'low', attribution: 'FatSecret', sourceUrl: food.food_url ?? 'https://foods.fatsecret.com/' };
+};
+
+const normalizeUsda = (food: UsdaFood) => {
+  const find = (number: string, names: string[]) => food.foodNutrients?.find((item) => item.nutrientNumber === number || names.some((name) => item.nutrientName?.toLowerCase() === name))?.value;
+  return { provider: 'usda', providerId: food.fdcId ? String(food.fdcId) : null, servingId: null, name: food.description?.trim() || 'Unnamed food', brand: food.brandOwner?.trim() || null, basis: 'per_100g', servingQuantityGrams: food.servingSizeUnit?.toLowerCase() === 'g' ? numberValue(food.servingSize) : null, servingLabel: food.servingSize ? `${food.servingSize} ${food.servingSizeUnit ?? ''}`.trim() : null, nutrients: { calories: numberValue(find('208', ['energy'])), proteinGrams: numberValue(find('203', ['protein'])), carbohydrateGrams: numberValue(find('205', ['carbohydrate, by difference'])), fatGrams: numberValue(find('204', ['total lipid (fat)'])), sodiumMilligrams: numberValue(find('307', ['sodium, na'])) }, confidence: food.fdcId && food.description ? 'medium' : 'low', attribution: 'USDA FoodData Central', sourceUrl: food.fdcId ? `https://fdc.nal.usda.gov/food-details/${food.fdcId}/nutrients` : 'https://fdc.nal.usda.gov/' };
 };
 
 async function getFatSecretToken() {
@@ -39,6 +46,14 @@ async function searchFatSecret(query: string) {
   return { provider: 'fatsecret', query, results: foods.map(normalizeFatSecret), cached: false };
 }
 
+async function searchUsda(query: string) {
+  const apiKey = Deno.env.get('USDA_FDC_API_KEY'); if (!apiKey) throw new Error('USDA FoodData Central is not configured.');
+  const response = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${encodeURIComponent(apiKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ query, pageSize: 5, dataType: ['Foundation', 'SR Legacy', 'Survey (FNDDS)', 'Branded'] }) });
+  if (!response.ok) throw new Error(response.status === 429 ? 'USDA FoodData Central is temporarily rate limited.' : 'USDA FoodData Central could not complete this lookup.');
+  const raw = await response.json() as { foods?: UsdaFood[] };
+  return { provider: 'usda', query, results: (raw.foods ?? []).map(normalizeUsda), cached: false };
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (request.method !== 'POST') return Response.json({ error: 'Use POST.' }, { status: 405, headers: corsHeaders });
@@ -46,17 +61,23 @@ Deno.serve(async (request) => {
   if (!supabaseUrl || !anonKey || !serviceKey || !authorization) return Response.json({ error: 'Authentication required.' }, { status: 401, headers: corsHeaders });
   const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authorization } } }); const { data: { user } } = await userClient.auth.getUser();
   if (!user) return Response.json({ error: 'Authentication required.' }, { status: 401, headers: corsHeaders });
-  let body: { query?: string; provider?: 'open_food_facts' | 'fatsecret' };
+  let body: { query?: string; provider?: 'usda' | 'open_food_facts' | 'fatsecret' };
   try { body = await request.json(); } catch { return Response.json({ error: 'Invalid JSON body.' }, { status: 400, headers: corsHeaders }); }
-  const query = body.query?.trim().replace(/\s+/g, ' '); const provider = body.provider ?? 'open_food_facts';
+  const query = body.query?.trim().replace(/\s+/g, ' '); const provider = body.provider ?? 'usda';
   if (!query || query.length < 2 || query.length > 120) return Response.json({ error: 'Ingredient search must contain 2 to 120 characters.' }, { status: 400, headers: corsHeaders });
   if (provider === 'fatsecret') {
     try { return Response.json(await searchFatSecret(query), { headers: { ...corsHeaders, 'Cache-Control': 'no-store' } }); }
     catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'FatSecret lookup failed.', retryable: true }, { status: 502, headers: corsHeaders }); }
   }
   const queryKey = query.toLocaleLowerCase('en-US'); const admin = createClient(supabaseUrl, serviceKey);
-  const { data: cached } = await admin.from('nutrition_provider_cache').select('payload, expires_at').eq('provider', 'open_food_facts').eq('query_key', queryKey).maybeSingle();
+  const { data: cached } = await admin.from('nutrition_provider_cache').select('payload, expires_at').eq('provider', provider).eq('query_key', queryKey).maybeSingle();
   if (cached && new Date(cached.expires_at).getTime() > Date.now()) return Response.json({ ...cached.payload as object, cached: true }, { headers: { ...corsHeaders, 'Cache-Control': 'private, max-age=300' } });
+  if (provider === 'usda') {
+    try {
+      const payload = await searchUsda(query); await admin.from('nutrition_provider_cache').upsert({ provider, query_key: queryKey, payload, fetched_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString() });
+      return Response.json(payload, { headers: { ...corsHeaders, 'Cache-Control': 'private, max-age=300' } });
+    } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'USDA lookup failed.', retryable: true }, { status: 502, headers: corsHeaders }); }
+  }
   const endpoint = new URL('https://world.openfoodfacts.org/api/v2/search'); endpoint.searchParams.set('search_terms', query); endpoint.searchParams.set('page_size', '5'); endpoint.searchParams.set('fields', 'code,product_name,brands,serving_quantity,serving_size,nutriments');
   const response = await fetch(endpoint, { headers: { 'User-Agent': 'CraveKeep/0.1 (api@cravekeep.com)', Accept: 'application/json' } });
   if (response.status === 429 || response.status === 503) return Response.json({ error: 'Open Food Facts is temporarily rate limited. Try again later.', retryable: true }, { status: 503, headers: corsHeaders });
