@@ -22,6 +22,18 @@ export type Database = {
         Update: { expires_at?: string; fetched_at?: string; payload?: Json; provider?: string; query_key?: string };
         Relationships: [];
       };
+      recipe_nutrition_estimates: {
+        Row: { id: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
+        Insert: { id?: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
+        Update: { id?: string; recipe_id?: string; owner_id?: string; servings?: number; calories?: number; protein_grams?: number; carbohydrate_grams?: number; fat_grams?: number; sodium_milligrams?: number; coverage?: number; confidence?: string; serving_assumption?: string; calculated_at?: string };
+        Relationships: [];
+      };
+      nutrition_ingredient_matches: {
+        Row: { id: string; estimate_id: string; position: number; ingredient_id: string; ingredient_name: string; provider: string; provider_id: string; serving_id: string | null; matched_name: string; grams: number; basis_grams: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; confidence: string };
+        Insert: { id?: string; estimate_id: string; position: number; ingredient_id: string; ingredient_name: string; provider: string; provider_id: string; serving_id?: string | null; matched_name: string; grams: number; basis_grams: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; confidence: string };
+        Update: { id?: string; estimate_id?: string; position?: number; ingredient_id?: string; ingredient_name?: string; provider?: string; provider_id?: string; serving_id?: string | null; matched_name?: string; grams?: number; basis_grams?: number; calories?: number; protein_grams?: number; carbohydrate_grams?: number; fat_grams?: number; sodium_milligrams?: number; confidence?: string };
+        Relationships: [];
+      };
       recipe_ingredients: {
         Row: { id: string; name: string; position: number; quantity: string; recipe_id: string };
         Insert: { id?: string; name: string; position: number; quantity?: string; recipe_id: string };
