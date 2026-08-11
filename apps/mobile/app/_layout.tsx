@@ -25,6 +25,7 @@ export default function RootLayout() {
           <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/[id]" />
+          <Stack.Screen name="recipes/[id]/remix" />
           <Stack.Screen name="cook/[id]" />
         </Stack>
           </ImportStoreProvider>

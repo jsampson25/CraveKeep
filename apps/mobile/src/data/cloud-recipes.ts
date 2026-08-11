@@ -18,6 +18,9 @@ type RecipeRow = {
   created_at: string;
   updated_at: string;
   version_number: number;
+  original_recipe_id: string | null;
+  adaptation_goal: NonNullable<Recipe['adaptation']>['goal'] | null;
+  taste_protection: NonNullable<Recipe['adaptation']>['tasteProtection'] | null;
   recipe_ingredients: { id: string; quantity: string; name: string; position: number }[];
   recipe_steps: { instruction: string; position: number }[];
 };
@@ -43,7 +46,9 @@ const fromRow = (row: RecipeRow): Recipe => ({
   cookbookIds: [],
   createdAt: row.created_at,
   updatedAt: row.updated_at,
-  version: 1
+  version: row.version_number,
+  originalRecipeId: row.original_recipe_id ?? undefined,
+  adaptation: row.adaptation_goal && row.taste_protection ? { goal: row.adaptation_goal, tasteProtection: row.taste_protection } : undefined
 });
 
 export async function fetchCloudRecipes(): Promise<Recipe[]> {
@@ -74,7 +79,10 @@ export async function saveCloudRecipe(recipe: Recipe, ownerId: string): Promise<
     favorite: recipe.favorite,
     created_at: recipe.createdAt,
     updated_at: recipe.updatedAt,
-    version_number: recipe.version
+    version_number: recipe.version,
+    original_recipe_id: recipe.originalRecipeId && /^[0-9a-f-]{36}$/i.test(recipe.originalRecipeId) ? recipe.originalRecipeId : undefined,
+    adaptation_goal: recipe.adaptation?.goal,
+    taste_protection: recipe.adaptation?.tasteProtection
   }).select('id').single();
   if (error) throw error;
 

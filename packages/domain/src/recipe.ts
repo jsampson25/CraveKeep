@@ -29,7 +29,22 @@ export type Recipe = {
   cookbookIds: string[];
   createdAt: string;
   updatedAt: string;
-  version: 1;
+  version: number;
+  originalRecipeId?: RecipeId;
+  adaptation?: {
+    goal: AdaptationGoal;
+    tasteProtection: TasteProtection;
+  };
+};
+
+export type AdaptationGoal = 'healthier_overall' | 'higher_protein' | 'lower_calorie' | 'lower_sodium';
+export type TasteProtection = 'nearly_identical' | 'balanced' | 'maximum_change';
+
+export type RecipeComparison = {
+  addedIngredients: string[];
+  removedIngredients: string[];
+  changedQuantities: { name: string; before: string; after: string }[];
+  stepsChanged: boolean;
 };
 
 export type RecipeDraft = Pick<
@@ -91,6 +106,31 @@ export function createImportedRecipe(draft: RecipeDraft, source: { url?: string;
   return {
     ...recipe,
     source: { kind: 'imported', label: source.label, url: source.url, creator: source.creator, capturedAt: recipe.createdAt }
+  };
+}
+
+export function compareRecipeVersions(original: Recipe, draft: RecipeDraft): RecipeComparison {
+  const before = new Map(original.ingredients.map((item) => [item.name.trim().toLowerCase(), item]));
+  const after = new Map(draft.ingredients.map((item) => [item.name.trim().toLowerCase(), item]));
+  const addedIngredients = [...after.keys()].filter((name) => name && !before.has(name)).map((name) => after.get(name)!.name);
+  const removedIngredients = [...before.keys()].filter((name) => !after.has(name)).map((name) => before.get(name)!.name);
+  const changedQuantities = [...after.keys()].flatMap((name) => {
+    const previous = before.get(name);
+    const next = after.get(name);
+    return previous && next && previous.quantity.trim() !== next.quantity.trim() ? [{ name: next.name, before: previous.quantity, after: next.quantity }] : [];
+  });
+  const stepsChanged = original.steps.map((step) => step.trim()).join('\n') !== draft.steps.map((step) => step.trim()).join('\n');
+  return { addedIngredients, removedIngredients, changedQuantities, stepsChanged };
+}
+
+export function createRecipeVersion(original: Recipe, draft: RecipeDraft, adaptation: NonNullable<Recipe['adaptation']>, now = new Date()): Recipe {
+  const base = createManualRecipe(draft, now);
+  return {
+    ...base,
+    source: original.source,
+    originalRecipeId: original.originalRecipeId ?? original.id,
+    version: original.version + 1,
+    adaptation
   };
 }
 

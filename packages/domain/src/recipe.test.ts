@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createImportedRecipe, createManualRecipe, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
+import { compareRecipeVersions, createImportedRecipe, createManualRecipe, createRecipeVersion, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
 
 const validDraft = {
   title: ' Tomato Toast ',
@@ -35,5 +35,24 @@ describe('manual recipe rules', () => {
     expect(recipe.source.kind).toBe('imported');
     expect(recipe.source.url).toBe('https://example.com/recipe');
     expect(recipe.privacy).toBe('private');
+  });
+});
+
+describe('recipe version rules', () => {
+  it('creates a new version without mutating the original', () => {
+    const original = createManualRecipe(validDraft, new Date('2026-08-10T12:00:00.000Z'));
+    const version = createRecipeVersion(original, { ...validDraft, title: 'Higher Protein Tomato Toast' }, { goal: 'higher_protein', tasteProtection: 'balanced' }, new Date('2026-08-11T12:00:00.000Z'));
+    expect(version.id).not.toBe(original.id);
+    expect(version.originalRecipeId).toBe(original.id);
+    expect(version.version).toBe(2);
+    expect(original.title).toBe('Tomato Toast');
+  });
+
+  it('reports exact ingredient and step changes', () => {
+    const original = createManualRecipe(validDraft);
+    const comparison = compareRecipeVersions(original, { ...validDraft, ingredients: [{ id: 'i1', quantity: '1', name: 'slices of bread' }, { id: 'i2', quantity: '2 tbsp', name: 'cottage cheese' }], steps: ['Toast and top the bread.'] });
+    expect(comparison.addedIngredients).toEqual(['cottage cheese']);
+    expect(comparison.changedQuantities[0]).toEqual({ name: 'slices of bread', before: '2', after: '1' });
+    expect(comparison.stepsChanged).toBe(true);
   });
 });
