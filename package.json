@@ -11,6 +11,7 @@
     "android": "pnpm --filter @cravekeep/mobile android",
     "ios": "pnpm --filter @cravekeep/mobile ios",
     "web": "pnpm --filter @cravekeep/mobile web",
+    "build:web": "pnpm --filter @cravekeep/mobile build:web",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",

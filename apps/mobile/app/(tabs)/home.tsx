@@ -3,14 +3,19 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, Eyebrow, Screen, SectionTitle, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
+import { useAuthStore } from '@/data/auth-store';
 import { colors, radii, spacing } from '@/theme';
 
 export default function HomeScreen() {
   const { recipes, ready, error } = useRecipeStore();
+  const { user } = useAuthStore();
   const latest = recipes[0];
+  const displayName = user?.user_metadata.display_name as string | undefined;
+  const firstName = displayName?.split(/\s+/)[0] ?? 'there';
+  const initials = (displayName ?? user?.email ?? 'CK').slice(0, 2).toUpperCase();
   return (
     <Screen><ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.header}><View><Eyebrow>CraveKeep</Eyebrow><Title>Good evening, Jason</Title></View><View accessibilityLabel="Open profile" style={styles.avatar}><Text style={styles.avatarText}>JS</Text></View></View>
+      <View style={styles.header}><View style={styles.flex}><Eyebrow>CraveKeep</Eyebrow><Title>Good evening, {firstName}</Title></View><Pressable accessibilityLabel="Open profile" accessibilityRole="button" onPress={() => router.push('/profile')} style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></Pressable></View>
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
       <Card style={styles.hero}><View style={styles.heroCopy}><Eyebrow>Your kitchen</Eyebrow><Text style={styles.heroTitle}>Every recipe worth making, kept in one place.</Text><Text style={styles.body}>Create your own recipe now. Capture from links, scans, and photos arrives in the next product slices.</Text></View><Ionicons color={colors.coral} name="restaurant-outline" size={64} /></Card>
       {!ready ? <ActivityIndicator color={colors.coral} /> : latest ? <>

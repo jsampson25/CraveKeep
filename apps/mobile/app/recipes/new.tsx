@@ -33,8 +33,8 @@ export default function NewRecipeScreen() {
     if (validateRecipeDraft(draft).length) return;
     setSaving(true);
     const recipe = createManualRecipe(draft);
-    await addRecipe(recipe);
-    router.replace(`/recipes/${recipe.id}`);
+    const saved = await addRecipe(recipe);
+    router.replace(`/recipes/${saved.id}`);
   };
 
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>

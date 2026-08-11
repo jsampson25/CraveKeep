@@ -18,6 +18,8 @@ pnpm dev
 
 Run `pnpm verify` for lint, type checking, and domain tests.
 
+Run `pnpm build:web` to create the Vercel-ready Expo web export in `apps/mobile/dist`.
+
 ## Repository
 
 - `apps/mobile` — Expo Router mobile application
@@ -33,3 +35,5 @@ The imported product blueprint takes precedence over visual boards when they con
 Use `https://cravekeep.com/samples/lemon-herb-chicken` in Capture Studio to exercise the deterministic extraction success path. Other public URLs deliberately enter a needs-review recovery state until an external extraction provider is selected and connected.
 
 Copy `apps/mobile/.env.example` to `apps/mobile/.env.local` and fill in the Supabase project URL and publishable key. Never place a secret or service-role key in a client environment file.
+
+Open the profile avatar to create an account or sign in. Authenticated recipes are written to the live Supabase project under owner-only row-level security; signed-out recipes remain local to the device.

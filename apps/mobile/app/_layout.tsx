@@ -3,13 +3,15 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RecipeStoreProvider } from '@/data/recipe-store';
 import { ImportStoreProvider } from '@/data/import-store';
+import { AuthStoreProvider } from '@/data/auth-store';
 import { colors } from '@/theme';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <RecipeStoreProvider>
-        <ImportStoreProvider>
+      <AuthStoreProvider>
+        <RecipeStoreProvider>
+          <ImportStoreProvider>
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }}>
           <Stack.Screen name="(tabs)" />
@@ -19,12 +21,14 @@ export default function RootLayout() {
           <Stack.Screen name="capture/processing" />
           <Stack.Screen name="capture/review" />
           <Stack.Screen name="imports" />
+          <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/[id]" />
           <Stack.Screen name="cook/[id]" />
         </Stack>
-        </ImportStoreProvider>
-      </RecipeStoreProvider>
+          </ImportStoreProvider>
+        </RecipeStoreProvider>
+      </AuthStoreProvider>
     </SafeAreaProvider>
   );
 }
