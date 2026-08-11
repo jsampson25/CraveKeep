@@ -1,0 +1,24 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, Card, Screen, SectionTitle, Title } from '@/components/ui';
+import { useRecipeStore } from '@/data/recipe-store';
+import { colors, radii, spacing } from '@/theme';
+
+export default function RecipeDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { findRecipe, toggleFavorite, toggleCookbook } = useRecipeStore();
+  const recipe = findRecipe(id);
+  if (!recipe) return <Screen style={styles.missing}><Title>Recipe not found</Title><Text style={styles.body}>It may have been removed from this device.</Text><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
+  return <Screen><ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.header}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.circle}><Ionicons name="arrow-back" size={23} /></Pressable><View style={styles.actions}><Pressable accessibilityLabel={recipe.favorite ? 'Remove favorite' : 'Favorite recipe'} onPress={() => toggleFavorite(recipe.id)} style={styles.circle}><Ionicons color={recipe.favorite ? colors.coral : colors.charcoal} name={recipe.favorite ? 'heart' : 'heart-outline'} size={23} /></Pressable></View></View>
+    <View style={styles.art}><Ionicons color={colors.herb} name="leaf" size={76} /></View><Title>{recipe.title}</Title><Text style={styles.body}>{recipe.description}</Text>
+    <View style={styles.meta}><Text style={styles.metaText}><Ionicons name="time-outline" /> {recipe.prepMinutes + recipe.cookMinutes} min</Text><Text style={styles.metaText}><Ionicons name="people-outline" /> {recipe.servings} servings</Text><Text style={styles.private}><Ionicons name="lock-closed-outline" /> Private</Text></View>
+    <Card><Text style={styles.sourceLabel}>SOURCE</Text><Text style={styles.source}>{recipe.source.label}</Text>{recipe.source.creator ? <Text style={styles.body}>By {recipe.source.creator}</Text> : null}</Card>
+    <SectionTitle>Ingredients</SectionTitle>{recipe.ingredients.map((ingredient) => <View key={ingredient.id} style={styles.line}><View style={styles.check} /><Text style={styles.quantity}>{ingredient.quantity}</Text><Text style={styles.flexText}>{ingredient.name}</Text></View>)}
+    <SectionTitle>Directions</SectionTitle>{recipe.steps.map((step, index) => <View key={`${index}-${step}`} style={styles.step}><View style={styles.stepNumber}><Text style={styles.stepNumberText}>{index + 1}</Text></View><Text style={styles.flexText}>{step}</Text></View>)}
+    <Button label="Start cooking" onPress={() => router.push(`/cook/${recipe.id}`)} />
+    <Button label={recipe.cookbookIds.includes('weeknight') ? 'Remove from Weeknight Wins' : 'Add to Weeknight Wins'} variant="secondary" onPress={() => toggleCookbook(recipe.id, 'weeknight')} />
+  </ScrollView></Screen>;
+}
+const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between' }, actions: { flexDirection: 'row', gap: spacing.sm }, circle: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.paperRaised, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, art: { height: 220, borderRadius: radii.large, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.herbSoft }, body: { color: colors.muted, lineHeight: 22 }, meta: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }, metaText: { color: colors.charcoal, fontWeight: '700' }, private: { color: colors.herb, fontWeight: '700' }, sourceLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '800', letterSpacing: 1 }, source: { color: colors.charcoal, fontSize: 17, fontWeight: '800' }, line: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.line }, check: { width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: colors.muted }, quantity: { minWidth: 62, color: colors.charcoal, fontWeight: '700' }, flexText: { flex: 1, color: colors.charcoal, fontSize: 16, lineHeight: 23 }, step: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start', paddingVertical: spacing.sm }, stepNumber: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.herb, alignItems: 'center', justifyContent: 'center' }, stepNumberText: { color: colors.white, fontWeight: '800' }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg } });

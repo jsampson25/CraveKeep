@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "CraveKeep",
+    "slug": "cravekeep",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "cravekeep",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cravekeep.app"
+    },
+    "android": {
+      "package": "com.cravekeep.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
