@@ -22,6 +22,18 @@ export type Database = {
         Update: { expires_at?: string; fetched_at?: string; payload?: Json; provider?: string; query_key?: string };
         Relationships: [];
       };
+      daily_nutrition_targets: {
+        Row: { owner_id: string; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; updated_at: string };
+        Insert: { owner_id: string; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; updated_at?: string };
+        Update: { owner_id?: string; calories?: number; protein_grams?: number; carbohydrate_grams?: number; fat_grams?: number; sodium_milligrams?: number; updated_at?: string };
+        Relationships: [];
+      };
+      planned_meals: {
+        Row: { id: string; owner_id: string; meal_date: string; slot: 'breakfast' | 'lunch' | 'dinner' | 'snack'; recipe_id: string; servings: number; status: 'planned' | 'eaten'; created_at: string };
+        Insert: { id?: string; owner_id: string; meal_date: string; slot: 'breakfast' | 'lunch' | 'dinner' | 'snack'; recipe_id: string; servings: number; status?: 'planned' | 'eaten'; created_at?: string };
+        Update: { id?: string; owner_id?: string; meal_date?: string; slot?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; recipe_id?: string; servings?: number; status?: 'planned' | 'eaten'; created_at?: string };
+        Relationships: [{ foreignKeyName: 'planned_meals_recipe_id_fkey'; columns: ['recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] }];
+      };
       recipe_nutrition_estimates: {
         Row: { id: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
         Insert: { id?: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
