@@ -1,0 +1,16 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, Card, Screen, Title } from '@/components/ui';
+import { useImportStore } from '@/data/import-store';
+import { colors, radii, spacing } from '@/theme';
+
+const statusLabel = { queued: 'Queued', processing: 'Processing', needs_review: 'Needs review', completed: 'Completed', failed: 'Needs attention' } as const;
+
+export default function ImportsScreen() {
+  const { jobs, ready } = useImportStore();
+  return <Screen><ScrollView contentContainerStyle={styles.content}><View style={styles.header}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable><Button label="New import" variant="quiet" onPress={() => router.push('/capture/link')} /></View><Title>Imports</Title><Text style={styles.body}>Active, completed, and needs-review recipes stay here with their source and recovery path.</Text>
+    {!ready ? <ActivityIndicator color={colors.coral} /> : jobs.length === 0 ? <Card style={styles.empty}><Ionicons color={colors.coral} name="file-tray-outline" size={54} /><Text style={styles.jobTitle}>No imports yet</Text><Text style={styles.body}>Paste your first recipe link to begin.</Text><Button label="Paste a link" onPress={() => router.push('/capture/link')} /></Card> : jobs.map((job) => <Pressable key={job.id} onPress={() => job.status === 'needs_review' ? router.push({ pathname: '/capture/review', params: { jobId: job.id } }) : job.recipeId ? router.push(`/recipes/${job.recipeId}`) : undefined}><Card style={styles.job}><View style={styles.row}><View style={[styles.icon, job.status === 'needs_review' && styles.iconWarning]}><Ionicons color={job.status === 'completed' ? colors.herb : colors.coral} name={job.status === 'completed' ? 'checkmark' : job.status === 'needs_review' ? 'alert' : 'hourglass-outline'} size={23} /></View><View style={styles.copy}><Text style={styles.jobTitle}>{job.source.title}</Text><Text style={styles.host}>{job.source.host}</Text><Text style={[styles.status, job.status === 'needs_review' && styles.statusWarning]}>{statusLabel[job.status]}</Text></View><Ionicons color={colors.muted} name="chevron-forward" size={22} /></View></Card></Pressable>)}
+  </ScrollView></Screen>;
+}
+const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, back: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, body: { color: colors.muted, lineHeight: 21 }, empty: { alignItems: 'center', gap: spacing.md }, job: { gap: spacing.sm }, row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, icon: { width: 46, height: 46, borderRadius: radii.medium, backgroundColor: colors.herbSoft, alignItems: 'center', justifyContent: 'center' }, iconWarning: { backgroundColor: '#FFF3D6' }, copy: { flex: 1, gap: 3 }, jobTitle: { color: colors.charcoal, fontSize: 17, fontWeight: '800' }, host: { color: colors.muted }, status: { color: colors.herb, fontSize: 12, fontWeight: '800' }, statusWarning: { color: colors.citrus } });

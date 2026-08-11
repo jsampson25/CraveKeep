@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createManualRecipe, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
+import { createImportedRecipe, createManualRecipe, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
 
 const validDraft = {
   title: ' Tomato Toast ',
@@ -28,5 +28,12 @@ describe('manual recipe rules', () => {
   it('scales simple numeric quantities without inventing complex conversions', () => {
     expect(scaleIngredientQuantity('2', 4, 6)).toBe('3');
     expect(scaleIngredientQuantity('1/2 cup', 4, 6)).toBe('1/2 cup');
+  });
+
+  it('keeps attribution on an imported original', () => {
+    const recipe = createImportedRecipe(validDraft, { url: 'https://example.com/recipe', label: 'example.com', creator: 'Example Cook' });
+    expect(recipe.source.kind).toBe('imported');
+    expect(recipe.source.url).toBe('https://example.com/recipe');
+    expect(recipe.privacy).toBe('private');
   });
 });

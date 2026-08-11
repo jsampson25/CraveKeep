@@ -86,6 +86,14 @@ export function createManualRecipe(draft: RecipeDraft, now = new Date()): Recipe
   };
 }
 
+export function createImportedRecipe(draft: RecipeDraft, source: { url: string; label: string; creator?: string }, now = new Date()): Recipe {
+  const recipe = createManualRecipe(draft, now);
+  return {
+    ...recipe,
+    source: { kind: 'imported', label: source.label, url: source.url, creator: source.creator, capturedAt: recipe.createdAt }
+  };
+}
+
 export function scaleIngredientQuantity(quantity: string, fromServings: number, toServings: number): string {
   const numeric = Number(quantity);
   if (!Number.isFinite(numeric) || fromServings <= 0 || toServings <= 0) return quantity;

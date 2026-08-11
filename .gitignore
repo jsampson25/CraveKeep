@@ -3,6 +3,7 @@ node_modules/
 .expo/
 dist/
 dist-web/
+supabase/.temp/
 coverage/
 .DS_Store
 *.log

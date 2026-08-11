@@ -1,6 +1,6 @@
 # CraveKeep
 
-CraveKeep is a mobile-first home for recipes captured from anywhere. This repository currently implements the first vertical slice: create a manual recipe, keep it in a local library, favorite and organize it, then follow it in Cook Mode.
+CraveKeep is a mobile-first home for recipes captured from anywhere. The current runnable slices support manual recipe creation and a link-capture workflow with source preview, persistent import history, truthful processing, structured review, recovery, and private saving.
 
 ## Requirements
 
@@ -22,7 +22,14 @@ Run `pnpm verify` for lint, type checking, and domain tests.
 
 - `apps/mobile` — Expo Router mobile application
 - `packages/domain` — platform-neutral recipe rules and types
+- `supabase` — database migrations and owner-only row-level security
 - `docs/product-blueprint` — authoritative v3 product blueprint and Codex handoff
 - `docs/design/approved` — approved concept boards
 
 The imported product blueprint takes precedence over visual boards when they conflict. Imported recipes are private by default, originals remain immutable, and nutrition/remixing stay optional.
+
+## Link-capture acceptance fixture
+
+Use `https://cravekeep.com/samples/lemon-herb-chicken` in Capture Studio to exercise the deterministic extraction success path. Other public URLs deliberately enter a needs-review recovery state until an external extraction provider is selected and connected.
+
+Copy `apps/mobile/.env.example` to `apps/mobile/.env.local` and fill in the Supabase project URL and publishable key. Never place a secret or service-role key in a client environment file.

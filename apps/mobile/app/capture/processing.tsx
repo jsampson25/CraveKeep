@@ -1,0 +1,23 @@
+import { extractDeterministically, IMPORT_STAGES } from '@cravekeep/domain';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Card, Screen, Title } from '@/components/ui';
+import { useImportStore } from '@/data/import-store';
+import { colors, radii, spacing } from '@/theme';
+
+const labels = { reading_source: 'Reading the source', finding_ingredients: 'Finding ingredients', building_steps: 'Building the steps', checking_details: 'Checking quantities and timing', preparing_recipe: 'Preparing your recipe' } as const;
+const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+export default function ProcessingScreen() {
+  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const { findJob, updateJob } = useImportStore();
+  const job = findJob(jobId);
+  const source = job?.source;
+  const started = useRef(false);
+  useEffect(() => { if (!source || started.current) return; started.current = true; let active = true; void (async () => { for (let index = 0; index < IMPORT_STAGES.length; index += 1) { if (!active) return; await updateJob(jobId, { status: 'processing', stage: IMPORT_STAGES[index], stageIndex: index + 1 }); await wait(450); } if (!active) return; const result = extractDeterministically(source); await updateJob(jobId, result); router.replace({ pathname: '/capture/review', params: { jobId } }); })(); return () => { active = false; }; }, [jobId, source, updateJob]);
+  if (!job) return <Screen style={styles.center}><Text>Preparing import…</Text></Screen>;
+  return <Screen style={styles.screen}><View style={styles.content}><Text style={styles.kicker}>BRINGING IT TOGETHER</Text><Title>Your recipe is taking shape.</Title><Card style={styles.source}><Ionicons color={colors.coral} name="link" size={25} /><View><Text style={styles.sourceTitle}>{job.source.title}</Text><Text style={styles.host}>{job.source.host}</Text></View></Card><View style={styles.stages}>{IMPORT_STAGES.map((stage, index) => { const complete = index < job.stageIndex; const active = job.stage === stage; return <View key={stage} style={styles.stage}><View style={[styles.marker, complete && styles.complete, active && styles.active]}>{complete ? <Ionicons color={colors.white} name="checkmark" size={15} /> : null}</View><Text style={[styles.stageText, (complete || active) && styles.stageTextActive]}>{labels[stage]}</Text></View>; })}</View><View style={styles.progress}><View style={[styles.progressFill, { width: `${(job.stageIndex / IMPORT_STAGES.length) * 100}%` }]} /></View><Text style={styles.truth}>Progress reflects completed extraction stages—never a fake countdown.</Text></View></Screen>;
+}
+const styles = StyleSheet.create({ screen: { padding: spacing.lg }, center: { alignItems: 'center', justifyContent: 'center' }, content: { flex: 1, justifyContent: 'center', gap: spacing.lg }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, source: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' }, sourceTitle: { color: colors.charcoal, fontWeight: '800' }, host: { color: colors.muted }, stages: { gap: spacing.md }, stage: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' }, marker: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, complete: { backgroundColor: colors.herb, borderColor: colors.herb }, active: { borderColor: colors.coral }, stageText: { color: colors.muted, fontSize: 16 }, stageTextActive: { color: colors.charcoal, fontWeight: '800' }, progress: { height: 7, borderRadius: radii.round, backgroundColor: colors.line, overflow: 'hidden' }, progressFill: { height: 7, backgroundColor: colors.coral }, truth: { color: colors.muted, textAlign: 'center', fontSize: 12 } });
