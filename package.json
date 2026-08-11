@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "pnpm --filter @cravekeep/mobile start",
+    "dev:device": "pnpm --filter @cravekeep/mobile start:device",
+    "build:ios:development": "pnpm --filter @cravekeep/mobile build:ios:development",
     "android": "pnpm --filter @cravekeep/mobile android",
     "ios": "pnpm --filter @cravekeep/mobile ios",
     "web": "pnpm --filter @cravekeep/mobile web",
