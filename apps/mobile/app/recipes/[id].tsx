@@ -9,6 +9,7 @@ import { useNutritionStore } from '@/data/nutrition-store';
 import { useAuthStore } from '@/data/auth-store';
 import { fetchCookSessions, type CookSession } from '@/data/cook-sessions';
 import { colors, radii, spacing } from '@/theme';
+import { RecipeArt } from '@/components/recipe-art';
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,7 +35,7 @@ export default function RecipeDetailScreen() {
   const averageTaste = cookSessions.length ? cookSessions.reduce((total, session) => total + session.taste, 0) / cookSessions.length : 0;
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.header}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.circle}><Ionicons name="arrow-back" size={23} /></Pressable><View style={styles.actions}>{recipe.source.kind === 'manual' && recipe.version === 1 && !recipe.originalRecipeId ? <Pressable accessibilityLabel="Edit recipe" onPress={() => router.push(`/recipes/${recipe.id}/edit`)} style={styles.circle}><Ionicons color={colors.charcoal} name="create-outline" size={23} /></Pressable> : null}<Pressable accessibilityLabel={recipe.favorite ? 'Remove favorite' : 'Favorite recipe'} onPress={() => toggleFavorite(recipe.id)} style={styles.circle}><Ionicons color={recipe.favorite ? colors.coral : colors.charcoal} name={recipe.favorite ? 'heart' : 'heart-outline'} size={23} /></Pressable></View></View>
-    <View style={styles.art}><Ionicons color={colors.herb} name="leaf" size={76} /></View><Title>{recipe.title}</Title><Text style={styles.body}>{recipe.description}</Text>
+    <RecipeArt favorite={recipe.favorite} /><Title>{recipe.title}</Title><Text style={styles.body}>{recipe.description}</Text>
     <View style={styles.versionBadge}><Ionicons color={colors.coralDark} name="git-branch-outline" size={16} /><Text style={styles.versionText}>{recipe.version === 1 ? 'Original recipe' : `Version ${recipe.version}`}</Text></View>
     {versions.length > 1 ? <Card><Text style={styles.sourceLabel}>VERSION HISTORY</Text><View style={styles.versionRow}>{versions.map((item) => <Pressable accessibilityRole="button" accessibilityState={{ selected: item.id === recipe.id }} key={item.id} onPress={() => router.replace(`/recipes/${item.id}`)} style={[styles.versionChoice, item.id === recipe.id && styles.versionChoiceActive]}><Text style={[styles.versionChoiceText, item.id === recipe.id && styles.versionChoiceTextActive]}>{item.version === 1 ? 'Original' : `V${item.version}`}</Text></Pressable>)}</View><Text style={styles.body}>Switch versions without changing or overwriting the original.</Text></Card> : null}
     <View style={styles.meta}><Text style={styles.metaText}><Ionicons name="time-outline" /> {recipe.prepMinutes + recipe.cookMinutes} min</Text><Text style={styles.metaText}><Ionicons name="people-outline" /> {recipe.servings} servings</Text><Text style={styles.private}><Ionicons name="lock-closed-outline" /> Private</Text></View>
