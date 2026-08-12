@@ -26,7 +26,7 @@ export default function Index() {
   }, [assemble, content, food, ready, reduceMotion, seen, settle, word]);
   if (!ready) return <View style={styles.screen} />;
   if (seen) return <Redirect href="/(tabs)/home" />;
-  const begin = async () => { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/(tabs)/home'); };
+  const begin = async () => { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/account'); };
   return <View style={styles.screen}><Animated.View style={[styles.logoStage, { transform: [{ translateY: settle.interpolate({ inputRange: [0, 1], outputRange: [0, -320] }) }, { scale: settle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.38] }) }] }]}><AnimatedBrandLogo assemble={assemble} word={word} /></Animated.View><Animated.View style={[styles.final, { opacity: settle }]}><View style={styles.art}><Image resizeMode="contain" source={foodOutline} style={[styles.food, styles.outline]} /><Animated.Image resizeMode="contain" source={foodColor} style={[styles.food, { opacity: food }]} /></View><Animated.View style={[styles.copy, { opacity: content }]}><Text accessibilityRole="header" style={styles.title}>Every recipe you crave.{`\n`}Kept your way.</Text><Pressable accessibilityRole="button" onPress={() => void begin()} style={({ pressed }) => [styles.button, pressed && styles.pressed]}><Text style={styles.buttonText}>Let’s begin</Text></Pressable></Animated.View></Animated.View></View>;
 }
 

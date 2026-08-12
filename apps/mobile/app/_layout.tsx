@@ -23,6 +23,9 @@ export default function RootLayout() {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="onboarding/account" />
+          <Stack.Screen name="onboarding/email" />
+          <Stack.Screen name="onboarding/auth-callback" />
           <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
           <Stack.Screen name="capture/link" />
           <Stack.Screen name="capture/media" />
