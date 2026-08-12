@@ -4,6 +4,17 @@ import { supabase } from './supabase';
 const STORAGE_KEY = 'cravekeep.cook-sessions.v1';
 export type CookSession = { id: string; recipeId: string; taste: number; effort: 'easy' | 'expected' | 'hard'; repeatIntent: boolean; notes: string; cookedAt: string };
 
+export async function fetchCookSessions(recipeId: string, ownerId?: string): Promise<CookSession[]> {
+  const stored = await AsyncStorage.getItem(STORAGE_KEY);
+  const local = (stored ? JSON.parse(stored) as CookSession[] : []).filter((session) => session.recipeId === recipeId);
+  if (!ownerId || !supabase || !/^[0-9a-f-]{36}$/i.test(recipeId)) return local.sort((a, b) => b.cookedAt.localeCompare(a.cookedAt));
+  const { data, error } = await supabase.from('cook_sessions').select('id, recipe_id, taste, effort, repeat_intent, notes, cooked_at').eq('recipe_id', recipeId).order('cooked_at', { ascending: false });
+  if (error) throw error;
+  const cloud = data.map((row) => ({ id: row.id, recipeId: row.recipe_id, taste: row.taste, effort: row.effort, repeatIntent: row.repeat_intent, notes: row.notes, cookedAt: row.cooked_at }));
+  const signatures = new Set(cloud.map((session) => `${session.cookedAt}|${session.taste}|${session.effort}|${session.repeatIntent}|${session.notes}`));
+  return [...cloud, ...local.filter((session) => !signatures.has(`${session.cookedAt}|${session.taste}|${session.effort}|${session.repeatIntent}|${session.notes}`))].sort((a, b) => b.cookedAt.localeCompare(a.cookedAt));
+}
+
 export async function saveCookSession(session: CookSession, ownerId?: string): Promise<void> {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
   const sessions = stored ? JSON.parse(stored) as CookSession[] : [];
