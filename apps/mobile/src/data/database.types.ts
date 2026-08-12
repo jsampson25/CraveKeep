@@ -35,9 +35,9 @@ export type Database = {
         Relationships: [{ foreignKeyName: 'planned_meals_recipe_id_fkey'; columns: ['recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] }];
       };
       grocery_items: {
-        Row: { id: string; owner_id: string; item_key: string; name: string; quantity: string; source_recipe_ids: string[]; checked: boolean; uncertain: boolean; updated_at: string };
-        Insert: { id?: string; owner_id: string; item_key: string; name: string; quantity?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
-        Update: { id?: string; owner_id?: string; item_key?: string; name?: string; quantity?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
+        Row: { id: string; owner_id: string; item_key: string; name: string; quantity: string; aisle: 'produce' | 'meat_seafood' | 'dairy_eggs' | 'bakery' | 'pantry' | 'frozen' | 'other'; note: string; source_recipe_ids: string[]; checked: boolean; uncertain: boolean; updated_at: string };
+        Insert: { id?: string; owner_id: string; item_key: string; name: string; quantity?: string; aisle?: 'produce' | 'meat_seafood' | 'dairy_eggs' | 'bakery' | 'pantry' | 'frozen' | 'other'; note?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
+        Update: { id?: string; owner_id?: string; item_key?: string; name?: string; quantity?: string; aisle?: 'produce' | 'meat_seafood' | 'dairy_eggs' | 'bakery' | 'pantry' | 'frozen' | 'other'; note?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
         Relationships: [];
       };
       recipe_nutrition_estimates: {
