@@ -1,17 +1,10 @@
-import { Animated, Image, StyleSheet, View, type ImageSourcePropType } from 'react-native';
-import logoC from '../../assets/brand/welcome-logo-c.png';
-import logoLockup from '../../assets/brand/welcome-logo-lockup.png';
-import logoMark from '../../assets/brand/welcome-logo-mark.png';
+import { Animated, Image, StyleSheet, View } from 'react-native';
+import logoC from '../../assets/brand/welcome-logo-piece-c.png';
+import logoRight from '../../assets/brand/welcome-logo-piece-right.png';
+import logoWord from '../../assets/brand/welcome-logo-piece-word.png';
 
-export type BrandLogoStage = 'c' | 'mark' | 'lockup';
-const sources: Record<BrandLogoStage, ImageSourcePropType> = { c: logoC, mark: logoMark, lockup: logoLockup };
-
-export function BrandLogo({ stage = 'lockup', compact = false }: { stage?: BrandLogoStage; compact?: boolean }) {
-  return <View accessibilityLabel="CraveKeep" style={[styles.wrap, compact ? styles.compact : styles.full]}><Image resizeMode="contain" source={sources[stage]} style={styles.image} /></View>;
+export function AnimatedBrandLogo({ assemble, word }: { assemble: Animated.Value; word: Animated.Value }) {
+  return <View accessibilityLabel="CraveKeep" style={styles.lockup}><View style={styles.mark}><Animated.Image resizeMode="contain" source={logoC} style={[styles.markPiece, { opacity: assemble, transform: [{ translateX: assemble.interpolate({ inputRange: [0, 1], outputRange: [-120, 0] }) }] }]} /><Animated.Image resizeMode="contain" source={logoRight} style={[styles.markPiece, { opacity: assemble, transform: [{ translateX: assemble.interpolate({ inputRange: [0, 1], outputRange: [120, 0] }) }] }]} /></View><Animated.View style={[styles.wordWrap, { opacity: word, transform: [{ translateY: word.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }]}><Image resizeMode="contain" source={logoWord} style={styles.word} /></Animated.View></View>;
 }
 
-export function AnimatedBrandLogo({ stage, opacity }: { stage: BrandLogoStage; opacity: Animated.Value | Animated.AnimatedInterpolation<number> }) {
-  return <Animated.View style={[styles.layer, { opacity }]}><BrandLogo stage={stage} /></Animated.View>;
-}
-
-const styles = StyleSheet.create({ wrap: { alignItems: 'center', justifyContent: 'center' }, full: { width: 280, height: 240 }, compact: { width: 112, height: 72 }, image: { width: '100%', height: '100%' }, layer: { position: 'absolute', alignItems: 'center', justifyContent: 'center' } });
+const styles = StyleSheet.create({ lockup: { width: 300, height: 286, alignItems: 'center' }, mark: { width: 280, height: 210 }, markPiece: { position: 'absolute', width: 280, height: 210 }, wordWrap: { width: 260, height: 68, marginTop: -2 }, word: { width: '100%', height: '100%' } });
