@@ -4,6 +4,12 @@ export type Database = {
   __InternalSupabase: { PostgrestVersion: '14.15' };
   public: {
     Tables: {
+      cook_sessions: {
+        Row: { id: string; owner_id: string; recipe_id: string; taste: number; effort: 'easy' | 'expected' | 'hard'; repeat_intent: boolean; notes: string; cooked_at: string };
+        Insert: { id?: string; owner_id: string; recipe_id: string; taste: number; effort: 'easy' | 'expected' | 'hard'; repeat_intent: boolean; notes?: string; cooked_at?: string };
+        Update: { id?: string; owner_id?: string; recipe_id?: string; taste?: number; effort?: 'easy' | 'expected' | 'hard'; repeat_intent?: boolean; notes?: string; cooked_at?: string };
+        Relationships: [{ foreignKeyName: 'cook_sessions_recipe_id_fkey'; columns: ['recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] }];
+      };
       capture_jobs: {
         Row: { created_at: string; error_message: string | null; extracted_recipe_id: string | null; id: string; owner_id: string; recovery_code: string | null; source_creator: string | null; source_host: string; source_title: string | null; source_url: string; stage: Database['public']['Enums']['import_stage'] | null; stage_index: number; status: Database['public']['Enums']['import_status']; updated_at: string };
         Insert: { created_at?: string; error_message?: string | null; extracted_recipe_id?: string | null; id?: string; owner_id: string; recovery_code?: string | null; source_creator?: string | null; source_host: string; source_title?: string | null; source_url: string; stage?: Database['public']['Enums']['import_stage'] | null; stage_index?: number; status?: Database['public']['Enums']['import_status']; updated_at?: string };
