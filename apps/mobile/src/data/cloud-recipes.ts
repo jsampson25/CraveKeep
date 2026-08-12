@@ -98,6 +98,32 @@ export async function saveCloudRecipe(recipe: Recipe, ownerId: string): Promise<
   return { ...recipe, id: row.id };
 }
 
+export async function updateCloudRecipe(recipe: Recipe): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('recipes').update({
+    title: recipe.title,
+    description: recipe.description,
+    servings: recipe.servings,
+    prep_minutes: recipe.prepMinutes,
+    cook_minutes: recipe.cookMinutes,
+    updated_at: recipe.updatedAt
+  }).eq('id', recipe.id);
+  if (error) throw error;
+
+  const [ingredientsDeleted, stepsDeleted] = await Promise.all([
+    supabase.from('recipe_ingredients').delete().eq('recipe_id', recipe.id),
+    supabase.from('recipe_steps').delete().eq('recipe_id', recipe.id)
+  ]);
+  const deleteError = ingredientsDeleted.error ?? stepsDeleted.error;
+  if (deleteError) throw deleteError;
+  const [ingredients, steps] = await Promise.all([
+    supabase.from('recipe_ingredients').insert(recipe.ingredients.map((ingredient, position) => ({ recipe_id: recipe.id, position, quantity: ingredient.quantity, name: ingredient.name }))),
+    supabase.from('recipe_steps').insert(recipe.steps.map((instruction, position) => ({ recipe_id: recipe.id, position, instruction })))
+  ]);
+  const childError = ingredients.error ?? steps.error;
+  if (childError) throw childError;
+}
+
 export async function setCloudFavorite(id: string, favorite: boolean): Promise<void> {
   if (!supabase) return;
   const { error } = await supabase.from('recipes').update({ favorite, updated_at: new Date().toISOString() }).eq('id', id);

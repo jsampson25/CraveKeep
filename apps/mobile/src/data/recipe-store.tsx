@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SAMPLE_RECIPE, type Recipe } from '@cravekeep/domain';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useAuthStore } from './auth-store';
-import { fetchCloudRecipes, saveCloudRecipe, setCloudFavorite } from './cloud-recipes';
+import { fetchCloudRecipes, saveCloudRecipe, setCloudFavorite, updateCloudRecipe } from './cloud-recipes';
 
 const STORAGE_KEY = 'cravekeep.recipes.v1';
 
@@ -11,6 +11,7 @@ type RecipeStoreValue = {
   ready: boolean;
   error: string | null;
   addRecipe: (recipe: Recipe) => Promise<Recipe>;
+  updateRecipe: (recipe: Recipe) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   toggleCookbook: (id: string, cookbookId: string) => Promise<void>;
   findRecipe: (id: string) => Recipe | undefined;
@@ -62,6 +63,13 @@ export function RecipeStoreProvider({ children }: PropsWithChildren) {
       }
       await persist([saved, ...recipes.filter((item) => item.id !== recipe.id && item.id !== saved.id)]);
       return saved;
+    },
+    updateRecipe: async (recipe) => {
+      await persist(recipes.map((item) => item.id === recipe.id ? recipe : item));
+      if (user && /^[0-9a-f-]{36}$/i.test(recipe.id)) {
+        try { await updateCloudRecipe(recipe); }
+        catch { setError('Recipe edits are saved on this device but cloud sync could not finish.'); }
+      }
     },
     toggleFavorite: async (id) => {
       const recipe = recipes.find((item) => item.id === id);
