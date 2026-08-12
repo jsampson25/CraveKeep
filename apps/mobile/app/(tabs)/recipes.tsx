@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
@@ -7,11 +8,22 @@ import { colors, radii, spacing } from '@/theme';
 
 export default function RecipesScreen() {
   const { recipes, ready } = useRecipeStore();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'favorites' | 'versions'>('all');
+  const visibleRecipes = useMemo(() => {
+    const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    return recipes.filter((recipe) => {
+      if (filter === 'favorites' && !recipe.favorite) return false;
+      if (filter === 'versions' && recipe.version === 1) return false;
+      const searchable = [recipe.title, recipe.description, recipe.source.label, ...recipe.ingredients.map((item) => item.name), ...recipe.steps].join(' ').toLocaleLowerCase();
+      return terms.every((term) => searchable.includes(term));
+    });
+  }, [filter, query, recipes]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.header}><Title>My Recipes</Title><View style={styles.avatar}><Text style={styles.avatarText}>JS</Text></View></View>
-    <View style={styles.search}><Ionicons color={colors.muted} name="search" size={20} /><TextInput accessibilityLabel="Search recipes" placeholder="What are you craving?" placeholderTextColor={colors.muted} style={styles.searchInput} /></View>
-    <View style={styles.filters}><Text style={styles.filterActive}>All</Text><Text style={styles.filter}>Favorites</Text><Text style={styles.filter}>Cookbooks</Text></View>
-    {!ready ? <ActivityIndicator color={colors.coral} /> : recipes.length === 0 ? <Card style={styles.empty}><Ionicons color={colors.coral} name="book-outline" size={64} /><Text style={styles.emptyTitle}>Your recipes deserve one home.</Text><Text style={styles.body}>Create a recipe now, then capture from anywhere as those slices arrive.</Text><Button label="Add my first recipe" onPress={() => router.push('/recipes/new')} /></Card> : <View style={styles.grid}>{recipes.map((recipe) => <Pressable key={recipe.id} onPress={() => router.push(`/recipes/${recipe.id}`)} style={styles.recipeCard}><View style={styles.recipeArt}><Ionicons color={colors.herb} name="leaf" size={38} />{recipe.favorite ? <Ionicons color={colors.coral} name="heart" size={19} style={styles.heart} /> : null}</View><Text numberOfLines={2} style={styles.recipeTitle}>{recipe.title}</Text><Text style={styles.body}>{recipe.prepMinutes + recipe.cookMinutes} min</Text><Text style={styles.badge}>{recipe.source.kind === 'manual' ? 'Original' : 'Sample'}</Text></Pressable>)}</View>}
+    <View style={styles.search}><Ionicons color={colors.muted} name="search" size={20} /><TextInput accessibilityLabel="Search recipes" onChangeText={setQuery} placeholder="Title, ingredient, or direction" placeholderTextColor={colors.muted} returnKeyType="search" style={styles.searchInput} value={query} />{query ? <Pressable accessibilityLabel="Clear recipe search" onPress={() => setQuery('')}><Ionicons color={colors.muted} name="close-circle" size={20} /></Pressable> : null}</View>
+    <View accessibilityRole="tablist" style={styles.filters}>{(['all', 'favorites', 'versions'] as const).map((value) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: filter === value }} key={value} onPress={() => setFilter(value)}><Text style={filter === value ? styles.filterActive : styles.filter}>{value === 'all' ? 'All' : value === 'favorites' ? 'Favorites' : 'Versions'}</Text></Pressable>)}</View>
+    {!ready ? <ActivityIndicator color={colors.coral} /> : recipes.length === 0 ? <Card style={styles.empty}><Ionicons color={colors.coral} name="book-outline" size={64} /><Text style={styles.emptyTitle}>Your recipes deserve one home.</Text><Text style={styles.body}>Create a recipe now, then capture from anywhere as those slices arrive.</Text><Button label="Add my first recipe" onPress={() => router.push('/recipes/new')} /></Card> : visibleRecipes.length === 0 ? <Card style={styles.empty}><Ionicons color={colors.herb} name="search-outline" size={48} /><Text style={styles.emptyTitle}>No recipes match.</Text><Text style={styles.body}>Try fewer words or choose a different filter.</Text><Button label="Clear search and filters" onPress={() => { setQuery(''); setFilter('all'); }} /></Card> : <View style={styles.grid}>{visibleRecipes.map((recipe) => <Pressable accessibilityLabel={`Open ${recipe.title}`} key={recipe.id} onPress={() => router.push(`/recipes/${recipe.id}`)} style={styles.recipeCard}><View style={styles.recipeArt}><Ionicons color={colors.herb} name="leaf" size={38} />{recipe.favorite ? <Ionicons color={colors.coral} name="heart" size={19} style={styles.heart} /> : null}</View><Text numberOfLines={2} style={styles.recipeTitle}>{recipe.title}</Text><Text style={styles.body}>{recipe.prepMinutes + recipe.cookMinutes} min</Text><Text style={styles.badge}>{recipe.version > 1 ? `Version ${recipe.version}` : recipe.source.kind === 'manual' ? 'Original' : recipe.source.kind === 'imported' ? 'Imported' : 'Sample'}</Text></Pressable>)}</View>}
     <Button label="Create a recipe" onPress={() => router.push('/recipes/new')} />
   </ScrollView></Screen>;
 }
