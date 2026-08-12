@@ -40,6 +40,12 @@ export type Database = {
         Update: { id?: string; owner_id?: string; item_key?: string; name?: string; quantity?: string; aisle?: 'produce' | 'meat_seafood' | 'dairy_eggs' | 'bakery' | 'pantry' | 'frozen' | 'other'; note?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
         Relationships: [];
       };
+      pantry_items: {
+        Row: { owner_id: string; item_key: string; name: string; quantity: string; confidence: 'confirmed' | 'estimated' | 'unknown'; expires_on: string | null; updated_at: string };
+        Insert: { owner_id: string; item_key: string; name: string; quantity?: string; confidence?: 'confirmed' | 'estimated' | 'unknown'; expires_on?: string | null; updated_at?: string };
+        Update: { owner_id?: string; item_key?: string; name?: string; quantity?: string; confidence?: 'confirmed' | 'estimated' | 'unknown'; expires_on?: string | null; updated_at?: string };
+        Relationships: [];
+      };
       recipe_nutrition_estimates: {
         Row: { id: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
         Insert: { id?: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };

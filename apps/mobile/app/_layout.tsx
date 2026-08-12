@@ -7,6 +7,7 @@ import { AuthStoreProvider } from '@/data/auth-store';
 import { NutritionStoreProvider } from '@/data/nutrition-store';
 import { PlanningStoreProvider } from '@/data/planning-store';
 import { GroceryStoreProvider } from '@/data/grocery-store';
+import { PantryStoreProvider } from '@/data/pantry-store';
 import { colors } from '@/theme';
 
 export default function RootLayout() {
@@ -17,6 +18,7 @@ export default function RootLayout() {
           <NutritionStoreProvider>
           <PlanningStoreProvider>
           <GroceryStoreProvider>
+          <PantryStoreProvider>
           <ImportStoreProvider>
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }}>
@@ -34,9 +36,11 @@ export default function RootLayout() {
           <Stack.Screen name="recipes/[id]/remix" />
           <Stack.Screen name="recipes/[id]/nutrition" />
           <Stack.Screen name="recipes/[id]/fit" />
+          <Stack.Screen name="pantry" />
           <Stack.Screen name="cook/[id]" />
         </Stack>
           </ImportStoreProvider>
+          </PantryStoreProvider>
           </GroceryStoreProvider>
           </PlanningStoreProvider>
           </NutritionStoreProvider>
