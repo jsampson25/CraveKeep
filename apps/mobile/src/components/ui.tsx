@@ -1,6 +1,6 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, type TextInputProps, View, type ViewStyle } from 'react-native';
-import { colors, radii, spacing } from '../theme';
+import { colors, radii, spacing, typography } from '../theme';
 
 export function Screen({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
   return <View style={[styles.screen, style]}>{children}</View>;
@@ -37,9 +37,9 @@ export function Field({ label, error, ...props }: TextInputProps & { label: stri
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   eyebrow: { color: colors.coralDark, fontSize: 12, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase' },
-  title: { color: colors.charcoal, fontFamily: 'Georgia', fontSize: 34, lineHeight: 39, fontWeight: '700' },
+  title: { color: colors.charcoal, ...typography.title, fontSize: 34, lineHeight: 39 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
-  sectionTitle: { color: colors.charcoal, fontSize: 19, fontWeight: '700' },
+  sectionTitle: { color: colors.charcoal, ...typography.label, fontSize: 19 },
   card: { backgroundColor: colors.paperRaised, borderColor: colors.line, borderRadius: radii.medium, borderWidth: 1, padding: spacing.md },
   button: { minHeight: 52, borderRadius: radii.medium, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.md },
   primaryButton: { backgroundColor: colors.coral },
@@ -47,11 +47,11 @@ const styles = StyleSheet.create({
   quietButton: { backgroundColor: 'transparent' },
   pressed: { opacity: 0.78 },
   disabled: { opacity: 0.45 },
-  buttonText: { color: colors.white, fontSize: 16, fontWeight: '800' },
+  buttonText: { color: colors.white, ...typography.action, fontSize: 16 },
   secondaryButtonText: { color: colors.coralDark },
   fieldWrap: { gap: spacing.xs },
-  label: { color: colors.charcoal, fontSize: 14, fontWeight: '700' },
-  input: { minHeight: 50, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paperRaised, borderRadius: radii.small, paddingHorizontal: 14, color: colors.charcoal, fontSize: 16 },
+  label: { color: colors.charcoal, ...typography.label, fontSize: 14 },
+  input: { minHeight: 50, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paperRaised, borderRadius: radii.small, paddingHorizontal: 14, color: colors.charcoal, ...typography.body, fontSize: 16 },
   inputError: { borderColor: colors.coral },
   error: { color: colors.coralDark, fontSize: 13 }
 });

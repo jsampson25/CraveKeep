@@ -15,3 +15,11 @@ export const colors = {
 
 export const radii = { small: 10, medium: 16, large: 24, round: 999 } as const;
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 } as const;
+
+export const typography = {
+  display: { fontFamily: 'Georgia', fontWeight: '700' as const, letterSpacing: -0.8 },
+  title: { fontFamily: 'Georgia', fontWeight: '700' as const, letterSpacing: -0.4 },
+  body: { fontWeight: '400' as const },
+  label: { fontWeight: '700' as const },
+  action: { fontWeight: '800' as const }
+} as const;
