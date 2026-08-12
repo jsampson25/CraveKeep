@@ -34,6 +34,12 @@ export type Database = {
         Update: { id?: string; owner_id?: string; meal_date?: string; slot?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; recipe_id?: string; servings?: number; status?: 'planned' | 'eaten'; created_at?: string };
         Relationships: [{ foreignKeyName: 'planned_meals_recipe_id_fkey'; columns: ['recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] }];
       };
+      grocery_items: {
+        Row: { id: string; owner_id: string; item_key: string; name: string; quantity: string; source_recipe_ids: string[]; checked: boolean; uncertain: boolean; updated_at: string };
+        Insert: { id?: string; owner_id: string; item_key: string; name: string; quantity?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
+        Update: { id?: string; owner_id?: string; item_key?: string; name?: string; quantity?: string; source_recipe_ids?: string[]; checked?: boolean; uncertain?: boolean; updated_at?: string };
+        Relationships: [];
+      };
       recipe_nutrition_estimates: {
         Row: { id: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
         Insert: { id?: string; recipe_id: string; owner_id: string; servings: number; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; sodium_milligrams: number; coverage: number; confidence: string; serving_assumption: string; calculated_at: string };
