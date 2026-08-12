@@ -7,7 +7,7 @@ import { colors, radii, spacing } from '@/theme';
 import foodColor from '../assets/brand/welcome-food-color.png';
 import foodOutline from '../assets/brand/welcome-food-outline.png';
 
-const WELCOME_KEY = 'cravekeep.welcome.v2';
+const WELCOME_KEY = 'cravekeep.welcome.v3';
 
 export default function Index() {
   const [ready, setReady] = useState(false);
