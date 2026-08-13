@@ -114,7 +114,7 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { create_my_household: { Args: { household_name: string }; Returns: string } };
+    Functions: { create_my_household: { Args: { household_name: string }; Returns: string }; is_username_available: { Args: { candidate: string }; Returns: boolean } };
     Enums: {
       import_stage: 'reading_source' | 'finding_ingredients' | 'building_steps' | 'checking_details' | 'preparing_recipe';
       import_status: 'queued' | 'processing' | 'needs_review' | 'completed' | 'failed';

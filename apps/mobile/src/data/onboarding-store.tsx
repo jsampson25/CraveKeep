@@ -23,7 +23,7 @@ const initial: OnboardingProfile = {
   flexibleDay: true, householdName: 'My Kitchen', householdMembers: []
 };
 const KEY = 'cravekeep.onboarding.profile.v3';
-type Value = { profile: OnboardingProfile; ready: boolean; saving: boolean; error?: string; update: (patch: Partial<OnboardingProfile>) => Promise<void>; saveProfile: () => Promise<string | undefined>; saveFoodProfile: () => Promise<string | undefined>; saveNutritionGoals: () => Promise<string | undefined>; saveHousehold: () => Promise<string | undefined>; finish: () => Promise<string | undefined> };
+type Value = { profile: OnboardingProfile; ready: boolean; saving: boolean; error?: string; update: (patch: Partial<OnboardingProfile>) => Promise<void>; usernameAvailable: (handle: string) => Promise<boolean>; saveProfile: () => Promise<string | undefined>; saveFoodProfile: () => Promise<string | undefined>; saveNutritionGoals: () => Promise<string | undefined>; saveHousehold: () => Promise<string | undefined>; finish: () => Promise<string | undefined> };
 const Context = createContext<Value | null>(null);
 const grams = (value: string) => Number.parseInt(value, 10) || 0;
 
@@ -68,6 +68,7 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     setSaving(true); setError(undefined); const result = await work(); setSaving(false);
     const message = result.error?.message; if (message) setError(message); return message;
   }, [user]);
+  const usernameAvailable = useCallback(async (handle: string) => { if (!supabase || !user) return false; const result = await supabase.rpc('is_username_available', { candidate: handle }); return !result.error && result.data; }, [user]);
   const saveProfile = useCallback(() => cloud(async () => supabase!.from('profiles').upsert({ id: user!.id, display_name: profile.displayName.trim(), username: profile.handle.trim().toLowerCase().replace(/^@/, ''), updated_at: new Date().toISOString() })), [cloud, profile.displayName, profile.handle, user]);
   const saveFoodProfile = useCallback(() => cloud(async () => supabase!.from('food_profiles').upsert({ owner_id: user!.id, loved_foods: profile.loves, avoided_foods: profile.avoids, never_suggest_foods: profile.neverSuggest, allergies: profile.allergies, dietary_preferences: profile.dietaryPreference === 'None' ? [] : [profile.dietaryPreference], cooking_time: profile.cookingTime, cooking_skill: profile.skill, appliances: profile.appliances.split(',').map(x => x.trim()).filter(Boolean), updated_at: new Date().toISOString() })), [cloud, profile, user]);
   const saveNutritionGoals = useCallback(() => cloud(async () => supabase!.from('nutrition_goals').upsert({ owner_id: user!.id, goal: profile.goal, calculation_mode: profile.calculationMode, calories: profile.calories, protein_grams: grams(profile.protein), carbohydrate_grams: grams(profile.carbs), fat_grams: grams(profile.fat), fiber_grams: grams(profile.fiber), age: profile.age, sex_for_calculation: profile.sexForCalculation, height_cm: profile.heightCm, current_weight_kg: profile.currentWeightKg, target_weight_kg: profile.targetWeightKg, activity_level: profile.activityLevel, weekly_average: profile.weeklyAverage, flexible_day: profile.flexibleDay, updated_at: new Date().toISOString() })), [cloud, profile, user]);
@@ -91,7 +92,7 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     return undefined;
   }, [cloud, profile.householdMembers, profile.householdName, user]);
   const finish = useCallback(async () => { const message = await cloud(async () => supabase!.from('profiles').update({ onboarding_completed: true, updated_at: new Date().toISOString() }).eq('id', user!.id)); if (!message) await update({ completed: true }); return message; }, [cloud, update, user]);
-  const value = useMemo(() => ({ profile, ready, saving, error, update, saveProfile, saveFoodProfile, saveNutritionGoals, saveHousehold, finish }), [error, finish, profile, ready, saveFoodProfile, saveHousehold, saveNutritionGoals, saveProfile, saving, update]);
+  const value = useMemo(() => ({ profile, ready, saving, error, update, usernameAvailable, saveProfile, saveFoodProfile, saveNutritionGoals, saveHousehold, finish }), [error, finish, profile, ready, saveFoodProfile, saveHousehold, saveNutritionGoals, saveProfile, saving, update, usernameAvailable]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 export function useOnboardingStore() { const value = useContext(Context); if (!value) throw new Error('useOnboardingStore must be used inside OnboardingStoreProvider'); return value; }
