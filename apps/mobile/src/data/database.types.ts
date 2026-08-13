@@ -17,9 +17,39 @@ export type Database = {
         Relationships: [{ foreignKeyName: 'capture_jobs_extracted_recipe_id_fkey'; columns: ['extracted_recipe_id']; isOneToOne: false; referencedRelation: 'recipes'; referencedColumns: ['id'] }];
       };
       profiles: {
-        Row: { created_at: string; display_name: string | null; id: string; updated_at: string };
-        Insert: { created_at?: string; display_name?: string | null; id: string; updated_at?: string };
-        Update: { created_at?: string; display_name?: string | null; id?: string; updated_at?: string };
+        Row: { avatar_url: string | null; created_at: string; display_name: string | null; id: string; onboarding_completed: boolean; updated_at: string; username: string | null };
+        Insert: { avatar_url?: string | null; created_at?: string; display_name?: string | null; id: string; onboarding_completed?: boolean; updated_at?: string; username?: string | null };
+        Update: { avatar_url?: string | null; created_at?: string; display_name?: string | null; id?: string; onboarding_completed?: boolean; updated_at?: string; username?: string | null };
+        Relationships: [];
+      };
+      food_profiles: {
+        Row: { owner_id: string; loved_foods: string[]; avoided_foods: string[]; never_suggest_foods: string[]; allergies: string[]; dietary_preferences: string[]; cooking_time: string; cooking_skill: string; appliances: string[]; updated_at: string };
+        Insert: { owner_id: string; loved_foods?: string[]; avoided_foods?: string[]; never_suggest_foods?: string[]; allergies?: string[]; dietary_preferences?: string[]; cooking_time?: string; cooking_skill?: string; appliances?: string[]; updated_at?: string };
+        Update: { owner_id?: string; loved_foods?: string[]; avoided_foods?: string[]; never_suggest_foods?: string[]; allergies?: string[]; dietary_preferences?: string[]; cooking_time?: string; cooking_skill?: string; appliances?: string[]; updated_at?: string };
+        Relationships: [];
+      };
+      nutrition_goals: {
+        Row: { owner_id: string; goal: string; calculation_mode: string; calories: number; protein_grams: number; carbohydrate_grams: number; fat_grams: number; fiber_grams: number; age: number | null; sex_for_calculation: string | null; height_cm: number | null; current_weight_kg: number | null; target_weight_kg: number | null; activity_level: string | null; weekly_average: boolean; flexible_day: boolean; updated_at: string };
+        Insert: { owner_id: string; goal?: string; calculation_mode?: string; calories?: number; protein_grams?: number; carbohydrate_grams?: number; fat_grams?: number; fiber_grams?: number; age?: number | null; sex_for_calculation?: string | null; height_cm?: number | null; current_weight_kg?: number | null; target_weight_kg?: number | null; activity_level?: string | null; weekly_average?: boolean; flexible_day?: boolean; updated_at?: string };
+        Update: { owner_id?: string; goal?: string; calculation_mode?: string; calories?: number; protein_grams?: number; carbohydrate_grams?: number; fat_grams?: number; fiber_grams?: number; age?: number | null; sex_for_calculation?: string | null; height_cm?: number | null; current_weight_kg?: number | null; target_weight_kg?: number | null; activity_level?: string | null; weekly_average?: boolean; flexible_day?: boolean; updated_at?: string };
+        Relationships: [];
+      };
+      households: {
+        Row: { id: string; owner_id: string; name: string; created_at: string; updated_at: string };
+        Insert: { id?: string; owner_id: string; name: string; created_at?: string; updated_at?: string };
+        Update: { id?: string; owner_id?: string; name?: string; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      household_members: {
+        Row: { household_id: string; user_id: string; role: string; display_name: string | null };
+        Insert: { household_id: string; user_id: string; role?: string; display_name?: string | null };
+        Update: { household_id?: string; user_id?: string; role?: string; display_name?: string | null };
+        Relationships: [];
+      };
+      household_dependents: {
+        Row: { id: string; household_id: string; display_name: string; member_type: string; allergies: string[]; preferences: string[]; created_at: string; updated_at: string };
+        Insert: { id?: string; household_id: string; display_name: string; member_type?: string; allergies?: string[]; preferences?: string[]; created_at?: string; updated_at?: string };
+        Update: { id?: string; household_id?: string; display_name?: string; member_type?: string; allergies?: string[]; preferences?: string[]; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       nutrition_provider_cache: {
@@ -84,7 +114,7 @@ export type Database = {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: { create_my_household: { Args: { household_name: string }; Returns: string } };
     Enums: {
       import_stage: 'reading_source' | 'finding_ingredients' | 'building_steps' | 'checking_details' | 'preparing_recipe';
       import_status: 'queued' | 'processing' | 'needs_review' | 'completed' | 'failed';

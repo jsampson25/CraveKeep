@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs, router } from 'expo-router';
+import { Redirect, Tabs, router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useAuthStore } from '@/data/auth-store';
+import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors } from '@/theme';
 
 const iconFor = (name: string, focused: boolean) => {
@@ -14,6 +16,11 @@ const iconFor = (name: string, focused: boolean) => {
 };
 
 export default function TabLayout() {
+  const { ready, user } = useAuthStore();
+  const { ready: onboardingReady, profile } = useOnboardingStore();
+  if (!ready || !onboardingReady) return <View style={styles.loading} />;
+  if (!user) return <Redirect href="/onboarding/account" />;
+  if (!profile.completed) return <Redirect href="/onboarding/profile" />;
   return (
     <Tabs screenOptions={({ route }) => ({
       headerShown: false,
@@ -36,6 +43,7 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, backgroundColor: colors.paper },
   bar: { height: 76, paddingBottom: 12, paddingTop: 8, backgroundColor: colors.paperRaised, borderTopColor: colors.line },
   label: { fontSize: 11, fontWeight: '700' },
   captureWrap: { width: 76, alignItems: 'center' },

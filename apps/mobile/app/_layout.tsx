@@ -8,12 +8,14 @@ import { NutritionStoreProvider } from '@/data/nutrition-store';
 import { PlanningStoreProvider } from '@/data/planning-store';
 import { GroceryStoreProvider } from '@/data/grocery-store';
 import { PantryStoreProvider } from '@/data/pantry-store';
+import { OnboardingStoreProvider } from '@/data/onboarding-store';
 import { colors } from '@/theme';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthStoreProvider>
+        <OnboardingStoreProvider>
         <RecipeStoreProvider>
           <NutritionStoreProvider>
           <PlanningStoreProvider>
@@ -26,6 +28,11 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding/account" />
           <Stack.Screen name="onboarding/email" />
           <Stack.Screen name="onboarding/auth-callback" />
+          <Stack.Screen name="onboarding/profile" />
+          <Stack.Screen name="onboarding/food-profile" />
+          <Stack.Screen name="onboarding/nutrition-goals" />
+          <Stack.Screen name="onboarding/household" />
+          <Stack.Screen name="onboarding/settings" />
           <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
           <Stack.Screen name="capture/link" />
           <Stack.Screen name="capture/media" />
@@ -50,6 +57,7 @@ export default function RootLayout() {
           </PlanningStoreProvider>
           </NutritionStoreProvider>
         </RecipeStoreProvider>
+        </OnboardingStoreProvider>
       </AuthStoreProvider>
     </SafeAreaProvider>
   );

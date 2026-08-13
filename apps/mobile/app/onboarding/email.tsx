@@ -18,7 +18,7 @@ export default function EmailAccountScreen() {
     setBusy(true); setMessage(undefined);
     const result = signingIn ? await signIn(email, password) : await signUp(email, password, name);
     setBusy(false);
-    if (result.error) setMessage(result.error); else if (result.confirmationRequired) setMessage('Check your email to verify your account, then return to sign in.'); else router.replace('/(tabs)/home');
+    if (result.error) setMessage(result.error); else if (result.confirmationRequired) setMessage('Check your email to verify your account, then return to sign in.'); else router.replace('/');
   };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <OnboardingProgress label={signingIn ? 'Welcome back' : 'Create account'} percent={signingIn ? 20 : 35} />

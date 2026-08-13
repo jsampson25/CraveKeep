@@ -1,9 +1,10 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, type TextInputProps, View, type ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radii, spacing, typography } from '../theme';
 
 export function Screen({ children, style }: PropsWithChildren<{ style?: ViewStyle }>) {
-  return <View style={[styles.screen, style]}>{children}</View>;
+  return <SafeAreaView edges={['top']} style={[styles.screen, style]}>{children}</SafeAreaView>;
 }
 
 export function Eyebrow({ children }: PropsWithChildren) {
@@ -35,7 +36,7 @@ export function Field({ label, error, ...props }: TextInputProps & { label: stri
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.paper },
+  screen: { flex: 1, paddingTop: spacing.sm, backgroundColor: colors.paper },
   eyebrow: { color: colors.coralDark, fontSize: 12, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase' },
   title: { color: colors.charcoal, ...typography.title, fontSize: 34, lineHeight: 39 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },

@@ -17,6 +17,55 @@ type AuthStoreValue = {
 };
 
 const AuthStore = createContext<AuthStoreValue | null>(null);
+const oauthExchanges = new Map<string, Promise<AuthResult>>();
+
+function getOAuthParams(url: string) {
+  const params = new URLSearchParams();
+  const queryStart = url.indexOf('?');
+  const hashStart = url.indexOf('#');
+  const queryEnd = hashStart >= 0 ? hashStart : url.length;
+
+  if (queryStart >= 0) {
+    new URLSearchParams(url.slice(queryStart + 1, queryEnd)).forEach((value, key) => params.set(key, value));
+  }
+  if (hashStart >= 0) {
+    new URLSearchParams(url.slice(hashStart + 1)).forEach((value, key) => params.set(key, value));
+  }
+  return params;
+}
+
+export function completeOAuthCode(code: string): Promise<AuthResult> {
+  const existing = oauthExchanges.get(code);
+  if (existing) return existing;
+  const exchange = (async () => {
+    if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    return error ? { error: error.message } : {};
+  })();
+  oauthExchanges.set(code, exchange);
+  return exchange;
+}
+
+export async function completeOAuthRedirect(url: string): Promise<AuthResult> {
+  if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
+
+  const params = getOAuthParams(url);
+  const providerError = params.get('error_description') ?? params.get('error');
+  if (providerError) return { error: providerError.replace(/\+/g, ' ') };
+
+  const code = params.get('code');
+  if (code) return completeOAuthCode(code);
+
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    return error ? { error: error.message } : {};
+  }
+
+  const { data } = await supabase.auth.getSession();
+  return data.session ? {} : { error: 'The provider returned without a usable session. Please try again.' };
+}
 
 export function AuthStoreProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
@@ -59,11 +108,7 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
     if (error || !data.url) return { error: error?.message ?? 'The secure sign-in page could not be opened.' };
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     if (result.type !== 'success') return result.type === 'cancel' ? { cancelled: true } : { error: 'Sign-in did not finish. Please try again.' };
-    const parsed = Linking.parse(result.url);
-    const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : undefined;
-    if (!code) return { error: 'The sign-in response was incomplete.' };
-    const exchanged = await supabase.auth.exchangeCodeForSession(code);
-    return exchanged.error ? { error: exchanged.error.message } : {};
+    return completeOAuthRedirect(result.url);
   }, []);
 
   const value = useMemo<AuthStoreValue>(() => ({
