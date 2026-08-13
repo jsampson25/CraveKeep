@@ -1,0 +1,8 @@
+export const foodCategories = [
+  { title: 'Meat & poultry', icon: 'restaurant-outline', items: ['Chicken breast','Chicken thighs','Ground chicken','Turkey','Ground turkey','Beef','Ground beef','Steak','Pork','Pork chops','Bacon','Ham','Lamb','Sausage','Duck'] },
+  { title: 'Seafood & proteins', icon: 'fish-outline', items: ['Salmon','Tuna','Cod','Tilapia','Shrimp','Crab','Lobster','Scallops','Eggs','Tofu','Tempeh','Lentils','Black beans','Chickpeas','Kidney beans','White beans'] },
+  { title: 'Vegetables', icon: 'leaf-outline', items: ['Onion','Red onion','Green onion','Garlic','Tomato','Bell pepper','Jalapeño','Carrot','Broccoli','Cauliflower','Spinach','Kale','Lettuce','Cabbage','Zucchini','Yellow squash','Eggplant','Mushrooms','Green beans','Peas','Corn','Celery','Cucumber','Asparagus','Brussels sprouts','Sweet potato','Potato','Beets','Radish','Artichoke'] },
+  { title: 'Fruits', icon: 'nutrition-outline', items: ['Apple','Banana','Orange','Lemon','Lime','Strawberry','Blueberry','Raspberry','Blackberry','Grapes','Watermelon','Cantaloupe','Pineapple','Mango','Peach','Pear','Plum','Cherry','Kiwi','Avocado','Coconut','Pomegranate'] },
+  { title: 'Grains, dairy & staples', icon: 'basket-outline', items: ['Rice','Brown rice','Quinoa','Pasta','Bread','Oats','Couscous','Tortillas','Flour','Milk','Almond milk','Oat milk','Butter','Greek yogurt','Cheddar','Mozzarella','Parmesan','Cream cheese','Peanuts','Almonds','Cashews','Walnuts','Olives'] },
+  { title: 'Herbs & flavors', icon: 'sparkles-outline', items: ['Basil','Cilantro','Parsley','Rosemary','Thyme','Dill','Mint','Oregano','Ginger','Turmeric','Cumin','Paprika','Cinnamon','Chili powder','Soy sauce','Hot sauce','Mustard','Mayonnaise','Honey','Maple syrup'] }
+] as const;

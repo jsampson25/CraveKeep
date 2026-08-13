@@ -16,14 +16,13 @@ export type OnboardingProfile = {
 };
 
 const initial: OnboardingProfile = {
-  completed: false, displayName: '', handle: '', loves: ['Garlic', 'Lemon', 'Salmon', 'Spinach'],
-  avoids: ['Mushrooms', 'Bell peppers', 'Olives'], neverSuggest: ['Cilantro', 'Beets', 'Eggplant'],
-  allergies: [], dietaryPreference: 'None', cookingTime: 'Any', skill: 'Intermediate',
-  appliances: 'Oven, Air fryer, Blender', goal: 'balanced', calculationMode: 'manual', calories: 2000,
+  completed: false, displayName: '', handle: '', loves: [], avoids: [], neverSuggest: [],
+  allergies: [], dietaryPreference: '', cookingTime: '', skill: '',
+  appliances: '', goal: '', calculationMode: 'manual', calories: 2000,
   protein: '100 g', carbs: '225 g', fat: '67 g', fiber: '25 g', weeklyAverage: true,
   flexibleDay: true, householdName: 'My Kitchen', householdMembers: []
 };
-const KEY = 'cravekeep.onboarding.profile.v2';
+const KEY = 'cravekeep.onboarding.profile.v3';
 type Value = { profile: OnboardingProfile; ready: boolean; saving: boolean; error?: string; update: (patch: Partial<OnboardingProfile>) => Promise<void>; saveProfile: () => Promise<string | undefined>; saveFoodProfile: () => Promise<string | undefined>; saveNutritionGoals: () => Promise<string | undefined>; saveHousehold: () => Promise<string | undefined>; finish: () => Promise<string | undefined> };
 const Context = createContext<Value | null>(null);
 const grams = (value: string) => Number.parseInt(value, 10) || 0;
