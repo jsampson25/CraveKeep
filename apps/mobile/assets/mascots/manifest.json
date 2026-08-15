@@ -1,0 +1,30 @@
+{
+  "description": "Transparent CraveKeep mascot artwork and storyboard animation frames.",
+  "roles": [
+    "recipe-keeper.png",
+    "cardinal-chef.png",
+    "pantry-guide.png"
+  ],
+  "animations": {
+    "recipe-card-loop": [
+      "recipe-card-loop-01.png",
+      "recipe-card-loop-02.png",
+      "recipe-card-loop-03.png",
+      "recipe-card-loop-04.png",
+      "recipe-card-loop-05.png",
+      "recipe-card-loop-06.png",
+      "recipe-card-loop-07.png",
+      "recipe-card-loop-08.png"
+    ],
+    "recipe-keeper-loop": [
+      "recipe-keeper-loop-01.png",
+      "recipe-keeper-loop-02.png",
+      "recipe-keeper-loop-03.png",
+      "recipe-keeper-loop-04.png",
+      "recipe-keeper-loop-05.png",
+      "recipe-keeper-loop-06.png",
+      "recipe-keeper-loop-07.png",
+      "recipe-keeper-loop-08.png"
+    ]
+  }
+}
