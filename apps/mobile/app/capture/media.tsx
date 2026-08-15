@@ -24,7 +24,7 @@ export default function MediaCaptureScreen() {
     setMessage(undefined);
     if (mode === 'camera') {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) { setMessage('Camera permission is required to scan a recipe. You can choose a saved photo instead.'); return; }
+      if (!permission.granted) { setMessage('Camera permission is required to scan a recipe. You can choose a saved photo instead.'); setBusy(false); return; }
     }
     let result: ImagePicker.ImagePickerResult;
     try {
