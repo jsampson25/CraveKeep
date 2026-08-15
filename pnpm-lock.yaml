@@ -3610,10 +3610,6 @@ snapshots:
 
   lottie-react-native@7.3.1: {}
 
-  '@react-native-async-storage/async-storage@2.2.0(react-native@0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))':
-    dependencies:
-      react-native: 0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3)
-
   '@adobe/css-tools@4.5.0': {}
 
   '@babel/code-frame@7.29.7':
