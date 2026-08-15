@@ -77,7 +77,7 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (!supabase) { setReady(true); return; }
-    void supabase.auth.getSession().then(({ data }) => setSession(data.session)).finally(() => setReady(true));
+    void supabase.auth.getSession().then(({ data }) => setSession(data.session)).catch(() => setSession(null)).finally(() => setReady(true));
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession));
     return () => data.subscription.unsubscribe();
   }, []);
