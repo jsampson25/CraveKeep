@@ -11,6 +11,7 @@ const groups = [
     ['nutrition-outline', 'Nutrition dashboard', 'Daily progress and macro balance', '/nutrition'],
     ['speedometer-outline', 'Nutrition goals', 'Calories, macros, activity', '/onboarding/nutrition-goals'],
     ['people-outline', 'Household', 'Members and shared planning', '/onboarding/household'],
+    ['sparkles-outline', 'Community', 'Shared recipes and kitchen inspiration', '/community'],
   ] },
   { title: 'Account & app', items: [
     ['person-circle-outline', 'Account', 'Profile and sign-in details', '/profile'],
