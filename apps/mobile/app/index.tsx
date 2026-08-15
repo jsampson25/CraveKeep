@@ -47,7 +47,7 @@ export default function Index() {
       return;
     }
     Animated.parallel([
-      Animated.timing(reveal, { toValue: 1, duration: 850, useNativeDriver: true }),
+      Animated.timing(reveal, { toValue: 1, duration: 450, useNativeDriver: true }),
       Animated.timing(copy, { toValue: 1, duration: 600, delay: 250, useNativeDriver: true }),
       Animated.loop(Animated.sequence([
         Animated.parallel([
@@ -87,12 +87,12 @@ export default function Index() {
         <View style={styles.mintBlob} />
       </View>
       <View style={styles.sheet}>
-        <Animated.View style={[styles.mascotFrame, { opacity: reveal, transform: [{ translateY: reveal.interpolate({ inputRange: [0, 1], outputRange: [80, 0] }) }] }]}>
+        <Animated.View style={[styles.mascotFrame, { opacity: reveal, transform: [{ translateY: reveal.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }] }]}>
           <MotionSlot name="launch-reveal" size={210} accessibilityLabel="Recipe Keeper mascot animation" style={styles.lottie} />
           <Animated.View style={[styles.actionMark, { opacity: pulse, transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.15] }) }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-12deg', '0deg', '12deg'] }) }] }]}>
             <Text style={styles.actionMarkText}>✦</Text>
           </Animated.View>
-          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={560} transitionDurationMs={110} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
+          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={900} transitionDurationMs={160} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
