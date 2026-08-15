@@ -13,6 +13,7 @@ type AuthStoreValue = {
   configured: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  updatePassword: (password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, displayName: string) => Promise<AuthResult>;
   signInWithProvider: (provider: 'apple' | 'google') => Promise<AuthResult>;
   signOut: () => Promise<AuthResult>;
@@ -93,6 +94,12 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
     return error ? { error: error.message } : {};
   }, []);
 
+  const updatePassword = useCallback(async (password: string): Promise<AuthResult> => {
+    if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
+    const { error } = await supabase.auth.updateUser({ password });
+    return error ? { error: error.message } : {};
+  }, []);
+
   const signUp = useCallback(async (email: string, password: string, displayName: string): Promise<AuthResult> => {
     if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
     const { data, error } = await supabase.auth.signUp({
@@ -128,10 +135,11 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
     configured: isSupabaseConfigured,
     signIn,
     resetPassword,
+    updatePassword,
     signUp,
     signInWithProvider,
     signOut
-  }), [ready, resetPassword, session, signIn, signInWithProvider, signOut, signUp]);
+  }), [ready, resetPassword, session, signIn, signInWithProvider, signOut, signUp, updatePassword]);
 
   return <AuthStore.Provider value={value}>{children}</AuthStore.Provider>;
 }

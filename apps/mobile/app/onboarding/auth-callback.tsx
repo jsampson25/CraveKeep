@@ -16,6 +16,8 @@ export default function AuthCallbackScreen() {
 
   useEffect(() => {
     if (started.current) return;
+    const hasCallback = Boolean(callbackUrl || params.code || params.error || params.error_code);
+    if (!hasCallback) return;
     started.current = true;
     const finish = async () => {
       if (callbackUrl) {
