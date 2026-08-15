@@ -38,7 +38,7 @@ export function RecipeStoreProvider({ children }: PropsWithChildren) {
       setRecipes((localRecipes) => {
         const cloudIds = new Set(cloudRecipes.map((recipe) => recipe.id));
         const next = [...cloudRecipes, ...localRecipes.filter((recipe) => !cloudIds.has(recipe.id))];
-        void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => setError('Recipes refreshed, but the local cache could not be updated.'));
         return next;
       });
       setError(null);
