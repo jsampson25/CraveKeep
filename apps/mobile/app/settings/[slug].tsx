@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useState } from 'react';
 import { Card, Screen, SectionTitle, Title } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
 
@@ -19,10 +20,11 @@ export default function SettingsDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const page = pages[(slug ?? 'about') as Slug] ?? pages.about;
   const interactive = slug === 'notifications';
+  const [notificationState, setNotificationState] = useState([true, true, false]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.back()} style={styles.back}><Ionicons color={colors.charcoal} name="arrow-back" size={22} /></Pressable>
     <View style={styles.heading}><View style={styles.icon}><Ionicons color={colors.white} name={page.icon} size={25} /></View><Text style={styles.eyebrow}>{page.eyebrow}</Text><Title>{page.title}</Title><Text style={styles.intro}>{page.intro}</Text></View>
-    {page.groups.map(([title, detail], index) => <View key={title}><SectionTitle>{title}</SectionTitle><Card style={styles.row}><View style={styles.flex}><Text style={styles.rowTitle}>{title}</Text><Text style={styles.detail}>{detail}</Text></View>{interactive ? <Switch accessibilityLabel={title} trackColor={{ false: colors.line, true: colors.coral }} thumbColor={colors.white} value={index < 2} /> : <Ionicons color={colors.muted} name="chevron-forward" size={19} />}</Card></View>)}
+    {page.groups.map(([title, detail], index) => <View key={title}><SectionTitle>{title}</SectionTitle><Card style={styles.row}><View style={styles.flex}><Text style={styles.rowTitle}>{title}</Text><Text style={styles.detail}>{detail}</Text></View>{interactive ? <Switch accessibilityLabel={title} onValueChange={(value) => setNotificationState((current) => current.map((item, itemIndex) => itemIndex === index ? value : item))} trackColor={{ false: colors.line, true: colors.coral }} thumbColor={colors.white} value={notificationState[index] ?? false} /> : <Ionicons color={colors.muted} name="chevron-forward" size={19} />}</Card></View>)}
     <Card style={styles.note}><Ionicons color={colors.herb} name="shield-checkmark-outline" size={24} /><Text style={styles.noteText}>You can change these choices anytime from Settings.</Text></Card>
   </ScrollView></Screen>;
 }
