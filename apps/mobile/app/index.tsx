@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
+
+const WebVideo = 'video' as unknown as React.ComponentType<any>;
 import { GoogleG } from '@/components/google-g';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
@@ -78,7 +80,19 @@ export default function Index() {
       </View>
       <View style={styles.sheet}>
         <Animated.View style={[styles.mascotFrame, { opacity: reveal, transform: [{ translateY: reveal.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }] }]}>
-          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={1200} transitionDurationMs={160} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
+          {Platform.OS === 'web' ? (
+            <WebVideo
+              aria-label="Recipe Keeper welcome wave"
+              autoPlay
+              loop
+              muted
+              playsInline
+              src={require('../assets/welcome-mascot-silent.mp4')}
+              style={styles.welcomeVideo}
+            />
+          ) : (
+            <MascotFrameSequence frames={welcomeFrames} frameDurationMs={1200} transitionDurationMs={160} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
+          )}
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
@@ -115,6 +129,7 @@ const styles = StyleSheet.create({
   mascotFrame: { height: 205, marginTop: -96, alignItems: 'center', justifyContent: 'center' },
   mascot: { width: '94%', height: 250 },
   mascotSequence: { width: '94%', height: 250 },
+  welcomeVideo: { width: '94%', height: 250, objectFit: 'contain' },
   copy: { gap: 8, paddingBottom: 18 },
   title: { color: colors.navy, ...typography.display, fontSize: 25, lineHeight: 30 },
   subtitle: { color: colors.muted, ...typography.body, fontSize: 15, lineHeight: 21 },
