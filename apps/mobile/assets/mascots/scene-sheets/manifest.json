@@ -6,6 +6,9 @@
     {
       "id": "cook-mode",
       "sheet": "cook-mode-sheet.png",
+      "mascotRole": "cardinal-chef",
+      "mascotAsset": "../cardinal-chef.png",
+      "sourceSequence": "role-specific-variants/cook-mode",
       "frameCount": 4,
       "frameSize": [
         320,
@@ -17,6 +20,9 @@
     {
       "id": "evening-checkin",
       "sheet": "evening-checkin-sheet.png",
+      "mascotRole": "recipe-keeper",
+      "mascotAsset": "../recipe-keeper.png",
+      "sourceSequence": "role-specific-variants/evening-checkin",
       "frameCount": 4,
       "frameSize": [
         320,
@@ -28,6 +34,9 @@
     {
       "id": "grocery-shopping",
       "sheet": "grocery-shopping-sheet.png",
+      "mascotRole": "pantry-guide",
+      "mascotAsset": "../pantry-guide.png",
+      "sourceSequence": "role-specific-variants/grocery-shopping",
       "frameCount": 4,
       "frameSize": [
         320,
@@ -39,6 +48,9 @@
     {
       "id": "importing-recipe",
       "sheet": "importing-recipe-sheet.png",
+      "mascotRole": "recipe-keeper",
+      "mascotAsset": "../recipe-keeper.png",
+      "sourceSequence": "recipe-card-loop",
       "frameCount": 8,
       "frameSize": [
         320,
@@ -50,6 +62,9 @@
     {
       "id": "recipe-keeper-loading",
       "sheet": "recipe-keeper-loading-sheet.png",
+      "mascotRole": "recipe-keeper",
+      "mascotAsset": "../recipe-keeper.png",
+      "sourceSequence": "recipe-keeper-loop",
       "frameCount": 8,
       "frameSize": [
         320,
@@ -61,6 +76,9 @@
     {
       "id": "saving-recipe",
       "sheet": "saving-recipe-sheet.png",
+      "mascotRole": "recipe-keeper",
+      "mascotAsset": "../recipe-keeper.png",
+      "sourceSequence": "role-specific-variants/success-celebration",
       "frameCount": 4,
       "frameSize": [
         320,
@@ -72,6 +90,9 @@
     {
       "id": "weekly-planning",
       "sheet": "weekly-planning-sheet.png",
+      "mascotRole": "pantry-guide",
+      "mascotAsset": "../pantry-guide.png",
+      "sourceSequence": "role-specific-variants/plan-my-week",
       "frameCount": 4,
       "frameSize": [
         320,
@@ -83,6 +104,9 @@
     {
       "id": "welcome-wave",
       "sheet": "welcome-wave-sheet.png",
+      "mascotRole": "recipe-keeper",
+      "mascotAsset": "../recipe-keeper.png",
+      "sourceSequence": "role-specific-variants/morning-wave",
       "frameCount": 4,
       "frameSize": [
         320,
