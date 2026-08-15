@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
 import { uploadCaptureImage } from '@/data/capture-assets';
@@ -47,7 +48,7 @@ export default function MediaCaptureScreen() {
   };
 
   return <Screen style={styles.screen}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable><View style={styles.content}>
-    <Text style={styles.kicker}>{mode === 'camera' ? 'SCAN A RECIPE' : 'CHOOSE A PHOTO'}</Text><Title>{asset ? 'Is this image readable?' : mode === 'camera' ? 'Frame the whole recipe.' : 'Choose your clearest image.'}</Title>
+    <Text style={styles.kicker}>{mode === 'camera' ? 'SCAN A RECIPE' : 'CHOOSE A PHOTO'}</Text><MotionSlot name="recipe-import" size={84} accessibilityLabel="Animated recipe capture state" /><Title>{asset ? 'Is this image readable?' : mode === 'camera' ? 'Frame the whole recipe.' : 'Choose your clearest image.'}</Title>
     {asset ? <Card style={styles.previewCard}><Image accessibilityLabel="Selected recipe image" resizeMode="contain" source={{ uri: asset.uri }} style={styles.preview} /><Text numberOfLines={1} style={styles.fileName}>{asset.fileName || 'Recipe image'}</Text></Card> : <Card style={styles.empty}><Ionicons color={colors.coral} name={mode === 'camera' ? 'camera-outline' : 'images-outline'} size={62} /><Text style={styles.body}>Include the title, ingredients, and directions. You can correct every field before saving.</Text></Card>}
     {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
     {busy ? <ActivityIndicator color={colors.coral} /> : asset ? <><Button label="Use this image" onPress={() => void continueToReview()} /><Button label="Choose another" variant="secondary" onPress={() => void choose()} /></> : <Button label={mode === 'camera' ? 'Open camera' : 'Choose photo'} onPress={() => void choose()} />}
