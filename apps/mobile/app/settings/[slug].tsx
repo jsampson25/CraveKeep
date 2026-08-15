@@ -25,7 +25,7 @@ export default function SettingsDetailScreen() {
   const interactive = slug === 'notifications';
   const [notificationState, setNotificationState] = useState([true, true, false]);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
-  useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) return; try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } finally { setNotificationsLoaded(true); } }); }, [interactive]);
+  useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) { setNotificationsLoaded(true); return; } try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } finally { setNotificationsLoaded(true); } }); }, [interactive]);
   useEffect(() => { if (interactive && notificationsLoaded) void AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState)); }, [interactive, notificationState, notificationsLoaded]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.back()} style={styles.back}><Ionicons color={colors.charcoal} name="arrow-back" size={22} /></Pressable>
