@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, Screen, Title } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
@@ -21,7 +22,8 @@ export default function CommunityScreen() {
   const [liked, setLiked] = useState<string[]>([]);
   const [saved, setSaved] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'for-you' | 'following'>('for-you');
-  useEffect(() => { void Promise.all([AsyncStorage.getItem(POSTS_KEY), AsyncStorage.getItem(LIKES_KEY), AsyncStorage.getItem(SAVES_KEY)]).then(([postValue, likeValue, saveValue]) => { try { if (postValue) { const stored = JSON.parse(postValue); if (Array.isArray(stored)) setPosts([...stored, ...initialPosts]); } if (likeValue) { const storedLikes = JSON.parse(likeValue); if (Array.isArray(storedLikes)) setLiked(storedLikes); } if (saveValue) { const storedSaves = JSON.parse(saveValue); if (Array.isArray(storedSaves)) setSaved(storedSaves); } } catch { /* ignore malformed local data */ } }); }, []);
+  const loadCommunityState = useCallback(() => { void Promise.all([AsyncStorage.getItem(POSTS_KEY), AsyncStorage.getItem(LIKES_KEY), AsyncStorage.getItem(SAVES_KEY)]).then(([postValue, likeValue, saveValue]) => { try { if (postValue) { const stored = JSON.parse(postValue); if (Array.isArray(stored)) setPosts([...stored, ...initialPosts]); } if (likeValue) { const storedLikes = JSON.parse(likeValue); if (Array.isArray(storedLikes)) setLiked(storedLikes); } if (saveValue) { const storedSaves = JSON.parse(saveValue); if (Array.isArray(storedSaves)) setSaved(storedSaves); } } catch { /* ignore malformed local data */ } }); }, []);
+  useFocusEffect(useCallback(() => { loadCommunityState(); }, [loadCommunityState]));
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.header}><View><Text style={styles.eyebrow}>COMMUNITY</Text><Title>See what cooks are keeping.</Title></View><View style={styles.icon}><Ionicons color={colors.white} name="people-outline" size={24} /></View></View>
     <View accessibilityRole="tablist" style={styles.tabs}><Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'for-you' }} onPress={() => setActiveTab('for-you')}><Text style={activeTab === 'for-you' ? styles.tabActive : styles.tab}>For you</Text></Pressable><Pressable accessibilityRole="tab" accessibilityState={{ selected: false }} onPress={() => router.push('/discover')}><Text style={styles.tab}>Discover</Text></Pressable><Pressable accessibilityRole="tab" accessibilityState={{ selected: activeTab === 'following' }} onPress={() => setActiveTab('following')}><Text style={activeTab === 'following' ? styles.tabActive : styles.tab}>Following</Text></Pressable></View>
