@@ -11,10 +11,10 @@ export type MascotFrameSequenceProps = {
 };
 
 const poses = [
-  { y: 14, rotate: -2, scale: 0.94 },
-  { y: -3, rotate: -8, scale: 1.01 },
-  { y: -9, rotate: 7, scale: 1.06 },
-  { y: 5, rotate: 0, scale: 0.98 },
+  { y: 18, rotate: -3, scale: 0.9 },
+  { y: -8, rotate: -12, scale: 1.03 },
+  { y: -14, rotate: 10, scale: 1.1 },
+  { y: 8, rotate: 0, scale: 0.96 },
 ];
 
 export function MascotFrameSequence({
@@ -97,7 +97,7 @@ export function MascotFrameSequence({
           { scale: bodyScale },
         ],
       }]}>
-        <Image source={frames[frameIndex]} resizeMode="contain" style={dimensions} />
+        <Image key={frameIndex} source={frames[frameIndex]} resizeMode="contain" style={dimensions} />
       </Animated.View>
     </View>
   );
