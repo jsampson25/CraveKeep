@@ -19,15 +19,25 @@ export default function MediaCaptureScreen() {
   const [message, setMessage] = useState<string>();
 
   const choose = async () => {
+    if (busy) return;
+    setBusy(true);
     setMessage(undefined);
     if (mode === 'camera') {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) { setMessage('Camera permission is required to scan a recipe. You can choose a saved photo instead.'); return; }
     }
-    const result = mode === 'camera'
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9, selectionLimit: 1 });
+    let result: ImagePicker.ImagePickerResult;
+    try {
+      result = mode === 'camera'
+        ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 })
+        : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9, selectionLimit: 1 });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'We could not open your camera or photo library.');
+      setBusy(false);
+      return;
+    }
     if (!result.canceled) setAsset(result.assets[0]);
+    setBusy(false);
   };
 
   const continueToReview = async () => {
