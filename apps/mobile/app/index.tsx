@@ -3,13 +3,12 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AnimatedBrandLogo } from '@/components/brand-logo';
-import { LottieMotion } from '@/components/animations/LottieMotion';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 import foodColor from '../assets/brand/welcome-food-color.png';
 import foodOutline from '../assets/brand/welcome-food-outline.png';
-import launchReveal from '../assets/animations/launch-reveal.json';
 
 const WELCOME_KEY = 'cravekeep.welcome.v8';
 
@@ -84,8 +83,8 @@ export default function Index() {
 
       <Animated.View style={[styles.final, { opacity: settle }]}>
         <View style={styles.art}>
-          <LottieMotion
-            source={launchReveal}
+          <MotionSlot
+            name="launch-reveal"
             size={230}
             accessibilityLabel="CraveKeep logo reveal animation"
             style={styles.lottie}
