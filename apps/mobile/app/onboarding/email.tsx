@@ -10,9 +10,14 @@ import { colors, spacing, typography } from '@/theme';
 export default function EmailAccountScreen() {
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const signingIn = mode === 'signin';
-  const { signIn, signUp } = useAuthStore();
-  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string>();
+  const { resetPassword, signIn, signUp } = useAuthStore();
+  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string>(); const [resetSent, setResetSent] = useState(false);
   const rules = [{ met: password.length >= 8, label: 'At least 8 characters' }, { met: /[a-z]/.test(password), label: 'One lowercase letter' }, { met: /[A-Z]/.test(password), label: 'One uppercase letter' }, { met: /[^A-Za-z]/.test(password), label: 'One number or symbol' }];
+  const sendReset = async () => {
+    if (!email.trim()) { setMessage('Enter your email first so we know where to send the reset link.'); return; }
+    setBusy(true); setMessage(undefined);
+    try { const result = await resetPassword(email); if (result.error) setMessage(result.error); else setResetSent(true); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not send the reset email. Please try again.'); } finally { setBusy(false); }
+  };
   const submit = async () => {
     if (!email.trim() || (signingIn ? !password : !rules.every((rule) => rule.met) || !name.trim())) { setMessage(signingIn ? 'Enter your email and password.' : 'Complete the required fields and password rules.'); return; }
     setBusy(true); setMessage(undefined);
@@ -24,8 +29,8 @@ export default function EmailAccountScreen() {
     <Title>{signingIn ? 'Sign in to CraveKeep' : 'Create your account'}</Title><Text style={styles.body}>{signingIn ? 'Your private recipes are ready when you are.' : 'We’ll email a verification link to protect your account.'}</Text>
     {!signingIn ? <Field autoComplete="name" label="First name" onChangeText={setName} value={name} /> : null}<Field autoCapitalize="none" autoComplete="email" keyboardType="email-address" label="Email" onChangeText={setEmail} value={email} /><Field autoCapitalize="none" autoComplete={signingIn ? 'current-password' : 'new-password'} label="Password" onChangeText={setPassword} secureTextEntry value={password} />
     {!signingIn ? <View style={styles.rules}>{rules.map((rule) => <Text key={rule.label} style={rule.met ? styles.ruleMet : styles.rule}><Ionicons name={rule.met ? 'checkmark-circle' : 'ellipse-outline'} /> {rule.label}</Text>)}</View> : null}
-    {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}<Button disabled={busy} label={busy ? 'Connecting…' : signingIn ? 'Sign in' : 'Create account'} onPress={() => void submit()} /><Button disabled={busy} label="Back to sign-in options" onPress={() => router.back()} variant="secondary" />
+    {resetSent ? <Text accessibilityRole="status" style={styles.success}>Check your email for a secure password-reset link.</Text> : null}{message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}{signingIn ? <Pressable disabled={busy} onPress={() => void sendReset()}><Text style={styles.forgot}>Forgot your password?</Text></Pressable> : null}<Button disabled={busy} label={busy ? 'Connecting…' : signingIn ? 'Sign in' : 'Create account'} onPress={() => void submit()} /><Button disabled={busy} label="Back to sign-in options" onPress={() => router.back()} variant="secondary" />
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
 
-const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 48 }, back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' }, body: { color: colors.muted, ...typography.body, lineHeight: 22 }, rules: { gap: spacing.sm }, rule: { color: colors.muted }, ruleMet: { color: colors.herb, ...typography.label }, message: { color: colors.coralDark, lineHeight: 20 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 48 }, back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' }, body: { color: colors.muted, ...typography.body, lineHeight: 22 }, rules: { gap: spacing.sm }, rule: { color: colors.muted }, ruleMet: { color: colors.herb, ...typography.label }, message: { color: colors.coralDark, lineHeight: 20 }, success: { color: colors.herb, lineHeight: 20, fontWeight: '700' }, forgot: { color: colors.coral, textAlign: 'center', fontWeight: '800' } });
