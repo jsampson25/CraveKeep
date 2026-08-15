@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Card, Eyebrow, Screen, Title } from '@/components/ui';
@@ -14,7 +14,8 @@ export default function RecipesScreen() {
   const [filter, setFilter] = useState<'all' | 'favorites' | 'versions'>('all');
   const [communitySavedCount, setCommunitySavedCount] = useState(0);
   const [communitySavedTitles, setCommunitySavedTitles] = useState<string[]>([]);
-  useEffect(() => { void Promise.all([AsyncStorage.getItem('cravekeep.community.saves.v1'), AsyncStorage.getItem('cravekeep.community.posts.v1')]).then(([value, postsValue]) => { try { const saved = value ? JSON.parse(value) : []; const posts = postsValue ? JSON.parse(postsValue) : []; if (Array.isArray(saved)) { setCommunitySavedCount(saved.length); if (Array.isArray(posts)) setCommunitySavedTitles(posts.filter((post) => saved.includes(post.id)).slice(0, 3).map((post) => post.title)); } } catch { setCommunitySavedCount(0); setCommunitySavedTitles([]); } }); }, []);
+  const loadCommunitySaves = useCallback(() => { void Promise.all([AsyncStorage.getItem('cravekeep.community.saves.v1'), AsyncStorage.getItem('cravekeep.community.posts.v1')]).then(([value, postsValue]) => { try { const saved = value ? JSON.parse(value) : []; const posts = postsValue ? JSON.parse(postsValue) : []; if (Array.isArray(saved)) { setCommunitySavedCount(saved.length); if (Array.isArray(posts)) setCommunitySavedTitles(posts.filter((post) => saved.includes(post.id)).slice(0, 3).map((post) => post.title)); } } catch { setCommunitySavedCount(0); setCommunitySavedTitles([]); } }); }, []);
+  useFocusEffect(useCallback(() => { loadCommunitySaves(); }, [loadCommunitySaves]));
   const visibleRecipes = useMemo(() => {
     const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
     return recipes.filter((recipe) => {
