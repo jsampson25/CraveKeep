@@ -11,9 +11,15 @@ export default function EmailAccountScreen() {
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const signingIn = mode === 'signin';
   const resetting = mode === 'reset';
-  const { resetPassword, signIn, signUp, updatePassword } = useAuthStore();
+  const { resetPassword, resendVerification, signIn, signUp, updatePassword } = useAuthStore();
+  const [verificationSent, setVerificationSent] = useState(false);
   const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string>(); const [resetSent, setResetSent] = useState(false);
   const rules = [{ met: password.length >= 8, label: 'At least 8 characters' }, { met: /[a-z]/.test(password), label: 'One lowercase letter' }, { met: /[A-Z]/.test(password), label: 'One uppercase letter' }, { met: /[^A-Za-z]/.test(password), label: 'One number or symbol' }];
+  const resend = async () => {
+    if (!email.trim()) { setMessage('Enter your email first.'); return; }
+    setBusy(true); setMessage(undefined);
+    try { const result = await resendVerification(email); if (result.error) setMessage(result.error); else setVerificationSent(true); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not resend the verification email.'); } finally { setBusy(false); }
+  };
   const saveNewPassword = async () => {
     if (!rules.every((rule) => rule.met)) { setMessage('Choose a password that meets all requirements.'); return; }
     setBusy(true); setMessage(undefined);
@@ -27,7 +33,7 @@ export default function EmailAccountScreen() {
   const submit = async () => {
     if (!email.trim() || (signingIn ? !password : !rules.every((rule) => rule.met) || !name.trim())) { setMessage(signingIn ? 'Enter your email and password.' : 'Complete the required fields and password rules.'); return; }
     setBusy(true); setMessage(undefined);
-    try { const result = signingIn ? await signIn(email, password) : await signUp(email, password, name); if (result.error) setMessage(result.error); else if (result.confirmationRequired) setMessage('Check your email to verify your account, then return to sign in.'); else router.replace('/'); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not complete that request. Please try again.'); } finally { setBusy(false); }
+    try { const result = signingIn ? await signIn(email, password) : await signUp(email, password, name); if (result.error) setMessage(result.error); else if (result.confirmationRequired) { setMessage('Check your email to verify your account, then return to sign in.'); } else router.replace('/'); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not complete that request. Please try again.'); } finally { setBusy(false); }
   };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <OnboardingProgress label={resetting ? 'Set a new password' : signingIn ? 'Welcome back' : 'Create account'} percent={resetting ? 80 : signingIn ? 20 : 35} />
@@ -35,7 +41,7 @@ export default function EmailAccountScreen() {
     <Title>{resetting ? 'Choose a new password' : signingIn ? 'Sign in to CraveKeep' : 'Create your account'}</Title><Text style={styles.body}>{resetting ? 'Create a new password for your CraveKeep account.' : signingIn ? 'Your private recipes are ready when you are.' : 'We’ll email a verification link to protect your account.'}</Text>
     {!signingIn && !resetting ? <Field autoComplete="name" label="First name" onChangeText={setName} value={name} /> : null}{!resetting ? <Field autoCapitalize="none" autoComplete="email" keyboardType="email-address" label="Email" onChangeText={setEmail} value={email} /> : null}<Field autoCapitalize="none" autoComplete={signingIn ? 'current-password' : 'new-password'} label="Password" onChangeText={setPassword} secureTextEntry value={password} />
     {!signingIn || resetting ? <View style={styles.rules}>{rules.map((rule) => <Text key={rule.label} style={rule.met ? styles.ruleMet : styles.rule}><Ionicons name={rule.met ? 'checkmark-circle' : 'ellipse-outline'} /> {rule.label}</Text>)}</View> : null}
-    {resetSent ? <Text accessibilityRole="status" style={styles.success}>{resetting ? 'Your password has been updated. You can now sign in.' : 'Check your email for a secure password-reset link.'}</Text> : null}{message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}{signingIn ? <Pressable disabled={busy} onPress={() => void sendReset()}><Text style={styles.forgot}>Forgot your password?</Text></Pressable> : null}<Button disabled={busy} label={busy ? 'Connecting…' : resetting ? 'Save new password' : signingIn ? 'Sign in' : 'Create account'} onPress={() => void (resetting ? saveNewPassword() : submit())} /><Button disabled={busy} label="Back to sign-in options" onPress={() => router.back()} variant="secondary" />
+    {resetSent ? <Text accessibilityRole="status" style={styles.success}>{resetting ? 'Your password has been updated. You can now sign in.' : 'Check your email for a secure password-reset link.'}</Text> : null}{verificationSent ? <Text accessibilityRole="status" style={styles.success}>A new verification email has been sent.</Text> : null}{message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}{signingIn ? <Pressable disabled={busy} onPress={() => void sendReset()}><Text style={styles.forgot}>Forgot your password?</Text></Pressable> : null}<>{!signingIn && !resetting ? <Pressable disabled={busy} onPress={() => void resend()}><Text style={styles.forgot}>Resend verification email</Text></Pressable> : null}<Button disabled={busy} label={busy ? 'Connecting…' : resetting ? 'Save new password' : signingIn ? 'Sign in' : 'Create account'} onPress={() => void (resetting ? saveNewPassword() : submit())} /><Button disabled={busy} label="Back to sign-in options" onPress={() => router.back()} variant="secondary" />
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
 
