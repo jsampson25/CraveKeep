@@ -24,6 +24,8 @@ Run `pnpm build:web` to create the Vercel-ready Expo web export in `apps/mobile/
 
 The production web deployment follows the `main` branch.
 
+Latest production verification includes the web OAuth root callback fix.
+
 ## Repository
 
 - `apps/mobile` — Expo Router mobile application
