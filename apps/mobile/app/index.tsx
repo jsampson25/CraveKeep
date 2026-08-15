@@ -58,9 +58,7 @@ export default function Index() {
     <View style={styles.screen}>
       <View style={styles.coralHero}>
         <View style={styles.brand}><Text style={styles.heart}>♡</Text><Text style={styles.crave}>Crave</Text><Text style={styles.keep}>Keep</Text></View>
-        <Text style={styles.heroTitle}>Keep every{'
-'}recipe{'
-'}you crave.</Text>
+        <Text style={styles.heroTitle}>Keep every recipe you crave.</Text>
         <Text style={styles.sparkle}>✦</Text>
         <View style={styles.mintBlob} />
       </View>
@@ -70,8 +68,7 @@ export default function Index() {
           <Image source={keeper} resizeMode="contain" style={styles.mascot} />
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-          <Text style={styles.title}>Save recipes.{'
-'}Plan meals. Cook more.</Text>
+          <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
           <Text style={styles.subtitle}>Your Recipe Keeper is ready to collect every recipe you love.</Text>
           <Pressable accessibilityRole="button" onPress={() => void begin()} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
             <Text style={styles.buttonText}>Get started</Text>
@@ -91,7 +88,7 @@ const styles = StyleSheet.create({
   heart: { color: colors.white, fontSize: 25, fontWeight: '900', marginRight: 4 },
   crave: { color: colors.white, fontSize: 22, fontWeight: '900' },
   keep: { color: colors.navy, fontSize: 22, fontWeight: '900' },
-  heroTitle: { color: colors.navy, ...typography.display, fontSize: 42, lineHeight: 42, marginTop: 48, zIndex: 2 },
+  heroTitle: { color: colors.navy, ...typography.display, fontSize: 42, lineHeight: 48, marginTop: 48, zIndex: 2 },
   sparkle: { position: 'absolute', right: 38, top: 100, color: colors.yellow, fontSize: 60, fontWeight: '900' },
   mintBlob: { position: 'absolute', right: -72, bottom: -105, width: 245, height: 245, borderRadius: 123, backgroundColor: colors.mint, opacity: 0.85 },
   sheet: { flex: 1, marginTop: -28, borderTopLeftRadius: 30, borderTopRightRadius: 30, backgroundColor: colors.background, paddingHorizontal: spacing.lg, zIndex: 3 },
@@ -99,7 +96,7 @@ const styles = StyleSheet.create({
   mascot: { width: '94%', height: 250 },
   lottie: { position: 'absolute', opacity: 0.1 },
   copy: { gap: spacing.sm, paddingBottom: 18 },
-  title: { color: colors.navy, ...typography.display, fontSize: 25, lineHeight: 29 },
+  title: { color: colors.navy, ...typography.display, fontSize: 25, lineHeight: 30 },
   subtitle: { color: colors.muted, ...typography.body, fontSize: 15, lineHeight: 21 },
   button: { minHeight: 56, borderRadius: radii.round, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral, marginTop: spacing.sm },
   pressed: { opacity: 0.8 },
