@@ -10,10 +10,11 @@ import { colors, spacing } from '@/theme';
 export default function SourcePreviewScreen() {
   const { url } = useLocalSearchParams<{ url: string }>();
   const [busy, setBusy] = useState(false);
-  const [parseError, setParseError] = useState<string>();
-  const source = useMemo(() => { try { return createSourcePreview(url); } catch (error) { setParseError(error instanceof Error ? error.message : 'This source link is not valid.'); return undefined; } }, [url]);
+  const parsed = useMemo(() => { try { return { source: createSourcePreview(url), error: undefined }; } catch (error) { return { source: undefined, error: error instanceof Error ? error.message : 'This source link is not valid.' }; } }, [url]);
+  const source = parsed.source;
+  const parseError = parsed.error;
   const { createJob } = useImportStore();
-  const start = async () => { if (!source || busy) return; setBusy(true); try { const job = await createJob(source); router.replace({ pathname: '/capture/processing', params: { jobId: job.id } }); } catch (error) { setParseError(error instanceof Error ? error.message : 'We could not start this import.'); setBusy(false); } };
+  const start = async () => { if (!source || busy) return; setBusy(true); try { const job = await createJob(source); router.replace({ pathname: '/capture/processing', params: { jobId: job.id } }); } catch (error) { /* Import start failed; the screen remains available for retry. */ setBusy(false); } };
   if (!source) return <Screen style={styles.center}><Ionicons color={colors.coralDark} name="alert-circle-outline" size={52} /><Title>Source unavailable.</Title><Text style={styles.error}>{parseError ?? 'This link could not be read.'}</Text><Button label="Back to Capture" onPress={() => router.replace('/capture')} /></Screen>;
   return <Screen style={styles.screen}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable><View style={styles.content}><Text style={styles.kicker}>SOURCE PREVIEW</Text><Title>Is this the right source?</Title><Card style={styles.card}><View style={styles.sourceIcon}><Ionicons color={colors.coral} name={source.mediaType === 'video' ? 'play' : source.mediaType === 'social' ? 'people' : 'globe-outline'} size={34} /></View><Text style={styles.title}>{source.title}</Text><Text style={styles.host}>{source.host}</Text><Text numberOfLines={2} style={styles.url}>{source.url}</Text><View style={styles.lock}><Ionicons color={colors.herb} name="lock-closed" size={16} /><Text style={styles.lockText}>The source and attribution stay linked to your private recipe.</Text></View></Card></View><Button disabled={busy} label={busy ? 'Starting import…' : 'Import this recipe'} onPress={start} /></Screen>;
 }
