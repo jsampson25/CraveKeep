@@ -38,6 +38,7 @@ export default function ProfileScreen() {
       <Card style={styles.streak}><View style={styles.streakIcon}><Ionicons color={colors.coral} name="sparkles" size={25} /></View><View style={styles.flex}><Text style={styles.cardTitle}>You’re building your kitchen.</Text><Text style={styles.body}>Keep saving recipes and planning meals to make CraveKeep more useful every week.</Text></View></Card>
       <View style={styles.stats}><View style={styles.stat}><Text style={styles.statValue}>{recipes.length}</Text><Text style={styles.statLabel}>Saved recipes</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.favorite).length}</Text><Text style={styles.statLabel}>Favorites</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.version > 1).length}</Text><Text style={styles.statLabel}>Healthier versions</Text></View></View>
       <Button label="Create a recipe" onPress={() => router.push('/recipes/new')} />
+      <Button label="Open Community" variant="secondary" onPress={() => router.push('/community')} />
       <Button label="Sign out" variant="secondary" onPress={() => void signOut()} />
     </> : <>
       <Text style={styles.body}>Sign in to sync private recipes across devices. Your local recipes stay available even while signed out.</Text>
