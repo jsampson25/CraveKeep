@@ -14,9 +14,10 @@ export default function EmailAccountScreen() {
   const { resetPassword, resendVerification, signIn, signUp, updatePassword } = useAuthStore();
   const [verificationSent, setVerificationSent] = useState(false);
   const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [message, setMessage] = useState<string>(); const [resetSent, setResetSent] = useState(false);
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const rules = [{ met: password.length >= 8, label: 'At least 8 characters' }, { met: /[a-z]/.test(password), label: 'One lowercase letter' }, { met: /[A-Z]/.test(password), label: 'One uppercase letter' }, { met: /[^A-Za-z]/.test(password), label: 'One number or symbol' }];
   const resend = async () => {
-    if (!email.trim()) { setMessage('Enter your email first.'); return; }
+    if (!validEmail) { setMessage('Enter a valid email address first.'); return; }
     setBusy(true); setMessage(undefined);
     try { const result = await resendVerification(email); if (result.error) setMessage(result.error); else setVerificationSent(true); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not resend the verification email.'); } finally { setBusy(false); }
   };
@@ -26,12 +27,12 @@ export default function EmailAccountScreen() {
     try { const result = await updatePassword(password); if (result.error) setMessage(result.error); else setResetSent(true); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not update your password. Please try again.'); } finally { setBusy(false); }
   };
   const sendReset = async () => {
-    if (!email.trim()) { setMessage('Enter your email first so we know where to send the reset link.'); return; }
+    if (!validEmail) { setMessage('Enter a valid email address so we know where to send the reset link.'); return; }
     setBusy(true); setMessage(undefined);
     try { const result = await resetPassword(email); if (result.error) setMessage(result.error); else setResetSent(true); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not send the reset email. Please try again.'); } finally { setBusy(false); }
   };
   const submit = async () => {
-    if (!email.trim() || (signingIn ? !password : !rules.every((rule) => rule.met) || !name.trim())) { setMessage(signingIn ? 'Enter your email and password.' : 'Complete the required fields and password rules.'); return; }
+    if (!validEmail || (signingIn ? !password : !rules.every((rule) => rule.met) || !name.trim())) { setMessage(signingIn ? 'Enter a valid email and password.' : 'Complete the required fields and password rules.'); return; }
     setBusy(true); setMessage(undefined);
     try { const result = signingIn ? await signIn(email, password) : await signUp(email, password, name); if (result.error) setMessage(result.error); else if (result.confirmationRequired) { setMessage('Check your email to verify your account, then return to sign in.'); } else router.replace('/'); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not complete that request. Please try again.'); } finally { setBusy(false); }
   };
