@@ -1,9 +1,12 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Screen, SectionTitle, Title } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
+
+const NOTIFICATION_SETTINGS_KEY = 'cravekeep.notifications.v1';
 
 const pages = {
   notifications: { title: 'Notifications', eyebrow: 'ACCOUNT & APP', icon: 'notifications-outline', intro: 'Choose the reminders that help without creating noise.', groups: [['Recipe reminders', 'Get a reminder when saved recipes are ready to cook.'], ['Meal plan reminders', 'Stay on track with upcoming meals and prep.'], ['Grocery list updates', 'Know when your shared list changes.']] },
@@ -21,6 +24,8 @@ export default function SettingsDetailScreen() {
   const page = pages[(slug ?? 'about') as Slug] ?? pages.about;
   const interactive = slug === 'notifications';
   const [notificationState, setNotificationState] = useState([true, true, false]);
+  useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) return; try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } }); }, [interactive]);
+  useEffect(() => { if (interactive) void AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState)); }, [interactive, notificationState]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.back()} style={styles.back}><Ionicons color={colors.charcoal} name="arrow-back" size={22} /></Pressable>
     <View style={styles.heading}><View style={styles.icon}><Ionicons color={colors.white} name={page.icon} size={25} /></View><Text style={styles.eyebrow}>{page.eyebrow}</Text><Title>{page.title}</Title><Text style={styles.intro}>{page.intro}</Text></View>
