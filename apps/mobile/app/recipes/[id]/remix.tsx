@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
 import { colors, radii, spacing } from '@/theme';
@@ -35,7 +36,7 @@ export default function RemixRecipeScreen() {
   const draft = useMemo<RecipeDraft>(() => ({ title, description: original?.description ?? '', servings: original?.servings ?? 1, prepMinutes: original?.prepMinutes ?? 0, cookMinutes: original?.cookMinutes ?? 0, ingredients: parseIngredients(ingredients), steps: steps.split('\n').map((step) => step.trim()).filter(Boolean) }), [ingredients, original, steps, title]);
   const comparison = useMemo(() => original ? compareRecipeVersions(original, draft) : null, [draft, original]);
   const errors = submitted ? validateRecipeDraft(draft) : [];
-  if (!original) return <Screen style={styles.missing}><Title>Recipe unavailable</Title><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
+  if (!original) return <Screen style={styles.missing}><MotionSlot name="saved-success" size={82} accessibilityLabel="Animated healthier recipe transformation" /><Title>Recipe unavailable</Title><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
 
   const save = async () => {
     setSubmitted(true);
@@ -60,4 +61,4 @@ export default function RemixRecipeScreen() {
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
 
-const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.md }, header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, private: { color: colors.herb, fontWeight: '800' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, body: { color: colors.muted, lineHeight: 21 }, label: { color: colors.charcoal, fontWeight: '800' }, options: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, option: { paddingHorizontal: spacing.md, paddingVertical: 10, borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised }, optionActive: { backgroundColor: colors.coral, borderColor: colors.coral }, optionText: { color: colors.charcoal, fontWeight: '700' }, optionTextActive: { color: colors.white }, fieldHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }, reset: { color: colors.coralDark, fontSize: 12, fontWeight: '800' }, comparison: { gap: spacing.sm, backgroundColor: colors.herbSoft }, cardTitle: { color: colors.charcoal, fontSize: 17, fontWeight: '900' }, change: { color: colors.charcoal, lineHeight: 20 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.md }, header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, private: { color: colors.mint, fontWeight: '800' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, body: { color: colors.muted, lineHeight: 21 }, label: { color: colors.charcoal, fontWeight: '800' }, options: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, option: { paddingHorizontal: spacing.md, paddingVertical: 10, borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised }, optionActive: { backgroundColor: colors.coral, borderColor: colors.coral }, optionText: { color: colors.charcoal, fontWeight: '700' }, optionTextActive: { color: colors.white }, fieldHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm }, reset: { color: colors.coralDark, fontSize: 12, fontWeight: '800' }, comparison: { gap: spacing.sm, backgroundColor: colors.mintSoft }, cardTitle: { color: colors.charcoal, fontSize: 17, fontWeight: '900' }, change: { color: colors.charcoal, lineHeight: 20 } });
