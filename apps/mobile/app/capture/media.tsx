@@ -44,17 +44,22 @@ export default function MediaCaptureScreen() {
     if (!asset) return;
     setBusy(true);
     setMessage(undefined);
-    const title = asset.fileName || (mode === 'camera' ? 'Scanned recipe' : 'Recipe photo');
-    const job = await createJob({ host: mode === 'camera' ? 'Camera scan' : 'Photo import', title, mediaType: 'image', localUri: asset.uri });
-    if (user) {
-      try {
-        const storagePath = await uploadCaptureImage(asset, user.id, job.id);
-        await updateJob(job.id, { source: { ...job.source, storagePath } });
-      } catch {
-        await updateJob(job.id, { warnings: ['Cloud upload could not finish. The image remains available on this device.'] });
+    try {
+      const title = asset.fileName || (mode === 'camera' ? 'Scanned recipe' : 'Recipe photo');
+      const job = await createJob({ host: mode === 'camera' ? 'Camera scan' : 'Photo import', title, mediaType: 'image', localUri: asset.uri });
+      if (user) {
+        try {
+          const storagePath = await uploadCaptureImage(asset, user.id, job.id);
+          await updateJob(job.id, { source: { ...job.source, storagePath } });
+        } catch {
+          await updateJob(job.id, { warnings: ['Cloud upload could not finish. The image remains available on this device.'] });
+        }
       }
+      router.replace({ pathname: '/capture/processing', params: { jobId: job.id } });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'We could not prepare this image. Please try another photo.');
+      setBusy(false);
     }
-    router.replace({ pathname: '/capture/processing', params: { jobId: job.id } });
   };
 
   return <Screen style={styles.screen}><Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable><View style={styles.content}>
