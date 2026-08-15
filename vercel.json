@@ -3,6 +3,7 @@
   "installCommand": "corepack pnpm install --no-frozen-lockfile",
   "buildCommand": "corepack pnpm --version && corepack pnpm build:web",
   "outputDirectory": "apps/mobile/dist",
+  "git": { "deploymentEnabled": true },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
