@@ -19,9 +19,13 @@ export default function OnboardingProfileScreen() {
     if (!profile.displayName.trim()) return setMessage('Enter the name people should see.');
     if (!/^[a-z0-9_]{3,24}$/.test(handle)) return setMessage('Username must be 3–24 letters, numbers, or underscores.');
     setMessage('Checking username…');
-    if (!await usernameAvailable(handle)) return setMessage('That username is already taken. Try another one.');
-    setMessage(undefined); await update({ handle });
-    if (!await saveProfile()) router.push('/onboarding/food-profile');
+    try {
+      if (!await usernameAvailable(handle)) return setMessage('That username is already taken. Try another one.');
+      setMessage(undefined); await update({ handle });
+      if (!await saveProfile()) router.push('/onboarding/food-profile');
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : 'We could not save your profile. Please try again.');
+    }
   };
   return <OnboardingShell title="Create your profile" percent={45} footer={<Button disabled={saving} label={saving ? 'Saving…' : 'Build my food profile'} onPress={() => void next()} />}><View style={styles.intro}><View style={styles.avatar}><Ionicons color={colors.white} name="person" size={30} /></View><View style={styles.flex}><Text style={styles.heading}>Set up your profile</Text><Text style={styles.body}>Choose the name and username people will see when you share recipes or connect with them.</Text></View></View><Field autoComplete="name" label="Display name" onChangeText={displayName => void update({ displayName })} placeholder="Jason Sampson" value={profile.displayName} /><Field autoCapitalize="none" autoCorrect={false} label="Username" onChangeText={handle => { setMessage(undefined); void update({ handle: handle.replace(/^@/, '').toLowerCase() }); }} placeholder="jasonskitchen" value={profile.handle} /><Text style={styles.preview}>cravekeep.com/@{profile.handle || 'yourname'}</Text><Text style={styles.private}>Only your display name, username, and profile photo are visible to people you share with. Your food and health information stays private.</Text>{message || error ? <Text style={styles.error}>{message || error}</Text> : null}</OnboardingShell>;
 }
