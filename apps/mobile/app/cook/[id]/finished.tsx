@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
 import { saveCookSession, type CookSession } from '@/data/cook-sessions';
@@ -20,7 +21,7 @@ export default function FinishedCookingScreen() {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string>();
-  if (!recipe) return <Screen style={styles.center}><Title>Recipe not found</Title><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
+  if (!recipe) return <Screen style={styles.center}><MotionSlot name="saved-success" size={88} accessibilityLabel="Animated saved cooking result" /><Title>Recipe not found</Title><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
   const save = async () => {
     if (!taste || !effort || repeatIntent === undefined) { setMessage('Answer the three quick questions before saving.'); return; }
     setSaving(true); setMessage(undefined);
@@ -45,4 +46,4 @@ export default function FinishedCookingScreen() {
   </ScrollView></Screen>;
 }
 
-const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, center: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, hero: { alignItems: 'center', gap: spacing.md }, done: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.herb }, body: { color: colors.muted, lineHeight: 22, textAlign: 'center' }, card: { gap: spacing.md }, question: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, score: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, scoreText: { color: colors.charcoal, fontWeight: '800' }, choice: { minHeight: 44, paddingHorizontal: 15, borderRadius: radii.round, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, choiceText: { color: colors.charcoal, fontWeight: '700' }, selected: { backgroundColor: colors.coral, borderColor: colors.coral }, selectedText: { color: colors.white }, error: { color: colors.coralDark, fontWeight: '700' } });
+const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, center: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, hero: { alignItems: 'center', gap: spacing.md }, done: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mint }, body: { color: colors.muted, lineHeight: 22, textAlign: 'center' }, card: { gap: spacing.md }, question: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }, score: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, scoreText: { color: colors.charcoal, fontWeight: '800' }, choice: { minHeight: 44, paddingHorizontal: 15, borderRadius: radii.round, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, choiceText: { color: colors.charcoal, fontWeight: '700' }, selected: { backgroundColor: colors.coral, borderColor: colors.coral }, selectedText: { color: colors.white }, error: { color: colors.coralDark, fontWeight: '700' } });
