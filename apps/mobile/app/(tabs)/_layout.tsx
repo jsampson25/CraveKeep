@@ -5,16 +5,16 @@ import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors } from '@/theme';
 
-const iconFor = (name: string, focused: boolean) => { const icons: Record<string, keyof typeof Ionicons.glyphMap> = { home: focused ? 'home' : 'home-outline', recipes: focused ? 'book' : 'book-outline', plan: focused ? 'calendar' : 'calendar-outline', groceries: focused ? 'basket' : 'basket-outline' }; return icons[name] ?? 'ellipse-outline'; };
+const iconFor = (name: string, focused: boolean) => { const icons: Record<string, keyof typeof Ionicons.glyphMap> = { home: focused ? 'home' : 'home-outline', recipes: focused ? 'book' : 'book-outline', community: focused ? 'people' : 'people-outline', plan: focused ? 'calendar' : 'calendar-outline', groceries: focused ? 'basket' : 'basket-outline' }; return icons[name] ?? 'ellipse-outline'; };
 
 export default function TabLayout() {
   const { ready, user } = useAuthStore(); const { ready: onboardingReady, profile } = useOnboardingStore();
   if (!ready || !onboardingReady) return <View style={styles.loading} />;
   if (!user) return <Redirect href='/onboarding/account' />; if (!profile.completed) return <Redirect href='/onboarding/profile' />;
-  return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.coral, tabBarInactiveTintColor: colors.muted, tabBarStyle: styles.bar, tabBarLabelStyle: styles.label, tabBarIcon: ({ focused, color }) => <Ionicons color={color} name={iconFor(route.name, focused)} size={22} /> })}>
+  return <Tabs screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.coral, tabBarInactiveTintColor: colors.muted, tabBarStyle: styles.bar, tabBarLabelStyle: styles.label, tabBarIcon: ({ color, focused }) => <Ionicons color={color} name={iconFor(route.name, focused)} size={22} /> })}>
     <Tabs.Screen name='home' options={{ title: 'Home' }} /><Tabs.Screen name='recipes' options={{ title: 'Recipes' }} />
     <Tabs.Screen name='capture-button' options={{ title: '', tabBarButton: () => <View style={styles.captureWrap}><Pressable accessibilityLabel='Open Capture Studio' accessibilityRole='button' onPress={() => router.push('/capture')} style={styles.capture}><Ionicons color={colors.white} name='add' size={30} /></Pressable></View> }} />
-    <Tabs.Screen name='plan' options={{ title: 'Plan' }} /><Tabs.Screen name='groceries' options={{ title: 'Groceries' }} />
+    <Tabs.Screen name='community' options={{ title: 'Community' }} /><Tabs.Screen name='plan' options={{ title: 'Plan' }} />
   </Tabs>;
 }
 const styles = StyleSheet.create({
