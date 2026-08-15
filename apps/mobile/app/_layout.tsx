@@ -48,6 +48,7 @@ export default function RootLayout() {
           <Stack.Screen name="recipes/[id]/remix" />
           <Stack.Screen name="recipes/[id]/nutrition" />
           <Stack.Screen name="recipes/[id]/fit" />
+          <Stack.Screen name="recipes/[id]/video" />
           <Stack.Screen name="pantry" />
           <Stack.Screen name="cook/[id]" />
           <Stack.Screen name="cook/[id]/finished" options={{ presentation: 'modal' }} />
