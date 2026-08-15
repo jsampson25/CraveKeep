@@ -20,6 +20,10 @@ Run `pnpm verify` for lint, type checking, and domain tests.
 
 Run `pnpm build:web` to create the Vercel-ready Expo web export in `apps/mobile/dist`.
 
+## Deployment
+
+The production web deployment follows the `main` branch.
+
 ## Repository
 
 - `apps/mobile` — Expo Router mobile application
