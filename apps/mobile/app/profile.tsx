@@ -43,7 +43,7 @@ export default function ProfileScreen() {
       <Field label="Email" autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} />
       <Field label="Password" autoCapitalize="none" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} secureTextEntry value={password} onChangeText={setPassword} />
       {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
-      <Button disabled={busy} label={busy ? 'Connectingâ€¦' : mode === 'signin' ? 'Sign in' : 'Create my account'} onPress={() => void submit()} />
+      <Button disabled={busy} label={busy ? 'Connecting…' : mode === 'signin' ? 'Sign in' : 'Create my account'} onPress={() => void submit()} />
     </>}
     <View style={styles.privacy}><Ionicons color={colors.herb} name="lock-closed-outline" size={20} /><Text style={styles.privacyText}>Recipes are private by default and protected by owner-only database policies.</Text></View>
   </ScrollView></KeyboardAvoidingView></Screen>;
