@@ -18,6 +18,8 @@ export default function ProfileScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string>();
 
+  const signOutSafely = async () => { setBusy(true); setMessage(undefined); try { const result = await signOut(); if (result.error) setMessage(result.error); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not sign you out. Please try again.'); } finally { setBusy(false); } };
+
   const submit = async () => {
     setMessage(undefined);
     if (!email.trim() || password.length < 8 || (mode === 'signup' && !displayName.trim())) {
@@ -39,7 +41,7 @@ export default function ProfileScreen() {
       <View style={styles.stats}><View style={styles.stat}><Text style={styles.statValue}>{recipes.length}</Text><Text style={styles.statLabel}>Saved recipes</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.favorite).length}</Text><Text style={styles.statLabel}>Favorites</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.version > 1).length}</Text><Text style={styles.statLabel}>Healthier versions</Text></View></View>
       <Button label="Create a recipe" onPress={() => router.push('/recipes/new')} />
       <Button label="Open Community" variant="secondary" onPress={() => router.push('/community')} />
-      <Button label="Sign out" variant="secondary" onPress={() => void signOut()} />
+      <Button disabled={busy} label={busy ? 'Signing out…' : 'Sign out'} variant="secondary" onPress={() => void signOutSafely()} />
     </> : <>
       <Text style={styles.body}>Sign in to sync private recipes across devices. Your local recipes stay available even while signed out.</Text>
       <View style={styles.switcher}><Pressable onPress={() => { setMode('signin'); setMessage(undefined); }} style={[styles.switch, mode === 'signin' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signin' && styles.switchTextActive]}>Sign in</Text></Pressable><Pressable onPress={() => { setMode('signup'); setMessage(undefined); }} style={[styles.switch, mode === 'signup' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signup' && styles.switchTextActive]}>Create account</Text></Pressable></View>
