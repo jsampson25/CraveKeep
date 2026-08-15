@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, StyleSheet, View, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, Animated, Image, StyleSheet, Text, View, type ImageSourcePropType, type StyleProp, type ViewStyle } from 'react-native';
 
 export type MascotFrameSequenceProps = {
   frames: ImageSourcePropType[];
@@ -10,10 +10,17 @@ export type MascotFrameSequenceProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+const poses = [
+  { y: 14, rotate: -2, scale: 0.94 },
+  { y: -3, rotate: -8, scale: 1.01 },
+  { y: -9, rotate: 7, scale: 1.06 },
+  { y: 5, rotate: 0, scale: 0.98 },
+];
+
 export function MascotFrameSequence({
   frames,
-  frameDurationMs = 360,
-  transitionDurationMs = 120,
+  frameDurationMs = 900,
+  transitionDurationMs = 160,
   size = 220,
   accessibilityLabel,
   style,
@@ -21,6 +28,9 @@ export function MascotFrameSequence({
   const [frameIndex, setFrameIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const opacity = useRef(new Animated.Value(1)).current;
+  const bodyY = useRef(new Animated.Value(poses[0].y)).current;
+  const bodyRotate = useRef(new Animated.Value(poses[0].rotate)).current;
+  const bodyScale = useRef(new Animated.Value(poses[0].scale)).current;
   const indexRef = useRef(0);
   const dimensions = typeof size === 'number' ? { width: size, height: size } : size;
 
@@ -33,9 +43,21 @@ export function MascotFrameSequence({
   }, []);
 
   useEffect(() => {
+    const pose = poses[frameIndex] ?? poses[0];
+    Animated.parallel([
+      Animated.timing(bodyY, { toValue: pose.y, duration: transitionDurationMs * 2, useNativeDriver: true }),
+      Animated.timing(bodyRotate, { toValue: pose.rotate, duration: transitionDurationMs * 2, useNativeDriver: true }),
+      Animated.timing(bodyScale, { toValue: pose.scale, duration: transitionDurationMs * 2, useNativeDriver: true }),
+    ]).start();
+  }, [bodyRotate, bodyScale, bodyY, frameIndex, transitionDurationMs]);
+
+  useEffect(() => {
     indexRef.current = 0;
     setFrameIndex(0);
     opacity.setValue(1);
+    bodyY.setValue(poses[0].y);
+    bodyRotate.setValue(poses[0].rotate);
+    bodyScale.setValue(poses[0].scale);
     if (reduceMotion || frames.length < 2) return;
 
     const timer = setInterval(() => {
@@ -60,11 +82,21 @@ export function MascotFrameSequence({
       clearInterval(timer);
       opacity.stopAnimation();
     };
-  }, [frameDurationMs, frames.length, opacity, reduceMotion, transitionDurationMs]);
+  }, [bodyRotate, bodyScale, bodyY, frameDurationMs, frames.length, opacity, reduceMotion, transitionDurationMs]);
+
+  const showWaveAccent = !reduceMotion && (frameIndex === 1 || frameIndex === 2);
 
   return (
     <View accessible accessibilityLabel={accessibilityLabel} style={[dimensions, styles.container, style]}>
-      <Animated.View style={[dimensions, { opacity }]}>
+      {showWaveAccent ? <Text pointerEvents="none" style={styles.waveAccent}>〰</Text> : null}
+      <Animated.View style={[dimensions, {
+        opacity,
+        transform: [
+          { translateY: bodyY },
+          { rotate: bodyRotate.interpolate({ inputRange: [-8, 7], outputRange: ['-8deg', '7deg'] }) },
+          { scale: bodyScale },
+        ],
+      }]}>
         <Image source={frames[frameIndex]} resizeMode="contain" style={dimensions} />
       </Animated.View>
     </View>
@@ -72,5 +104,6 @@ export function MascotFrameSequence({
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  container: { alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
+  waveAccent: { position: 'absolute', right: 18, top: 28, zIndex: 2, color: '#FF665F', fontSize: 36, fontWeight: '900' },
 });
