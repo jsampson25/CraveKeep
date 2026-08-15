@@ -6,7 +6,7 @@ import { MotionSlot } from '@/components/animations/MotionSlot';
 import { colors, radii, spacing } from '@/theme';
 
 const paths = [
-  { icon: 'share-outline', title: 'From another app', detail: 'Instagram, TikTok, YouTube, and more', ready: false },
+  { icon: 'share-outline', title: 'From another app', detail: 'Paste a copied Instagram, TikTok, YouTube, or recipe link', ready: true, route: '/capture/link?source=shared' },
   { icon: 'link-outline', title: 'Paste a link', detail: 'From a website or any recipe page', ready: true, route: '/capture/link' },
   { icon: 'camera-outline', title: 'Scan a recipe', detail: 'Use the camera for cards and cookbooks', ready: true, route: '/capture/media?mode=camera' },
   { icon: 'images-outline', title: 'Choose a photo', detail: 'Screenshots and images from your library', ready: true, route: '/capture/media?mode=library' },
