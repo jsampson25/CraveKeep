@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { colors, radii, spacing } from '@/theme';
 
 export default function CommunityShareScreen() {
-  const [title, setTitle] = useState('');
+  const { title: initialTitle } = useLocalSearchParams<{ title?: string }>();
+  const [title, setTitle] = useState(initialTitle ?? '');
   const [caption, setCaption] = useState('');
   const [shared, setShared] = useState(false);
   if (shared) return <Screen><View style={styles.success}><View style={styles.successIcon}><Ionicons color={colors.white} name="checkmark" size={36} /></View><Title>Recipe shared.</Title><Text style={styles.body}>Your kitchen inspiration is ready for the Community feed.</Text><Button label="Back to Community" onPress={() => router.replace('/community')} /></View></Screen>;
