@@ -13,7 +13,8 @@ export default function CommunityShareScreen() {
   const [shared, setShared] = useState(false);
   const publish = async () => {
     const existing = await AsyncStorage.getItem('cravekeep.community.posts.v1');
-    const posts = existing ? JSON.parse(existing) : [];
+    let posts: unknown[] = [];
+    try { posts = existing ? JSON.parse(existing) : []; } catch { posts = []; }
     const post = { id: `local-${Date.now()}`, name: 'You', title: title.trim(), caption: caption.trim() || 'A recipe worth keeping.', time: 'Just now · Your kitchen', likes: 0, comments: 0, color: colors.coral, soft: '#FFF0ED', icon: 'restaurant-outline' };
     await AsyncStorage.setItem('cravekeep.community.posts.v1', JSON.stringify([post, ...(Array.isArray(posts) ? posts : [])]));
     setShared(true);
