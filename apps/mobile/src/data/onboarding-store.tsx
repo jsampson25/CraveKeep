@@ -65,8 +65,14 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
   }, []);
   const cloud = useCallback(async (work: () => Promise<{ error: { message: string } | null }>) => {
     if (!user || !supabase) return 'Sign in before saving your setup.';
-    setSaving(true); setError(undefined); const result = await work(); setSaving(false);
-    const message = result.error?.message; if (message) setError(message); return message;
+    setSaving(true); setError(undefined);
+    try {
+      const result = await work(); const message = result.error?.message;
+      if (message) setError(message); return message;
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : 'Could not save your setup. Please try again.';
+      setError(message); return message;
+    } finally { setSaving(false); }
   }, [user]);
   const usernameAvailable = useCallback(async (handle: string) => { if (!supabase || !user) return false; const result = await supabase.rpc('is_username_available', { candidate: handle }); return !result.error && result.data; }, [user]);
   const saveProfile = useCallback(() => cloud(async () => supabase!.from('profiles').upsert({ id: user!.id, display_name: profile.displayName.trim(), username: profile.handle.trim().toLowerCase().replace(/^@/, ''), updated_at: new Date().toISOString() })), [cloud, profile.displayName, profile.handle, user]);
