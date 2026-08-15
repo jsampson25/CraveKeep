@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button } from '@/components/ui';
 import { foodCategories } from '@/data/food-catalog';
 import { useOnboardingStore } from '@/data/onboarding-store';
