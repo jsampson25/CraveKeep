@@ -1,14 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
-import keeper from '../assets/mascot/recipe-keeper.png';
 
 const WELCOME_KEY = 'cravekeep.welcome.v11';
+const welcomeFrames = [
+  require('../assets/mascots/role-specific-variants/morning-wave-01.png'),
+  require('../assets/mascots/role-specific-variants/morning-wave-02.png'),
+  require('../assets/mascots/role-specific-variants/morning-wave-03.png'),
+  require('../assets/mascots/role-specific-variants/morning-wave-04.png'),
+];
 
 export default function Index() {
   const { ready: authReady, user } = useAuthStore();
@@ -86,7 +92,7 @@ export default function Index() {
           <Animated.View style={[styles.actionMark, { opacity: pulse, transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.15] }) }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-12deg', '0deg', '12deg'] }) }] }]}>
             <Text style={styles.actionMarkText}>✦</Text>
           </Animated.View>
-          <Animated.Image source={keeper} resizeMode="contain" style={[styles.mascot, { transform: [{ translateY: bounce }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] }) }, { scale: bounce.interpolate({ inputRange: [-8, 0], outputRange: [1.025, 1] }) }] }]} />
+          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={560} transitionDurationMs={110} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
@@ -115,6 +121,7 @@ const styles = StyleSheet.create({
   sheet: { flex: 1, marginTop: -28, borderTopLeftRadius: 30, borderTopRightRadius: 30, backgroundColor: colors.background, paddingHorizontal: spacing.lg, zIndex: 3 },
   mascotFrame: { height: 205, marginTop: -96, alignItems: 'center', justifyContent: 'center' },
   mascot: { width: '94%', height: 250 },
+  mascotSequence: { width: '94%', height: 250 },
   lottie: { position: 'absolute', opacity: 0.1 },
   actionMark: { position: 'absolute', right: 20, top: 20, zIndex: 4 },
   actionMarkText: { color: colors.coral, fontSize: 34, fontWeight: '900' },
