@@ -41,6 +41,7 @@ export default function RootLayout() {
           <Stack.Screen name="capture/review" />
           <Stack.Screen name="imports" />
           <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="settings" />
           <Stack.Screen name="recipes/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/[id]" />
           <Stack.Screen name="recipes/[id]/edit" options={{ presentation: 'modal' }} />
