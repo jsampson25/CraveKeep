@@ -8,7 +8,8 @@ import { colors, radii, spacing } from '@/theme';
 const groups = [
   { title: 'Your kitchen', items: [
     ['options-outline', 'Preferences', 'Foods, cuisines, dietary style', '/onboarding/food-profile'],
-    ['nutrition-outline', 'Nutrition goals', 'Calories, macros, activity', '/onboarding/nutrition-goals'],
+    ['nutrition-outline', 'Nutrition dashboard', 'Daily progress and macro balance', '/nutrition'],
+    ['speedometer-outline', 'Nutrition goals', 'Calories, macros, activity', '/onboarding/nutrition-goals'],
     ['people-outline', 'Household', 'Members and shared planning', '/onboarding/household'],
   ] },
   { title: 'Account & app', items: [
