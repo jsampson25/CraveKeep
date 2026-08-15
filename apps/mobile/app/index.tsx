@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { useAuthStore } from '@/data/auth-store';
