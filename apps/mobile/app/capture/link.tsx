@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Field, Screen, Title } from '@/components/ui';
 import { colors, radii, spacing } from '@/theme';
 
@@ -15,7 +16,7 @@ export default function PasteLinkScreen() {
   };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.screen}>
     <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable>
-    <View style={styles.content}><Text style={styles.kicker}>PASTE A LINK</Text><Title>Bring that recipe home.</Title><Text style={styles.body}>Paste a recipe, post, or video link. CraveKeep confirms the source before processing anything.</Text><Field autoCapitalize="none" autoCorrect={false} keyboardType="url" label="Recipe, post, or video link" onChangeText={(value) => { setUrl(value); setError(undefined); }} placeholder="https://example.com/recipe" value={url} error={error} /><Button disabled={!url.trim()} label="Find the recipe" onPress={preview} /><Pressable onPress={() => setUrl('https://cravekeep.com/samples/lemon-herb-chicken')} style={styles.sample}><Text style={styles.sampleText}>Use the acceptance-test sample</Text></Pressable></View>
+    <View style={styles.content}><Text style={styles.kicker}>PASTE A LINK</Text><MotionSlot name="recipe-import" size={84} accessibilityLabel="Animated recipe capture state" /><Title>Bring that recipe home.</Title><Text style={styles.body}>Paste a recipe, post, or video link. CraveKeep confirms the source before processing anything.</Text><Field autoCapitalize="none" autoCorrect={false} keyboardType="url" label="Recipe, post, or video link" onChangeText={(value) => { setUrl(value); setError(undefined); }} placeholder="https://example.com/recipe" value={url} error={error} /><Button disabled={!url.trim()} label="Find the recipe" onPress={preview} /><Pressable onPress={() => setUrl('https://cravekeep.com/samples/lemon-herb-chicken')} style={styles.sample}><Text style={styles.sampleText}>Use the acceptance-test sample</Text></Pressable></View>
     <View style={styles.notice}><Ionicons color={colors.herb} name="shield-checkmark-outline" size={21} /><Text style={styles.noticeText}>Clipboard contents are never read silently.</Text></View>
   </KeyboardAvoidingView></Screen>;
 }
