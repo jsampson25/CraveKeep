@@ -1,0 +1,43 @@
+{
+  "sheet": "workflow-action-sprite-sheet.png",
+  "columns": [
+    "morning-welcome",
+    "evening-checkin",
+    "plan-my-week",
+    "grocery-progress",
+    "cook-mode",
+    "success-saved"
+  ],
+  "frames": {
+    "morning-welcome": [
+      "morning-welcome-01.png",
+      "morning-welcome-02.png",
+      "morning-welcome-03.png"
+    ],
+    "evening-checkin": [
+      "evening-checkin-01.png",
+      "evening-checkin-02.png",
+      "evening-checkin-03.png"
+    ],
+    "plan-my-week": [
+      "plan-my-week-01.png",
+      "plan-my-week-02.png",
+      "plan-my-week-03.png"
+    ],
+    "grocery-progress": [
+      "grocery-progress-01.png",
+      "grocery-progress-02.png",
+      "grocery-progress-03.png"
+    ],
+    "cook-mode": [
+      "cook-mode-01.png",
+      "cook-mode-02.png",
+      "cook-mode-03.png"
+    ],
+    "success-saved": [
+      "success-saved-01.png",
+      "success-saved-02.png",
+      "success-saved-03.png"
+    ]
+  }
+}
