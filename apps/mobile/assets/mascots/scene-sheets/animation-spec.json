@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "coordinateSystem": "Each sheet is a left-to-right frame strip. Hold each shot for its listed duration, then crossfade or interpolate to the next shot.",
+  "reducedMotion": "Show shot 1 as a static pose and disable frame looping.",
+  "scenes": [
+    {
+      "id": "welcome-wave",
+      "screenUse": ["launch", "home", "morning welcome"],
+      "role": "recipe-keeper",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "welcome", "durationMs": 260, "motion": "settle into stance", "easing": "easeOut"},
+        {"frame": 2, "name": "wave-up", "durationMs": 260, "motion": "raise hand and tilt head", "easing": "easeOut"},
+        {"frame": 3, "name": "wave-hold", "durationMs": 420, "motion": "hold wave, blink once", "easing": "linear"},
+        {"frame": 4, "name": "wave-return", "durationMs": 360, "motion": "lower hand and return to center", "easing": "easeInOut"}
+      ],
+      "transition": "soft opacity fade into the screen content"
+    },
+    {
+      "id": "evening-checkin",
+      "screenUse": ["home", "evening check-in"],
+      "role": "recipe-keeper",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "clock-present", "durationMs": 320, "motion": "present clock and glance toward it", "easing": "easeOut"},
+        {"frame": 2, "name": "check-clock", "durationMs": 360, "motion": "look down and blink", "easing": "easeInOut"},
+        {"frame": 3, "name": "thinking", "durationMs": 420, "motion": "small head tilt and breathing scale", "easing": "linear"},
+        {"frame": 4, "name": "invite-dinner", "durationMs": 400, "motion": "turn back and gesture toward dinner action", "easing": "easeInOut"}
+      ],
+      "transition": "clock sparkle fades as dinner card appears"
+    },
+    {
+      "id": "weekly-planning",
+      "screenUse": ["plan", "meal planner"],
+      "role": "pantry-guide",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "show-plan", "durationMs": 360, "motion": "hold planner open", "easing": "easeOut"},
+        {"frame": 2, "name": "review", "durationMs": 420, "motion": "scan planner from left to right", "easing": "easeInOut"},
+        {"frame": 3, "name": "organize", "durationMs": 480, "motion": "shift card stack and point to a day", "easing": "easeInOut"},
+        {"frame": 4, "name": "approve", "durationMs": 420, "motion": "thumbs-up with small bounce", "easing": "easeOut"}
+      ],
+      "transition": "planner cards slide into the weekly grid"
+    },
+    {
+      "id": "grocery-shopping",
+      "screenUse": ["groceries", "grocery progress"],
+      "role": "pantry-guide",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "push-cart", "durationMs": 420, "motion": "roll cart forward a few pixels", "easing": "easeOut"},
+        {"frame": 2, "name": "reach", "durationMs": 420, "motion": "reach toward an item", "easing": "easeInOut"},
+        {"frame": 3, "name": "add-item", "durationMs": 460, "motion": "place item into cart", "easing": "easeInOut"},
+        {"frame": 4, "name": "checked", "durationMs": 420, "motion": "thumbs-up while cart settles", "easing": "easeOut"}
+      ],
+      "transition": "checkmarks pop in after the cart settles"
+    },
+    {
+      "id": "cook-mode",
+      "screenUse": ["cook", "step-by-step cooking"],
+      "role": "cardinal-chef",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "stir-start", "durationMs": 360, "motion": "begin circular stirring motion", "easing": "easeOut"},
+        {"frame": 2, "name": "stir", "durationMs": 480, "motion": "stir pot with visible steam pulse", "easing": "easeInOut"},
+        {"frame": 3, "name": "taste", "durationMs": 420, "motion": "lift spoon and taste", "easing": "easeInOut"},
+        {"frame": 4, "name": "ready", "durationMs": 460, "motion": "present dish with proud bounce", "easing": "easeOut"}
+      ],
+      "transition": "steam dissolves into the next recipe step"
+    },
+    {
+      "id": "importing-recipe",
+      "screenUse": ["capture", "import recipe", "recipe loading"],
+      "role": "recipe-keeper",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "cards-scatter", "durationMs": 450, "motion": "recipe cards float outward on curved paths", "easing": "easeOut"},
+        {"frame": 2, "name": "keeper-catches", "durationMs": 450, "motion": "mascot catches cards with a quick side-to-side sway", "easing": "easeInOut"},
+        {"frame": 3, "name": "recipe-builds", "durationMs": 450, "motion": "cards stack and ingredient tabs fan out", "easing": "easeOut"},
+        {"frame": 4, "name": "ingredients-check", "durationMs": 450, "motion": "checkmarks draw on one at a time", "easing": "easeInOut"},
+        {"frame": 5, "name": "logo-pulse", "durationMs": 450, "motion": "logo scales up 4 percent and settles", "easing": "easeOut"},
+        {"frame": 6, "name": "recipe-spark", "durationMs": 450, "motion": "small sparkle travels from pencil to card", "easing": "easeInOut"},
+        {"frame": 7, "name": "ready-state", "durationMs": 600, "motion": "hold thumbs-up and reveal completion message", "easing": "easeOut"},
+        {"frame": 8, "name": "loop-reset", "durationMs": 300, "motion": "return cards to starting positions", "easing": "easeInOut"}
+      ],
+      "transition": "crossfade to imported recipe review"
+    },
+    {
+      "id": "saving-recipe",
+      "screenUse": ["save recipe", "success", "recipe actions"],
+      "role": "recipe-keeper",
+      "loop": true,
+      "shots": [
+        {"frame": 1, "name": "cards-lift", "durationMs": 300, "motion": "lift saved cards from below", "easing": "easeOut"},
+        {"frame": 2, "name": "cards-stack", "durationMs": 360, "motion": "stack cards into a tidy bundle", "easing": "easeInOut"},
+        {"frame": 3, "name": "keeper-holds", "durationMs": 420, "motion": "hold bundle with subtle breathing motion", "easing": "linear"},
+        {"frame": 4, "name": "saved", "durationMs": 520, "motion": "celebrate with thumbs-up and sparkle burst", "easing": "easeOut"}
+      ],
+      "transition": "sparkle burst reveals the saved confirmation"
+    }
+  ]
+}
