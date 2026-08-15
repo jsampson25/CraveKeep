@@ -56,8 +56,8 @@ export default function Index() {
   if (seen) return <Redirect href="/onboarding/account" />;
 
   const begin = async () => {
-    await AsyncStorage.setItem(WELCOME_KEY, 'seen');
-    router.replace('/onboarding/account');
+    try { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/account'); }
+    catch { setMessage('Could not start onboarding. Please try again.'); }
   };
 
   const oauth = async (provider: 'apple' | 'google') => {
