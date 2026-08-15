@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
+import { GoogleG } from '@/components/google-g';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
@@ -16,11 +17,13 @@ const welcomeFrames = [
 ];
 
 export default function Index() {
-  const { ready: authReady, user } = useAuthStore();
+  const { configured, ready: authReady, signInWithProvider, user } = useAuthStore();
   const { ready: onboardingReady, profile } = useOnboardingStore();
   const [ready, setReady] = useState(false);
   const [seen, setSeen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [busy, setBusy] = useState<'apple' | 'google'>();
+  const [message, setMessage] = useState<string>();
   const reveal = useRef(new Animated.Value(0)).current;
   const copy = useRef(new Animated.Value(0)).current;
 
@@ -54,6 +57,16 @@ export default function Index() {
     router.replace('/onboarding/account');
   };
 
+  const oauth = async (provider: 'apple' | 'google') => {
+    if (!configured) { setMessage('Sign-in is not configured in this build.'); return; }
+    setBusy(provider); setMessage(undefined);
+    try {
+      const result = await signInWithProvider(provider);
+      if (result.error) setMessage(result.error); else if (!result.cancelled) router.replace('/');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Sign-in could not start.'); }
+    finally { setBusy(undefined); }
+  };
+
   return (
     <View style={styles.screen}>
       <View style={styles.coralHero}>
@@ -69,10 +82,17 @@ export default function Index() {
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
           <Text style={styles.subtitle}>Your Recipe Keeper is ready to collect every recipe you love.</Text>
-          <Pressable accessibilityRole="button" onPress={() => void begin()} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
+          <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void begin()} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
             <Text style={styles.buttonText}>Get started</Text>
           </Pressable>
+          <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void oauth('apple')} style={[styles.provider, styles.apple]}>
+            {busy === 'apple' ? <ActivityIndicator color={colors.white} /> : <><Text style={styles.appleIcon}>●</Text><Text style={styles.appleText}>Continue with Apple</Text></>}
+          </Pressable>
+          <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void oauth('google')} style={styles.provider}>
+            {busy === 'google' ? <ActivityIndicator color={colors.coral} /> : <><GoogleG /><Text style={styles.providerText}>Continue with Google</Text></>}
+          </Pressable>
           <Text style={styles.signIn}>Already have an account? <Text style={styles.accent}>Sign in</Text></Text>
+          {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
         </Animated.View>
       </View>
     </View>
@@ -94,12 +114,18 @@ const styles = StyleSheet.create({
   mascotFrame: { height: 205, marginTop: -96, alignItems: 'center', justifyContent: 'center' },
   mascot: { width: '94%', height: 250 },
   mascotSequence: { width: '94%', height: 250 },
-  copy: { gap: spacing.sm, paddingBottom: 18 },
+  copy: { gap: 8, paddingBottom: 18 },
   title: { color: colors.navy, ...typography.display, fontSize: 25, lineHeight: 30 },
   subtitle: { color: colors.muted, ...typography.body, fontSize: 15, lineHeight: 21 },
   button: { minHeight: 56, borderRadius: radii.round, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral, marginTop: spacing.sm },
   pressed: { opacity: 0.8 },
   buttonText: { color: colors.white, ...typography.action, fontSize: 17 },
+  provider: { minHeight: 48, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised },
+  apple: { backgroundColor: '#171717', borderColor: '#171717' },
+  appleIcon: { color: colors.white, fontSize: 15, fontWeight: '900' },
+  providerText: { color: colors.charcoal, ...typography.action, fontSize: 14 },
+  appleText: { color: colors.white, ...typography.action, fontSize: 14 },
+  message: { color: colors.coralDark, textAlign: 'center', fontSize: 12 },
   signIn: { color: colors.muted, textAlign: 'center', ...typography.caption },
   accent: { color: colors.coral, fontWeight: '800' },
 });
