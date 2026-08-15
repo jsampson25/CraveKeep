@@ -8,7 +8,7 @@ import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 import keeper from '../assets/mascot/recipe-keeper.png';
 
-const WELCOME_KEY = 'cravekeep.welcome.v10';
+const WELCOME_KEY = 'cravekeep.welcome.v11';
 
 export default function Index() {
   const { ready: authReady, user } = useAuthStore();
@@ -18,7 +18,9 @@ export default function Index() {
   const [reduceMotion, setReduceMotion] = useState(false);
   const reveal = useRef(new Animated.Value(0)).current;
   const copy = useRef(new Animated.Value(0)).current;
-  const bob = useRef(new Animated.Value(0)).current;
+  const bounce = useRef(new Animated.Value(0)).current;
+  const sway = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     void Promise.all([AsyncStorage.getItem(WELCOME_KEY), AccessibilityInfo.isReduceMotionEnabled()]).then(([value, reduced]) => {
@@ -33,17 +35,33 @@ export default function Index() {
     if (reduceMotion) {
       reveal.setValue(1);
       copy.setValue(1);
+      bounce.setValue(0);
+      sway.setValue(0);
+      pulse.setValue(1);
       return;
     }
     Animated.parallel([
       Animated.timing(reveal, { toValue: 1, duration: 850, useNativeDriver: true }),
       Animated.timing(copy, { toValue: 1, duration: 600, delay: 250, useNativeDriver: true }),
       Animated.loop(Animated.sequence([
-        Animated.timing(bob, { toValue: -6, duration: 900, useNativeDriver: true }),
-        Animated.timing(bob, { toValue: 0, duration: 900, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(bounce, { toValue: -8, duration: 520, useNativeDriver: true }),
+          Animated.timing(sway, { toValue: -1, duration: 520, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1, duration: 520, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(bounce, { toValue: 0, duration: 520, useNativeDriver: true }),
+          Animated.timing(sway, { toValue: 1, duration: 520, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0, duration: 520, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(bounce, { toValue: -4, duration: 320, useNativeDriver: true }),
+          Animated.timing(sway, { toValue: 0, duration: 320, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 1, duration: 320, useNativeDriver: true }),
+        ]),
       ])),
     ]).start();
-  }, [copy, ready, reduceMotion, reveal, seen, bob]);
+  }, [bounce, copy, pulse, ready, reduceMotion, reveal, seen, sway]);
 
   if (!ready || !authReady || !onboardingReady) return <View style={styles.loading} />;
   if (user) return <Redirect href={profile.completed ? '/(tabs)/home' : '/onboarding/profile'} />;
@@ -63,9 +81,12 @@ export default function Index() {
         <View style={styles.mintBlob} />
       </View>
       <View style={styles.sheet}>
-        <Animated.View style={[styles.mascotFrame, { opacity: reveal, transform: [{ translateY: reveal.interpolate({ inputRange: [0, 1], outputRange: [80, 0] }) }, { translateY: bob }] }]}>
+        <Animated.View style={[styles.mascotFrame, { opacity: reveal, transform: [{ translateY: reveal.interpolate({ inputRange: [0, 1], outputRange: [80, 0] }) }] }]}>
           <MotionSlot name="launch-reveal" size={210} accessibilityLabel="Recipe Keeper mascot animation" style={styles.lottie} />
-          <Image source={keeper} resizeMode="contain" style={styles.mascot} />
+          <Animated.View style={[styles.actionMark, { opacity: pulse, transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.15] }) }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-12deg', '0deg', '12deg'] }) }] }]}>
+            <Text style={styles.actionMarkText}>✦</Text>
+          </Animated.View>
+          <Animated.Image source={keeper} resizeMode="contain" style={[styles.mascot, { transform: [{ translateY: bounce }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-2deg', '0deg', '2deg'] }) }, { scale: bounce.interpolate({ inputRange: [-8, 0], outputRange: [1.025, 1] }) }] }]} />
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
@@ -95,6 +116,8 @@ const styles = StyleSheet.create({
   mascotFrame: { height: 205, marginTop: -96, alignItems: 'center', justifyContent: 'center' },
   mascot: { width: '94%', height: 250 },
   lottie: { position: 'absolute', opacity: 0.1 },
+  actionMark: { position: 'absolute', right: 20, top: 20, zIndex: 4 },
+  actionMarkText: { color: colors.coral, fontSize: 34, fontWeight: '900' },
   copy: { gap: spacing.sm, paddingBottom: 18 },
   title: { color: colors.navy, ...typography.display, fontSize: 25, lineHeight: 30 },
   subtitle: { color: colors.muted, ...typography.body, fontSize: 15, lineHeight: 21 },
