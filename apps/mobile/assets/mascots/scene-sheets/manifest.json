@@ -1,0 +1,95 @@
+{
+  "name": "CraveKeep scene-specific animation sheets",
+  "transparent": true,
+  "frameConvention": "left-to-right",
+  "scenes": [
+    {
+      "id": "cook-mode",
+      "sheet": "cook-mode-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    },
+    {
+      "id": "evening-checkin",
+      "sheet": "evening-checkin-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    },
+    {
+      "id": "grocery-shopping",
+      "sheet": "grocery-shopping-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    },
+    {
+      "id": "importing-recipe",
+      "sheet": "importing-recipe-sheet.png",
+      "frameCount": 8,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 667,
+      "loop": true
+    },
+    {
+      "id": "recipe-keeper-loading",
+      "sheet": "recipe-keeper-loading-sheet.png",
+      "frameCount": 8,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 667,
+      "loop": true
+    },
+    {
+      "id": "saving-recipe",
+      "sheet": "saving-recipe-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    },
+    {
+      "id": "weekly-planning",
+      "sheet": "weekly-planning-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    },
+    {
+      "id": "welcome-wave",
+      "sheet": "welcome-wave-sheet.png",
+      "frameCount": 4,
+      "frameSize": [
+        320,
+        320
+      ],
+      "durationMs": 333,
+      "loop": true
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "CraveKeep role-specific action variants",
+  "transparent": true,
+  "frameLayout": "6 columns x 4 rows",
+  "sequences": [
+    {
+      "id": "morning-wave",
+      "role": "recipe-keeper",
+      "frames": ["morning-wave-01.png", "morning-wave-02.png", "morning-wave-03.png", "morning-wave-04.png"],
+      "loop": true,
+      "durationMs": 1400
+    },
+    {
+      "id": "evening-checkin",
+      "role": "recipe-keeper",
+      "frames": ["evening-checkin-01.png", "evening-checkin-02.png", "evening-checkin-03.png", "evening-checkin-04.png"],
+      "loop": true,
+      "durationMs": 1600
+    },
+    {
+      "id": "plan-my-week",
+      "role": "pantry-guide",
+      "frames": ["plan-my-week-01.png", "plan-my-week-02.png", "plan-my-week-03.png", "plan-my-week-04.png"],
+      "loop": true,
+      "durationMs": 1800
+    },
+    {
+      "id": "grocery-shopping",
+      "role": "pantry-guide",
+      "frames": ["grocery-shopping-01.png", "grocery-shopping-02.png", "grocery-shopping-03.png", "grocery-shopping-04.png"],
+      "loop": true,
+      "durationMs": 1800
+    },
+    {
+      "id": "cook-mode",
+      "role": "cardinal-chef",
+      "frames": ["cook-mode-01.png", "cook-mode-02.png", "cook-mode-03.png", "cook-mode-04.png"],
+      "loop": true,
+      "durationMs": 1800
+    },
+    {
+      "id": "success-celebration",
+      "role": "recipe-keeper",
+      "frames": ["success-celebration-01.png", "success-celebration-02.png", "success-celebration-03.png", "success-celebration-04.png"],
+      "loop": true,
+      "durationMs": 1500
+    }
+  ]
+}
