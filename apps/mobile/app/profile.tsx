@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
 import { colors, radii, spacing } from '@/theme';
@@ -29,7 +30,7 @@ export default function ProfileScreen() {
 
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable>
-    <Text style={styles.kicker}>YOUR CRAVEKEEP</Text><Title>{user ? 'Cloud sync is connected.' : 'Keep your recipes with you.'}</Title>
+    <Text style={styles.kicker}>YOUR CRAVEKEEP</Text><MotionSlot name="mascot-morning" size={76} accessibilityLabel="Animated account settings" /><Title>{user ? 'Cloud sync is connected.' : 'Keep your recipes with you.'}</Title>
     {!ready ? <ActivityIndicator color={colors.coral} /> : !configured ? <Card style={styles.notice}><Text style={styles.cardTitle}>Cloud sync needs configuration</Text><Text style={styles.body}>This build is missing its public Supabase URL or publishable key. Recipes remain safely stored on this device.</Text></Card> : user ? <>
       <Card style={styles.account}><View style={styles.avatar}><Text style={styles.avatarText}>{(user.user_metadata.display_name || user.email || 'CK').slice(0, 2).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.cardTitle}>{user.user_metadata.display_name || 'CraveKeep cook'}</Text><Text style={styles.body}>{user.email}</Text><Text style={styles.connected}><Ionicons name="checkmark-circle" /> Signed in</Text></View></Card>
       <Text style={styles.body}>Your account is authenticated against the live Supabase project. Private recipe sync is the next connection step.</Text>
