@@ -92,7 +92,7 @@ export default function Index() {
           <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void oauth('google')} style={styles.provider}>
             {busy === 'google' ? <ActivityIndicator color={colors.coral} /> : <><GoogleG /><Text style={styles.providerText}>Continue with Google</Text></>}
           </Pressable>
-          <Text style={styles.signIn}>Already have an account? <Text style={styles.accent}>Sign in</Text></Text>
+          <Pressable hitSlop={10} onPress={() => router.push('/onboarding/email?mode=signin')}><Text style={styles.signIn}>Already have an account? <Text style={styles.accent}>Sign in</Text></Text></Pressable>
           {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
         </Animated.View>
       </View>
