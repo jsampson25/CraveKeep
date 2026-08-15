@@ -4,21 +4,25 @@ import { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
+import { GoogleG } from '@/components/google-g';
 import { useAuthStore } from '@/data/auth-store';
 import { useRecipeStore } from '@/data/recipe-store';
 import { colors, radii, spacing } from '@/theme';
 
 export default function ProfileScreen() {
-  const { user, ready, configured, signIn, signUp, signOut } = useAuthStore();
+  const { user, ready, configured, signIn, signInWithProvider, signUp, signOut } = useAuthStore();
   const { recipes } = useRecipeStore();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const [providerBusy, setProviderBusy] = useState<'apple' | 'google'>();
   const [message, setMessage] = useState<string>();
 
   const signOutSafely = async () => { setBusy(true); setMessage(undefined); try { const result = await signOut(); if (result.error) setMessage(result.error); } catch (error) { setMessage(error instanceof Error ? error.message : 'We could not sign you out. Please try again.'); } finally { setBusy(false); } };
+
+  const oauth = async (provider: 'apple' | 'google') => { setProviderBusy(provider); setMessage(undefined); try { const result = await signInWithProvider(provider); if (result.error) setMessage(result.error); else if (!result.cancelled) router.replace('/'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Sign-in could not start. Please try again.'); } finally { setProviderBusy(undefined); } };
 
   const submit = async () => {
     setMessage(undefined);
@@ -44,7 +48,7 @@ export default function ProfileScreen() {
       <Button disabled={busy} label={busy ? 'Signing out…' : 'Sign out'} variant="secondary" onPress={() => void signOutSafely()} />
     </> : <>
       <Text style={styles.body}>Sign in to sync private recipes across devices. Your local recipes stay available even while signed out.</Text>
-      <View style={styles.switcher}><Pressable onPress={() => { setMode('signin'); setMessage(undefined); }} style={[styles.switch, mode === 'signin' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signin' && styles.switchTextActive]}>Sign in</Text></Pressable><Pressable onPress={() => { setMode('signup'); setMessage(undefined); }} style={[styles.switch, mode === 'signup' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signup' && styles.switchTextActive]}>Create account</Text></Pressable></View>
+      <Pressable disabled={Boolean(providerBusy)} onPress={() => void oauth('apple')} style={[styles.provider, styles.apple]}>{providerBusy === 'apple' ? <ActivityIndicator color={colors.white} /> : <><Ionicons color={colors.white} name="logo-apple" size={20} /><Text style={styles.appleText}>Continue with Apple</Text></>}</Pressable><Pressable disabled={Boolean(providerBusy)} onPress={() => void oauth('google')} style={styles.provider}>{providerBusy === 'google' ? <ActivityIndicator color={colors.coral} /> : <><GoogleG /><Text style={styles.providerText}>Continue with Google</Text></>}</Pressable><View style={styles.switcher}><Pressable onPress={() => { setMode('signin'); setMessage(undefined); }} style={[styles.switch, mode === 'signin' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signin' && styles.switchTextActive]}>Sign in</Text></Pressable><Pressable onPress={() => { setMode('signup'); setMessage(undefined); }} style={[styles.switch, mode === 'signup' && styles.switchActive]}><Text style={[styles.switchText, mode === 'signup' && styles.switchTextActive]}>Create account</Text></Pressable></View>
       {mode === 'signup' ? <Field label="Name" autoComplete="name" value={displayName} onChangeText={setDisplayName} /> : null}
       <Field label="Email" autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} />
       <Field label="Password" autoCapitalize="none" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} secureTextEntry value={password} onChangeText={setPassword} />
@@ -56,4 +60,4 @@ export default function ProfileScreen() {
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
 
-const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, back: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, body: { color: colors.muted, lineHeight: 21 }, notice: { gap: spacing.sm }, cardTitle: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, account: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, avatar: { width: 54, height: 54, borderRadius: 27, backgroundColor: colors.charcoal, alignItems: 'center', justifyContent: 'center' }, avatarText: { color: colors.white, fontWeight: '900' }, connected: { color: colors.herb, fontWeight: '800' }, switcher: { flexDirection: 'row', padding: 4, borderRadius: radii.medium, backgroundColor: colors.line }, switch: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radii.small }, switchActive: { backgroundColor: colors.paperRaised }, switchText: { color: colors.muted, fontWeight: '700' }, switchTextActive: { color: colors.charcoal }, forgot: { color: colors.coral, textAlign: 'center', fontWeight: '800' }, message: { color: colors.coralDark, backgroundColor: colors.lavenderSoft, padding: spacing.md, borderRadius: radii.small }, privacy: { flexDirection: 'row', gap: spacing.sm, padding: spacing.md, backgroundColor: colors.mintSoft, borderRadius: radii.medium }, privacyText: { flex: 1, color: colors.herb, fontWeight: '700', lineHeight: 20 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, back: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, kicker: { color: colors.coralDark, fontWeight: '900', letterSpacing: 1.2 }, body: { color: colors.muted, lineHeight: 21 }, notice: { gap: spacing.sm }, cardTitle: { color: colors.charcoal, fontSize: 18, fontWeight: '800' }, account: { flexDirection: 'row', alignItems: 'center', gap: spacing.md }, avatar: { width: 54, height: 54, borderRadius: 27, backgroundColor: colors.charcoal, alignItems: 'center', justifyContent: 'center' }, avatarText: { color: colors.white, fontWeight: '900' }, connected: { color: colors.herb, fontWeight: '800' }, provider: { minHeight: 50, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised }, apple: { backgroundColor: '#171717', borderColor: '#171717' }, providerText: { color: colors.charcoal, fontWeight: '800' }, appleText: { color: colors.white, fontWeight: '800' }, switcher: { flexDirection: 'row', padding: 4, borderRadius: radii.medium, backgroundColor: colors.line }, switch: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radii.small }, switchActive: { backgroundColor: colors.paperRaised }, switchText: { color: colors.muted, fontWeight: '700' }, switchTextActive: { color: colors.charcoal }, forgot: { color: colors.coral, textAlign: 'center', fontWeight: '800' }, message: { color: colors.coralDark, backgroundColor: colors.lavenderSoft, padding: spacing.md, borderRadius: radii.small }, privacy: { flexDirection: 'row', gap: spacing.sm, padding: spacing.md, backgroundColor: colors.mintSoft, borderRadius: radii.medium }, privacyText: { flex: 1, color: colors.herb, fontWeight: '700', lineHeight: 20 } });
