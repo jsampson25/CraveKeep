@@ -2,6 +2,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { Platform } from 'react-native';
 import { isSupabaseConfigured, supabase } from './supabase';
 
 type AuthResult = { error?: string; confirmationRequired?: boolean; cancelled?: boolean };
@@ -103,7 +104,9 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
 
   const signInWithProvider = useCallback(async (provider: 'apple' | 'google'): Promise<AuthResult> => {
     if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
-    const redirectTo = Linking.createURL('/onboarding/auth-callback');
+    const redirectTo = Platform.OS === 'web' && typeof window !== 'undefined'
+      ? `${window.location.origin}/onboarding/auth-callback`
+      : Linking.createURL('onboarding/auth-callback');
     const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo, skipBrowserRedirect: true } });
     if (error || !data.url) return { error: error?.message ?? 'The secure sign-in page could not be opened.' };
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
