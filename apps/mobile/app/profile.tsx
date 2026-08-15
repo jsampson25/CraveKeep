@@ -33,6 +33,7 @@ export default function ProfileScreen() {
     {!ready ? <ActivityIndicator color={colors.coral} /> : !configured ? <Card style={styles.notice}><Text style={styles.cardTitle}>Cloud sync needs configuration</Text><Text style={styles.body}>This build is missing its public Supabase URL or publishable key. Recipes remain safely stored on this device.</Text></Card> : user ? <>
       <Card style={styles.account}><View style={styles.avatar}><Text style={styles.avatarText}>{(user.user_metadata.display_name || user.email || 'CK').slice(0, 2).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.cardTitle}>{user.user_metadata.display_name || 'CraveKeep cook'}</Text><Text style={styles.body}>{user.email}</Text><Text style={styles.connected}><Ionicons name="checkmark-circle" /> Signed in</Text></View></Card>
       <Text style={styles.body}>Your account is authenticated against the live Supabase project. Private recipe sync is the next connection step.</Text>
+      <Button label="Open settings" variant="secondary" onPress={() => router.push('/settings')} />
       <Button label="Sign out" variant="secondary" onPress={() => void signOut()} />
     </> : <>
       <Text style={styles.body}>Sign in to sync private recipes across devices. Your local recipes stay available even while signed out.</Text>
