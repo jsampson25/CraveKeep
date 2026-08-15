@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useImportStore } from '@/data/import-store';
 import { useRecipeStore } from '@/data/recipe-store';
@@ -25,7 +26,7 @@ export default function RecipeReviewScreen() {
   const draft = useMemo<RecipeDraft>(() => ({ title, description: initial?.description ?? '', servings: Number(servings), prepMinutes: initial?.prepMinutes ?? 0, cookMinutes: initial?.cookMinutes ?? 0, ingredients: parseIngredients(ingredients), steps: steps.split('\n').map((item) => item.trim()).filter(Boolean) }), [ingredients, initial, servings, steps, title]);
   const errors = submitted ? validateRecipeDraft(draft) : [];
   const errorFor = (field: (typeof errors)[number]['field']) => errors.find((error) => error.field === field)?.message;
-  if (!job) return <Screen style={styles.center}><Title>Import unavailable</Title><Button label="View imports" onPress={() => router.replace('/imports')} /></Screen>;
+  if (!job) return <Screen style={styles.center}><MotionSlot name="recipe-import-success" size={84} accessibilityLabel="Animated recipe capture state" /><Title>Import unavailable</Title><Button label="View imports" onPress={() => router.replace('/imports')} /></Screen>;
   const save = async () => { setSubmitted(true); if (validateRecipeDraft(draft).length) return; const recipe = createImportedRecipe(draft, { url: job.source.url, label: job.source.host, creator: job.source.creator }); const saved = await addRecipe(recipe); await updateJob(job.id, { status: 'completed', recipeId: saved.id, recoveryCode: undefined }); router.replace(`/recipes/${saved.id}`); };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <View style={styles.header}><Pressable accessibilityLabel="Close review" onPress={() => router.replace('/imports')}><Ionicons name="close" size={27} /></Pressable><Text style={styles.private}><Ionicons name="lock-closed" /> Private import</Text></View><Text style={styles.kicker}>RECIPE REVIEW</Text><Title>Check the details.</Title>

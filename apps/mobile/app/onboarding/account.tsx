@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingProgress } from '@/components/onboarding-progress';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { GoogleG } from '@/components/google-g';
 import { useAuthStore } from '@/data/auth-store';
 import { colors, spacing, typography } from '@/theme';
@@ -45,7 +46,7 @@ export default function AccountOptionsScreen() {
   return <View style={[styles.screen, { paddingTop: insets.top + 8, paddingBottom: Math.max(insets.bottom, 12) }]}>
     <View style={styles.topBar}><View accessibilityLabel="CraveKeep" style={styles.brandMark}><Image resizeMode="contain" source={logoC} style={styles.brandPiece} /><Image resizeMode="contain" source={logoRight} style={styles.brandPiece} /></View><View style={styles.progress}><OnboardingProgress label="Account setup" percent={20} /></View></View>
     <Animated.View style={[styles.intro, { transform: [{ translateY: settle.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }, { scale: settle.interpolate({ inputRange: [0, 1], outputRange: [1.03, .94] }) }] }]}>
-      <View style={styles.hero}>
+      <View style={styles.hero}><MotionSlot name='onboarding-recipe-card' size={110} accessibilityLabel='Animated CraveKeep recipe card' style={styles.motion} />
         <Animated.View style={[styles.composition, { opacity: arrive, transform: [{ translateY: arrive.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }) }, { scale: arrive.interpolate({ inputRange: [0, 1], outputRange: [.92, 1] }) }, { rotate: '-4deg' }] }]}>
           <Image resizeMode="contain" source={paperBookArt} style={styles.heroArt} />
           <View style={styles.writingLayer}><Animated.Text style={[styles.recipeTitle, styles.writtenTitle, { opacity: writing.interpolate({ inputRange: [0, .1, .28], outputRange: [0, 0, 1] }) }]}>Lemon Herb Chicken</Animated.Text><Animated.Text style={[styles.ingredient, styles.lineOne, { opacity: writing.interpolate({ inputRange: [.28, .48], outputRange: [0, 1] }) }]}>• 2 boneless chicken breasts</Animated.Text><Animated.Text style={[styles.ingredient, styles.lineTwo, { opacity: writing.interpolate({ inputRange: [.5, .7], outputRange: [0, 1] }) }]}>• 2 tbsp olive oil</Animated.Text><Animated.Text style={[styles.ingredient, styles.lineThree, { opacity: writing.interpolate({ inputRange: [.72, .94], outputRange: [0, 1] }) }]}>• 1 lemon · rosemary</Animated.Text></View>
@@ -67,7 +68,7 @@ export default function AccountOptionsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: 22, backgroundColor: colors.paper }, topBar: { flexDirection: 'row', alignItems: 'center', gap: 14 }, brandMark: { width: 48, height: 38 }, brandPiece: { position: 'absolute', width: 48, height: 38 }, progress: { flex: 1 },
-  intro: { height: 423, justifyContent: 'flex-end' }, hero: { height: 315, alignItems: 'center' }, composition: { width: 345, height: 315 }, heroArt: { position: 'absolute', width: 345, height: 345, top: -16 },
+  intro: { height: 423, justifyContent: 'flex-end' }, hero: { height: 315, alignItems: 'center' }, motion: { position: 'absolute', right: 14, top: 4, opacity: 0.42, zIndex: 5 }, composition: { width: 345, height: 315 }, heroArt: { position: 'absolute', width: 345, height: 345, top: -16 },
   writingLayer: { position: 'absolute', left: 63, top: 70, width: 190, height: 150 }, recipeTitle: { position: 'absolute', color: colors.charcoal, fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 17, lineHeight: 22 }, writtenTitle: { top: 0 }, ingredient: { position: 'absolute', left: 3, color: colors.charcoal, fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 10, lineHeight: 18 }, lineOne: { top: 34 }, lineTwo: { top: 66 }, lineThree: { top: 98 },
   pencil: { position: 'absolute', left: 0, top: 0, width: 154, height: 38, zIndex: 8 },
   title: { marginTop: 24, color: colors.charcoal, ...typography.display, fontSize: 30, lineHeight: 34, textAlign: 'center' }, subtitle: { marginTop: 5, paddingHorizontal: 18, color: colors.muted, fontSize: 13, lineHeight: 18, textAlign: 'center' },

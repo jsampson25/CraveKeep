@@ -3,15 +3,14 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AnimatedBrandLogo } from '@/components/brand-logo';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 import foodColor from '../assets/brand/welcome-food-color.png';
 import foodOutline from '../assets/brand/welcome-food-outline.png';
 
-// Bump when the onboarding experience materially changes so existing development
-// installs can see and complete the revised flow.
-const WELCOME_KEY = 'cravekeep.welcome.v7';
+const WELCOME_KEY = 'cravekeep.welcome.v8';
 
 export default function Index() {
   const { ready: authReady, user } = useAuthStore();
@@ -24,17 +23,105 @@ export default function Index() {
   const settle = useRef(new Animated.Value(0)).current;
   const food = useRef(new Animated.Value(0)).current;
   const content = useRef(new Animated.Value(0)).current;
-  useEffect(() => { void Promise.all([AsyncStorage.getItem(WELCOME_KEY), AccessibilityInfo.isReduceMotionEnabled()]).then(([value, reduced]) => { setSeen(Boolean(value)); setReduceMotion(reduced); setReady(true); }); }, []);
+
+  useEffect(() => {
+    void Promise.all([
+      AsyncStorage.getItem(WELCOME_KEY),
+      AccessibilityInfo.isReduceMotionEnabled(),
+    ]).then(([value, reduced]) => {
+      setSeen(Boolean(value));
+      setReduceMotion(reduced);
+      setReady(true);
+    });
+  }, []);
+
   useEffect(() => {
     if (!ready || seen) return;
-    if (reduceMotion) { assemble.setValue(1); word.setValue(1); settle.setValue(1); food.setValue(1); content.setValue(1); return; }
-    Animated.sequence([Animated.timing(assemble, { toValue: 1, duration: 850, useNativeDriver: true }), Animated.timing(word, { toValue: 1, duration: 420, useNativeDriver: true }), Animated.delay(300), Animated.timing(settle, { toValue: 1, duration: 650, useNativeDriver: true }), Animated.delay(550), Animated.timing(food, { toValue: 1, duration: 1800, useNativeDriver: true }), Animated.timing(content, { toValue: 1, duration: 450, useNativeDriver: true })]).start();
+    if (reduceMotion) {
+      assemble.setValue(1);
+      word.setValue(1);
+      settle.setValue(1);
+      food.setValue(1);
+      content.setValue(1);
+      return;
+    }
+    Animated.sequence([
+      Animated.timing(assemble, { toValue: 1, duration: 850, useNativeDriver: true }),
+      Animated.timing(word, { toValue: 1, duration: 420, useNativeDriver: true }),
+      Animated.delay(300),
+      Animated.timing(settle, { toValue: 1, duration: 650, useNativeDriver: true }),
+      Animated.delay(550),
+      Animated.timing(food, { toValue: 1, duration: 1800, useNativeDriver: true }),
+      Animated.timing(content, { toValue: 1, duration: 450, useNativeDriver: true }),
+    ]).start();
   }, [assemble, content, food, ready, reduceMotion, seen, settle, word]);
+
   if (!ready || !authReady || !onboardingReady) return <View style={styles.screen} />;
   if (user) return <Redirect href={profile.completed ? '/(tabs)/home' : '/onboarding/profile'} />;
   if (seen) return <Redirect href="/onboarding/account" />;
-  const begin = async () => { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/account'); };
-  return <View style={styles.screen}><Animated.View style={[styles.logoStage, { transform: [{ translateY: settle.interpolate({ inputRange: [0, 1], outputRange: [0, -320] }) }, { scale: settle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.38] }) }] }]}><AnimatedBrandLogo assemble={assemble} word={word} /></Animated.View><Animated.View style={[styles.final, { opacity: settle }]}><View style={styles.art}><Image resizeMode="contain" source={foodOutline} style={[styles.food, styles.outline]} /><Animated.Image resizeMode="contain" source={foodColor} style={[styles.food, { opacity: food }]} /></View><Animated.View style={[styles.copy, { opacity: content }]}><Text accessibilityRole="header" style={styles.title}>Every recipe you crave.{`\n`}Kept your way.</Text><Pressable accessibilityRole="button" onPress={() => void begin()} style={({ pressed }) => [styles.button, pressed && styles.pressed]}><Text style={styles.buttonText}>Let’s begin</Text></Pressable></Animated.View></Animated.View></View>;
+
+  const begin = async () => {
+    await AsyncStorage.setItem(WELCOME_KEY, 'seen');
+    router.replace('/onboarding/account');
+  };
+
+  return (
+    <View style={styles.screen}>
+      <Animated.View
+        style={[
+          styles.logoStage,
+          {
+            transform: [
+              { translateY: settle.interpolate({ inputRange: [0, 1], outputRange: [0, -320] }) },
+              { scale: settle.interpolate({ inputRange: [0, 1], outputRange: [1, 0.38] }) },
+            ],
+          },
+        ]}
+      >
+        <AnimatedBrandLogo assemble={assemble} word={word} />
+      </Animated.View>
+
+      <Animated.View style={[styles.final, { opacity: settle }]}>
+        <View style={styles.art}>
+          <MotionSlot
+            name="launch-reveal"
+            size={230}
+            accessibilityLabel="CraveKeep logo reveal animation"
+            style={styles.lottie}
+          />
+          <Image resizeMode="contain" source={foodOutline} style={[styles.food, styles.outline]} />
+          <Animated.Image resizeMode="contain" source={foodColor} style={[styles.food, { opacity: food }]} />
+        </View>
+        <Animated.View style={[styles.copy, { opacity: content }]}>
+          <Text accessibilityRole="header" style={styles.title}>
+            Every recipe you crave.{'\n'}Kept your way.
+          </Text>
+          <Text style={styles.subtitle}>Save, plan, shop, and cook from one bright kitchen companion.</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => void begin()}
+            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          >
+            <Text style={styles.buttonText}>Let’s begin</Text>
+          </Pressable>
+        </Animated.View>
+      </Animated.View>
+    </View>
+  );
 }
 
-const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center' }, logoStage: { position: 'absolute', width: 300, height: 286, alignItems: 'center', justifyContent: 'center', zIndex: 3 }, final: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, paddingHorizontal: spacing.lg, paddingTop: 170, paddingBottom: 36 }, art: { flex: 1, minHeight: 300, position: 'relative' }, food: { position: 'absolute', width: '100%', height: '100%' }, outline: { opacity: 0.42 }, copy: { gap: spacing.lg }, title: { color: colors.charcoal, ...typography.display, fontSize: 36, lineHeight: 42 }, button: { minHeight: 58, borderRadius: radii.medium, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral }, pressed: { opacity: 0.8 }, buttonText: { color: colors.white, ...typography.action, fontSize: 18 } });
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  logoStage: { position: 'absolute', width: 300, height: 286, alignItems: 'center', justifyContent: 'center', zIndex: 3 },
+  final: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, paddingHorizontal: spacing.lg, paddingTop: 150, paddingBottom: 36 },
+  art: { flex: 1, minHeight: 300, position: 'relative', alignItems: 'center', justifyContent: 'center' },
+  lottie: { position: 'absolute', opacity: 0.18 },
+  food: { position: 'absolute', width: '100%', height: '100%' },
+  outline: { opacity: 0.34 },
+  copy: { gap: spacing.md },
+  title: { color: colors.charcoal, ...typography.display, fontSize: 36, lineHeight: 42 },
+  subtitle: { color: colors.muted, ...typography.body, fontSize: 16, lineHeight: 23 },
+  button: { minHeight: 58, borderRadius: radii.round, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral, marginTop: spacing.sm },
+  pressed: { opacity: 0.8 },
+  buttonText: { color: colors.white, ...typography.action, fontSize: 18 },
+});

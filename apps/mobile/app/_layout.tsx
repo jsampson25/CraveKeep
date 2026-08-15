@@ -41,12 +41,14 @@ export default function RootLayout() {
           <Stack.Screen name="capture/review" />
           <Stack.Screen name="imports" />
           <Stack.Screen name="profile" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="settings" />
           <Stack.Screen name="recipes/new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/[id]" />
           <Stack.Screen name="recipes/[id]/edit" options={{ presentation: 'modal' }} />
           <Stack.Screen name="recipes/[id]/remix" />
           <Stack.Screen name="recipes/[id]/nutrition" />
           <Stack.Screen name="recipes/[id]/fit" />
+          <Stack.Screen name="recipes/[id]/video" />
           <Stack.Screen name="pantry" />
           <Stack.Screen name="cook/[id]" />
           <Stack.Screen name="cook/[id]/finished" options={{ presentation: 'modal' }} />

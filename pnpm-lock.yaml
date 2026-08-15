@@ -77,6 +77,12 @@ importers:
       expo-web-browser:
         specifier: ~57.0.2
         version: 57.0.2(expo@57.0.12)(react-native@0.86.2(@babel/core@7.29.7)(@react-native/metro-config@0.86.2(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))
+      '@lottiefiles/dotlottie-react':
+        specifier: ^0.19.14
+        version: 0.19.14(react@19.2.3)
+      lottie-react-native:
+        specifier: ~7.3.1
+        version: 7.3.1
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -1017,6 +1023,27 @@ packages:
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
+        optional: true
+
+  '@lottiefiles/dotlottie-react@0.19.14':
+    resolution: {integrity: sha512-rnBQOXhJp5kO1fBN5lMwRcavxJxQ37TvK0RVoohokaZA4yrt9Yk1hy5RnicSTn5/UvBLtK2wEDuu3UBylCgkHw==}
+    peerDependencies:
+      react: ^17 || ^18 || ^19
+
+  '@lottiefiles/dotlottie-web@0.79.1':
+    resolution: {integrity: sha512-UKk+DmY2yurQs2T02AekNGVLD+fSGlygHKnf9485LCWF+CUvMSUXizAgR2qDGFUH2APj2i58nk21QhfVi9EG6g==}
+
+  lottie-react-native@7.3.1:
+    resolution: {integrity: sha512-VW0gtiP1i3Jv6+PaVaNg6QDIqAXwAqmxVp1UOJFqsB6FeBN0zc8M/XR8DE8YiayZzd149nlqGOgmwoV7FbRGDw==}
+    peerDependencies:
+      '@lottiefiles/dotlottie-react': ^0.6.5
+      react: '*'
+      react-native: '>=0.46'
+      react-native-windows: '>=0.63.x'
+    peerDependenciesMeta:
+      '@lottiefiles/dotlottie-react':
+        optional: true
+      react-native-windows:
         optional: true
 
   '@react-native-async-storage/async-storage@2.2.0':
@@ -3591,6 +3618,14 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
+
+  '@lottiefiles/dotlottie-react@0.19.14(react@19.2.3)':
+    dependencies:
+      '@lottiefiles/dotlottie-web': 0.79.1
+
+  '@lottiefiles/dotlottie-web@0.79.1': {}
+
+  lottie-react-native@7.3.1: {}
 
   '@adobe/css-tools@4.5.0': {}
 
