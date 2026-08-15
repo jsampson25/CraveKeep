@@ -92,7 +92,7 @@ export default function Index() {
           <Animated.View style={[styles.actionMark, { opacity: pulse, transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.15] }) }, { rotate: sway.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-12deg', '0deg', '12deg'] }) }] }]}>
             <Text style={styles.actionMarkText}>✦</Text>
           </Animated.View>
-          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={900} transitionDurationMs={160} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
+          <MascotFrameSequence frames={welcomeFrames} frameDurationMs={1200} transitionDurationMs={160} size={250} accessibilityLabel="Recipe Keeper welcome wave" style={styles.mascotSequence} />
         </Animated.View>
         <Animated.View style={[styles.copy, { opacity: copy, transform: [{ translateY: copy.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <Text style={styles.title}>Save recipes. Plan meals. Cook more.</Text>
