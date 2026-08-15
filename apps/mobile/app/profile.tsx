@@ -5,10 +5,12 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Field, Screen, Title } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
+import { useRecipeStore } from '@/data/recipe-store';
 import { colors, radii, spacing } from '@/theme';
 
 export default function ProfileScreen() {
   const { user, ready, configured, signIn, signUp, signOut } = useAuthStore();
+  const { recipes } = useRecipeStore();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,9 +34,10 @@ export default function ProfileScreen() {
     <Pressable accessibilityLabel="Go back" onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} /></Pressable>
     <Text style={styles.kicker}>YOUR CRAVEKEEP</Text><MotionSlot name="mascot-morning" size={76} accessibilityLabel="Animated account settings" /><Title>{user ? 'Cloud sync is connected.' : 'Keep your recipes with you.'}</Title>
     {!ready ? <ActivityIndicator color={colors.coral} /> : !configured ? <Card style={styles.notice}><Text style={styles.cardTitle}>Cloud sync needs configuration</Text><Text style={styles.body}>This build is missing its public Supabase URL or publishable key. Recipes remain safely stored on this device.</Text></Card> : user ? <>
-      <Card style={styles.account}><View style={styles.avatar}><Text style={styles.avatarText}>{(user.user_metadata.display_name || user.email || 'CK').slice(0, 2).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.cardTitle}>{user.user_metadata.display_name || 'CraveKeep cook'}</Text><Text style={styles.body}>{user.email}</Text><Text style={styles.connected}><Ionicons name="checkmark-circle" /> Signed in</Text></View></Card>
-      <Text style={styles.body}>Your account is authenticated against the live Supabase project. Private recipe sync is the next connection step.</Text>
-      <Button label="Open settings" variant="secondary" onPress={() => router.push('/settings')} />
+      <Card style={styles.account}><View style={styles.avatar}><Text style={styles.avatarText}>{(user.user_metadata.display_name || user.email || 'CK').slice(0, 2).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.cardTitle}>{user.user_metadata.display_name || 'CraveKeep cook'}</Text><Text style={styles.body}>{user.email}</Text><Text style={styles.connected}><Ionicons name="checkmark-circle" /> Synced and private</Text></View><Pressable accessibilityLabel="Open settings" onPress={() => router.push('/settings')}><Ionicons color={colors.muted} name="settings-outline" size={22} /></Pressable></Card>
+      <Card style={styles.streak}><View style={styles.streakIcon}><Ionicons color={colors.coral} name="sparkles" size={25} /></View><View style={styles.flex}><Text style={styles.cardTitle}>You’re building your kitchen.</Text><Text style={styles.body}>Keep saving recipes and planning meals to make CraveKeep more useful every week.</Text></View></Card>
+      <View style={styles.stats}><View style={styles.stat}><Text style={styles.statValue}>{recipes.length}</Text><Text style={styles.statLabel}>Saved recipes</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.favorite).length}</Text><Text style={styles.statLabel}>Favorites</Text></View><View style={styles.stat}><Text style={styles.statValue}>{recipes.filter((recipe) => recipe.version > 1).length}</Text><Text style={styles.statLabel}>Healthier versions</Text></View></View>
+      <Button label="Create a recipe" onPress={() => router.push('/recipes/new')} />
       <Button label="Sign out" variant="secondary" onPress={() => void signOut()} />
     </> : <>
       <Text style={styles.body}>Sign in to sync private recipes across devices. Your local recipes stay available even while signed out.</Text>
