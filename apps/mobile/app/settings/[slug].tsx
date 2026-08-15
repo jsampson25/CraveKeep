@@ -24,8 +24,9 @@ export default function SettingsDetailScreen() {
   const page = pages[(slug ?? 'about') as Slug] ?? pages.about;
   const interactive = slug === 'notifications';
   const [notificationState, setNotificationState] = useState([true, true, false]);
-  useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) return; try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } }); }, [interactive]);
-  useEffect(() => { if (interactive) void AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState)); }, [interactive, notificationState]);
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
+  useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) return; try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } finally { setNotificationsLoaded(true); } }); }, [interactive]);
+  useEffect(() => { if (interactive && notificationsLoaded) void AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState)); }, [interactive, notificationState, notificationsLoaded]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.back()} style={styles.back}><Ionicons color={colors.charcoal} name="arrow-back" size={22} /></Pressable>
     <View style={styles.heading}><View style={styles.icon}><Ionicons color={colors.white} name={page.icon} size={25} /></View><Text style={styles.eyebrow}>{page.eyebrow}</Text><Title>{page.title}</Title><Text style={styles.intro}>{page.intro}</Text></View>
