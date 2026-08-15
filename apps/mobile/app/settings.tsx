@@ -12,14 +12,14 @@ const groups = [
   ] },
   { title: 'Account & app', items: [
     ['person-circle-outline', 'Account', 'Profile and sign-in details', '/profile'],
-    ['notifications-outline', 'Notifications', 'Meal, grocery, and import reminders', null],
-    ['link-outline', 'Connected sources', 'Import sources and permissions', null],
-    ['card-outline', 'Subscription', 'Plan and billing', null],
+    ['notifications-outline', 'Notifications', 'Meal, grocery, and import reminders', '/settings/notifications'],
+    ['link-outline', 'Connected sources', 'Import sources and permissions', '/settings/sources'],
+    ['card-outline', 'Subscription', 'Plan and billing', '/settings/subscription'],
   ] },
   { title: 'Privacy & support', items: [
-    ['lock-closed-outline', 'Privacy & data', 'Export, sharing, and deletion', null],
-    ['help-circle-outline', 'Help & feedback', 'Get help or send a suggestion', null],
-    ['information-circle-outline', 'About CraveKeep', 'Version, terms, and acknowledgements', null],
+    ['lock-closed-outline', 'Privacy & data', 'Export, sharing, and deletion', '/settings/privacy'],
+    ['help-circle-outline', 'Help & feedback', 'Get help or send a suggestion', '/settings/help'],
+    ['information-circle-outline', 'About CraveKeep', 'Version, terms, and acknowledgements', '/settings/about'],
   ] },
 ] as const;
 
