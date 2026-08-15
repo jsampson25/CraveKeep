@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
@@ -86,7 +87,7 @@ export default function Index() {
             <Text style={styles.buttonText}>Get started</Text>
           </Pressable>
           <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void oauth('apple')} style={[styles.provider, styles.apple]}>
-            {busy === 'apple' ? <ActivityIndicator color={colors.white} /> : <><Text style={styles.appleIcon}>●</Text><Text style={styles.appleText}>Continue with Apple</Text></>}
+            {busy === 'apple' ? <ActivityIndicator color={colors.white} /> : <><Ionicons color={colors.white} name="logo-apple" size={20} /><Text style={styles.appleText}>Continue with Apple</Text></>}
           </Pressable>
           <Pressable accessibilityRole="button" disabled={Boolean(busy)} onPress={() => void oauth('google')} style={styles.provider}>
             {busy === 'google' ? <ActivityIndicator color={colors.coral} /> : <><GoogleG /><Text style={styles.providerText}>Continue with Google</Text></>}
@@ -122,7 +123,6 @@ const styles = StyleSheet.create({
   buttonText: { color: colors.white, ...typography.action, fontSize: 17 },
   provider: { minHeight: 48, flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised },
   apple: { backgroundColor: '#171717', borderColor: '#171717' },
-  appleIcon: { color: colors.white, fontSize: 15, fontWeight: '900' },
   providerText: { color: colors.charcoal, ...typography.action, fontSize: 14 },
   appleText: { color: colors.white, ...typography.action, fontSize: 14 },
   message: { color: colors.coralDark, textAlign: 'center', fontSize: 12 },
