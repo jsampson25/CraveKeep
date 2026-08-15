@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Card, Eyebrow, Screen, SectionTitle, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
 import { useAuthStore } from '@/data/auth-store';
