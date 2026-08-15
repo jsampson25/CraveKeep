@@ -31,9 +31,14 @@ export default function ProfileScreen() {
       return;
     }
     setBusy(true);
-    const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password, displayName);
-    setBusy(false);
-    setMessage(result.error ?? (result.confirmationRequired ? 'Check your email to confirm your account, then sign in.' : undefined));
+    try {
+      const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password, displayName);
+      setMessage(result.error ?? (result.confirmationRequired ? 'Check your email to confirm your account, then sign in.' : undefined));
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'We could not complete that request. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
