@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
+import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Field } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
