@@ -23,7 +23,7 @@ export default function NutritionGoalsScreen() {
     const fat = Math.round(calories * 0.28 / 9); const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
     await update({ calculationMode:'calculated', calories, protein:`${protein} g`, carbs:`${carbs} g`, fat:`${fat} g`, fiber:`${Math.max(25,Math.round(calories/1000*14))} g` }); setMessage('Estimate calculated. Review and adjust it before saving.');
   };
-  const next = async () => { if (!await saveNutritionGoals()) router.push('/onboarding/household'); };
+  const next = async () => { setMessage('Saving your nutrition goals…'); try { if (!await saveNutritionGoals()) router.push('/onboarding/household'); } catch (reason) { setMessage(reason instanceof Error ? reason.message : 'We could not save your nutrition goals. Please try again.'); } };
   return <OnboardingShell title="Nutrition direction" percent={80} footer={<Button disabled={saving} label={saving?'Saving…':'Save and continue'} onPress={()=>void next()} />}>
     <View><Text style={styles.hero}>What would you like meals to support?</Text><Text style={styles.body}>This guides recipe portions and suggestions. CraveKeep is not medical advice or a required food tracker.</Text></View>
     <View style={styles.goalGrid}>{goals.map(([value,label])=><Pressable key={value} onPress={()=>void update({goal:value})} style={[styles.goal,profile.goal===value&&styles.selected]}><Text style={[styles.goalText,profile.goal===value&&styles.selectedText]}>{label}</Text></Pressable>)}</View>
