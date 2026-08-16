@@ -2,21 +2,27 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card, Screen, SectionTitle, Title } from '@/components/ui';
+import { summarizePlannedDay, type DailyNutritionTargets } from '@cravekeep/domain';
 import { usePlanningStore } from '@/data/planning-store';
+import { useNutritionStore } from '@/data/nutrition-store';
+import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-const nutrients = [
-  { key: 'calories', label: 'Calories', value: 1650, target: 2000, unit: 'kcal', color: colors.coral, soft: '#FFF0ED' },
-  { key: 'protein', label: 'Protein', value: 96, target: 140, unit: 'g', color: colors.mint, soft: colors.mintSoft },
-  { key: 'carbs', label: 'Carbs', value: 142, target: 220, unit: 'g', color: colors.lemon, soft: colors.lemonSoft },
-  { key: 'fat', label: 'Fat', value: 48, target: 70, unit: 'g', color: colors.lavender, soft: colors.lavenderSoft },
-] as const;
+const toLocalDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 export default function NutritionDashboardScreen() {
-  const { targets } = usePlanningStore();
-  const calorieTarget = targets?.calories ?? 2000;
-  const proteinTarget = targets?.proteinGrams ?? 140;
-  const cards = nutrients.map((item) => item.key === 'calories' ? { ...item, target: calorieTarget } : item.key === 'protein' ? { ...item, target: proteinTarget } : item);
+  const { targets, meals } = usePlanningStore();
+  const { estimates } = useNutritionStore();
+  const { profile } = useOnboardingStore();
+  const dailyTargets: DailyNutritionTargets = targets ?? { calories: profile.calories, proteinGrams: Number.parseInt(profile.protein, 10) || 0, carbohydrateGrams: Number.parseInt(profile.carbs, 10) || 0, fatGrams: Number.parseInt(profile.fat, 10) || 0, sodiumMilligrams: 2300 };
+  const today = toLocalDate(new Date());
+  const summary = summarizePlannedDay(meals.filter((meal) => meal.date === today), estimates, dailyTargets);
+  const cards = [
+    { key: 'calories', label: 'Calories', value: summary.planned.calories, target: dailyTargets.calories, unit: 'kcal', color: colors.coral, soft: '#FFF0ED' },
+    { key: 'protein', label: 'Protein', value: summary.planned.proteinGrams, target: dailyTargets.proteinGrams, unit: 'g', color: colors.mint, soft: colors.mintSoft },
+    { key: 'carbs', label: 'Carbs', value: summary.planned.carbohydrateGrams, target: dailyTargets.carbohydrateGrams, unit: 'g', color: colors.lemon, soft: colors.lemonSoft },
+    { key: 'fat', label: 'Fat', value: summary.planned.fatGrams, target: dailyTargets.fatGrams, unit: 'g', color: colors.lavender, soft: colors.lavenderSoft },
+  ];
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.header}><View style={styles.flex}><Text style={styles.eyebrow}>YOUR NUTRITION</Text><Title>See how your day is shaping up.</Title></View><Pressable accessibilityRole="button" accessibilityLabel="Edit nutrition targets" onPress={() => router.push('/onboarding/nutrition-goals')} style={styles.icon}><Ionicons color={colors.white} name="nutrition-outline" size={25} /></Pressable></View>
     <Card style={styles.snapshot}><Text style={styles.kicker}>TODAY'S SNAPSHOT</Text><Text style={styles.snapshotTitle}>{Math.round((cards[0]!.value / cards[0]!.target) * 100)}% of your calorie target</Text><Text style={styles.body}>Use this view to balance meals without losing sight of what you enjoy.</Text><View style={styles.snapshotBar}><View style={[styles.snapshotFill, { width: `${Math.min(100, Math.round((cards[0]!.value / cards[0]!.target) * 100))}%` }]} /></View></Card>
