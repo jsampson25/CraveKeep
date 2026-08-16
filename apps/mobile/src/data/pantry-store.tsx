@@ -1,15 +1,90 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { PantryItem } from '@cravekeep/domain';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { useAuthStore } from './auth-store';
 import { supabase } from './supabase';
+
 const STORAGE_KEY = 'cravekeep.pantry.v1';
 type PantryStoreValue = { items: PantryItem[]; ready: boolean; error: string | null; saveItem: (item: PantryItem) => Promise<void>; removeItem: (key: string) => Promise<void> };
 const PantryStore = createContext<PantryStoreValue | null>(null);
-export function PantryStoreProvider({ children }: PropsWithChildren) { const { user } = useAuthStore(); const [items, setItems] = useState<PantryItem[]>([]); const [ready, setReady] = useState(false); const [error, setError] = useState<string | null>(null);
-  useEffect(() => { AsyncStorage.getItem(STORAGE_KEY).then((value) => { if (value) setItems(JSON.parse(value) as PantryItem[]); }).catch(() => setError('Pantry could not be loaded.')).finally(() => setReady(true)); }, []);
-  useEffect(() => { if (!user || !supabase) return; const client = supabase; const ownerId = user.id; const loadCloud = async () => { const { data, error: cloudError } = await client.from('pantry_items').select('*').eq('owner_id', ownerId).order('name'); if (cloudError) throw cloudError; const cloud = data.map((row) => ({ key: row.item_key, name: row.name, quantity: row.quantity, confidence: row.confidence, expiresOn: row.expires_on ?? undefined, updatedAt: row.updated_at })); if (cloud.length) { setItems(cloud); await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)).catch(() => setError('Pantry refreshed, but the local cache could not be updated.')); } }; void loadCloud().catch(() => setError('Cloud pantry could not be refreshed.')); }, [user]);
-  const persist = useCallback(async (next: PantryItem[]) => { setItems(next); try { await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { setError('Your pantry change is visible but could not be saved on this device.'); } }, []);
-  const value = useMemo<PantryStoreValue>(() => ({ items, ready, error, saveItem: async (item) => { const next = [item, ...items.filter((candidate) => candidate.key !== item.key)]; await persist(next); if (user && supabase) { const { error: cloudError } = await supabase.from('pantry_items').upsert({ owner_id: user.id, item_key: item.key, name: item.name, quantity: item.quantity, confidence: item.confidence, expires_on: item.expiresOn, updated_at: item.updatedAt }); if (cloudError) setError('Pantry saved locally but cloud sync could not finish.'); } }, removeItem: async (key) => { await persist(items.filter((item) => item.key !== key)); if (user && supabase) { const { error: cloudError } = await supabase.from('pantry_items').delete().eq('owner_id', user.id).eq('item_key', key); if (cloudError) setError('Pantry item removed locally but cloud sync could not finish.'); } } }), [error, items, persist, ready, user]);
-  return <PantryStore.Provider value={value}>{children}</PantryStore.Provider>; }
-export function usePantryStore() { const value = useContext(PantryStore); if (!value) throw new Error('usePantryStore must be used inside PantryStoreProvider'); return value; }
+
+export function PantryStoreProvider({ children }: PropsWithChildren) {
+  const { user } = useAuthStore();
+  const [items, setItems] = useState<PantryItem[]>([]);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const itemsRef = useRef(items);
+  const writeQueue = useRef<Promise<void>>(Promise.resolve());
+
+  const persist = useCallback(async (next: PantryItem[]) => {
+    itemsRef.current = next;
+    setItems(next);
+    writeQueue.current = writeQueue.current
+      .catch(() => undefined)
+      .then(() => AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)))
+      .then(() => setError(null))
+      .catch(() => setError('Your pantry change is visible but could not be saved on this device.'));
+    await writeQueue.current;
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((value) => {
+        if (!value) return;
+        const parsed: unknown = JSON.parse(value);
+        if (!Array.isArray(parsed)) throw new Error('Invalid saved pantry');
+        const next = parsed as PantryItem[];
+        itemsRef.current = next;
+        setItems(next);
+      })
+      .catch(() => setError('Pantry could not be loaded.'))
+      .finally(() => setReady(true));
+  }, []);
+
+  useEffect(() => {
+    if (!user || !supabase) return;
+    const client = supabase;
+    const ownerId = user.id;
+    const loadCloud = async () => {
+      const { data, error: cloudError } = await client.from('pantry_items').select('*').eq('owner_id', ownerId).order('name');
+      if (cloudError) throw cloudError;
+      const cloud = data.map((row) => ({ key: row.item_key, name: row.name, quantity: row.quantity, confidence: row.confidence, expiresOn: row.expires_on ?? undefined, updatedAt: row.updated_at }));
+      if (cloud.length) {
+        itemsRef.current = cloud;
+        setItems(cloud);
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)).catch(() => setError('Pantry refreshed, but the local cache could not be updated.'));
+      }
+    };
+    void loadCloud().catch(() => setError('Cloud pantry could not be refreshed.'));
+  }, [user]);
+
+  const value = useMemo<PantryStoreValue>(() => ({
+    items,
+    ready,
+    error,
+    saveItem: async (item) => {
+      const next = [item, ...itemsRef.current.filter((candidate) => candidate.key !== item.key)];
+      await persist(next);
+      if (user && supabase) {
+        const { error: cloudError } = await supabase.from('pantry_items').upsert({ owner_id: user.id, item_key: item.key, name: item.name, quantity: item.quantity, confidence: item.confidence, expires_on: item.expiresOn, updated_at: item.updatedAt });
+        if (cloudError) setError('Pantry saved locally but cloud sync could not finish.');
+      }
+    },
+    removeItem: async (key) => {
+      const next = itemsRef.current.filter((item) => item.key !== key);
+      await persist(next);
+      if (user && supabase) {
+        const { error: cloudError } = await supabase.from('pantry_items').delete().eq('owner_id', user.id).eq('item_key', key);
+        if (cloudError) setError('Pantry item removed locally but cloud sync could not finish.');
+      }
+    }
+  }), [error, items, persist, ready, user]);
+
+  return <PantryStore.Provider value={value}>{children}</PantryStore.Provider>;
+}
+
+export function usePantryStore() {
+  const value = useContext(PantryStore);
+  if (!value) throw new Error('usePantryStore must be used inside PantryStoreProvider');
+  return value;
+}
