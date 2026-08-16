@@ -20,7 +20,7 @@ export default function CommunityShareScreen() {
       const existing = await AsyncStorage.getItem('cravekeep.community.posts.v1');
       let posts: unknown[] = [];
       try { posts = existing ? JSON.parse(existing) : []; } catch { posts = []; }
-      const post = { id: `local-${Date.now()}`, name: 'You', title: title.trim(), caption: caption.trim() || 'A recipe worth keeping.', time: 'Just now · Your kitchen', likes: 0, comments: 0, color: colors.coral, soft: '#FFF0ED', icon: 'restaurant-outline' };
+      const post = { id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: 'You', title: title.trim(), caption: caption.trim() || 'A recipe worth keeping.', time: 'Just now · Your kitchen', likes: 0, comments: 0, color: colors.coral, soft: '#FFF0ED', icon: 'restaurant-outline' };
       await AsyncStorage.setItem('cravekeep.community.posts.v1', JSON.stringify([post, ...(Array.isArray(posts) ? posts : [])]));
       setShared(true);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Your recipe could not be shared. Please try again.'); }
