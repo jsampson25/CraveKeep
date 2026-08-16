@@ -13,10 +13,10 @@ supabase db push
 
 Always review the dry run before applying a migration to a shared environment, then run `supabase db advisors --linked --type all`.
 
-`nutrition-lookup` and `extract-recipe` are authenticated Edge Functions. Browser calls are limited to `https://cravekeep.com` and `https://www.cravekeep.com` by default; set the server-side `CRAVEKEEP_ALLOWED_ORIGINS` secret as a comma-separated origin list when adding another web host. Native requests without an `Origin` header remain supported. It identifies CraveKeep to Open Food Facts as `CraveKeep/0.1 (api@cravekeep.com)`, caches explicit searches for 24 hours, and never exposes future provider credentials to the client.
+`nutrition-lookup`, `extract-recipe`, and `extract-link` are authenticated Edge Functions. Browser calls are limited to `https://cravekeep.com` and `https://www.cravekeep.com` by default; set the server-side `CRAVEKEEP_ALLOWED_ORIGINS` secret as a comma-separated origin list when adding another web host. Native requests without an `Origin` header remain supported. It identifies CraveKeep to Open Food Facts as `CraveKeep/0.1 (api@cravekeep.com)`, caches explicit searches for 24 hours, and never exposes future provider credentials to the client.
 
 FatSecret lookups use OAuth 2 client credentials from `FATSECRET_CLIENT_ID` and `FATSECRET_CLIENT_SECRET`. Full FatSecret responses are never cached because its API documentation limits storable fields; normalized results retain provider and serving IDs for later retrieval.
 
-`extract-recipe` uses the server-only `OPENAI_API_KEY` to read signed-in recipe images and returns a reviewable draft; if the secret is absent or extraction fails, the original image remains attached for manual completion.
+`extract-recipe` uses the server-only `OPENAI_API_KEY` to read signed-in recipe images and returns a reviewable draft; if the secret is absent or extraction fails, the original image remains attached for manual completion. `extract-link` reads standard Recipe JSON-LD metadata from public recipe pages and returns a reviewable draft; video and social links remain attached for manual review until a transcript provider is configured.
 
 USDA FoodData Central is the default generic-ingredient provider. Searches use the server-only `USDA_FDC_API_KEY`, return at most five candidates, retain source attribution and confidence, and cache normalized public-domain results for 24 hours.
