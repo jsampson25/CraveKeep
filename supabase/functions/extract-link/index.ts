@@ -32,7 +32,7 @@ const parseJsonLd = (html: string) => {
   }
   return null;
 };
-const instructionText = (value: unknown) => Array.isArray(value) ? value.map((item) => typeof item === 'string' ? item.trim() : item && typeof item === 'object' ? text((item as Record<string, unknown]).text) : '').filter(Boolean) : [];
+const instructionText = (value: unknown) => Array.isArray(value) ? value.map((item) => typeof item === 'string' ? item.trim() : item && typeof item === 'object' ? text((item as Record<string, unknown>).text) : '').filter(Boolean) : [];
 const ingredientText = (value: unknown) => Array.isArray(value) ? value.map((item) => text(item)).filter(Boolean) : [];
 
 Deno.serve(async (request) => {
