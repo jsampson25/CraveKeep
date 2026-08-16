@@ -23,9 +23,11 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const itemsRef = useRef(items);
   const writeQueue = useRef<Promise<void>>(Promise.resolve());
 
   const persist = useCallback(async (next: GroceryItem[]) => {
+    itemsRef.current = next;
     setItems(next);
     writeQueue.current = writeQueue.current
       .catch(() => undefined)
@@ -41,7 +43,9 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
         if (!value) return;
         const parsed: unknown = JSON.parse(value);
         if (!Array.isArray(parsed)) throw new Error('Invalid saved groceries');
-        setItems(parsed as GroceryItem[]);
+        const next = parsed as GroceryItem[];
+        itemsRef.current = next;
+        setItems(next);
       })
       .catch(() => setError('Your grocery list could not be loaded.'))
       .finally(() => setReady(true));
@@ -51,6 +55,7 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
     if (!user) return;
     void fetchCloudGroceries(user.id).then((cloud) => {
       if (!cloud.length) return;
+      itemsRef.current = cloud;
       setItems(cloud);
       void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)).catch(() => setError('Groceries refreshed, but the local cache could not be updated.'));
     }).catch(() => setError('Cloud groceries could not be refreshed.'));
@@ -68,7 +73,7 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
       }
     },
     addItem: async (item) => {
-      const next = [item, ...items.filter((candidate) => candidate.key !== item.key)];
+      const next = [item, ...itemsRef.current.filter((candidate) => candidate.key !== item.key)];
       await persist(next);
       if (user) {
         try { await replaceCloudGroceries(user.id, next); }
@@ -76,10 +81,10 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
       }
     },
     toggleChecked: async (key) => {
-      const item = items.find((candidate) => candidate.key === key);
+      const item = itemsRef.current.find((candidate) => candidate.key === key);
       if (!item) return;
       const checked = !item.checked;
-      const next = items.map((candidate) => candidate.key === key ? { ...candidate, checked } : candidate);
+      const next = itemsRef.current.map((candidate) => candidate.key === key ? { ...candidate, checked } : candidate);
       await persist(next);
       if (user) {
         try { await setCloudGroceryChecked(user.id, key, checked); }
@@ -87,7 +92,7 @@ export function GroceryStoreProvider({ children }: PropsWithChildren) {
       }
     },
     clearChecked: async () => {
-      const next = items.filter((item) => !item.checked);
+      const next = itemsRef.current.filter((item) => !item.checked);
       await persist(next);
       if (user) {
         try { await replaceCloudGroceries(user.id, next); }
