@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Switch, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Card, Screen, SectionTitle, Title } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
@@ -24,10 +24,11 @@ export default function SettingsDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const page = pages[(slug ?? 'about') as Slug] ?? pages.about;
   const interactive = slug === 'notifications';
-  const actionFor = (title: string) => slug === 'help' ? title === 'Getting started' ? () => router.replace('/') : title === 'Send feedback' ? () => void Linking.openURL('mailto:hello@cravekeep.com?subject=CraveKeep%20feedback') : () => void Linking.openURL('mailto:support@cravekeep.com?subject=CraveKeep%20support') : undefined;
   const [notificationState, setNotificationState] = useState([true, true, false]);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const [storageError, setStorageError] = useState<string>();
+  const exportData = async () => { try { const keys = ['cravekeep.recipes.v1', 'cravekeep.imports.v1', 'cravekeep.groceries.v1', 'cravekeep.planning.v1', 'cravekeep.nutrition.v1', 'cravekeep.onboarding.profile.v3']; const entries = await AsyncStorage.multiGet(keys); const data = Object.fromEntries(entries.map(([key, value]) => [key, value ? JSON.parse(value) : null])); await Share.share({ title: 'CraveKeep data export', message: JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2) }); } catch (reason) { setStorageError(reason instanceof Error ? reason.message : 'Your data could not be prepared for export.'); } };
+  const actionFor = (title: string) => slug === 'help' ? title === 'Getting started' ? () => router.replace('/') : title === 'Send feedback' ? () => void Linking.openURL('mailto:hello@cravekeep.com?subject=CraveKeep%20feedback') : () => void Linking.openURL('mailto:support@cravekeep.com?subject=CraveKeep%20support') : slug === 'privacy' && title === 'Export my data' ? () => void exportData() : undefined;
   useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) { setNotificationsLoaded(true); return; } try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } finally { setNotificationsLoaded(true); } }).catch(() => { setStorageError('Notification preferences could not be loaded. Default settings are shown.'); setNotificationsLoaded(true); }); }, [interactive]);
   useEffect(() => { if (interactive && notificationsLoaded) void AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState)).catch(() => setStorageError('Notification preferences changed but could not be saved on this device.')); }, [interactive, notificationState, notificationsLoaded]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
