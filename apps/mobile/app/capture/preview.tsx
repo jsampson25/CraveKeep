@@ -2,7 +2,7 @@ import { createSourcePreview } from '@cravekeep/domain';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useImportStore } from '@/data/import-store';
 import { colors, spacing } from '@/theme';

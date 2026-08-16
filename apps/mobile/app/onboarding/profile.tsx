@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
-import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Field } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';

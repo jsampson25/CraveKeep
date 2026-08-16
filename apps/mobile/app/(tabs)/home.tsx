@@ -8,8 +8,6 @@ import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-const targets = [{ label: 'Calories', value: '1,650', unit: 'kcal', color: colors.coral, soft: '#FFF0ED' }, { label: 'Protein', value: '140', unit: 'g', color: colors.mint, soft: colors.mintSoft }, { label: 'Carbs', value: '165', unit: 'g', color: colors.lemon, soft: colors.lemonSoft }, { label: 'Fat', value: '55', unit: 'g', color: colors.lavender, soft: colors.lavenderSoft }];
-
 export default function HomeScreen() {
   const { recipes, ready, error } = useRecipeStore(); const { user } = useAuthStore(); const { profile } = useOnboardingStore(); const latest = recipes[0];
   const dailyTargets = [{ label: 'Calories', value: profile.calories.toLocaleString(), unit: 'kcal', color: colors.coral, soft: '#FFF0ED' }, { label: 'Protein', value: profile.protein.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.mint, soft: colors.mintSoft }, { label: 'Carbs', value: profile.carbs.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.lemon, soft: colors.lemonSoft }, { label: 'Fat', value: profile.fat.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.lavender, soft: colors.lavenderSoft }];

@@ -4,8 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MascotFrameSequence } from '@/components/animations/MascotFrameSequence';
+import welcomeFrame01 from '../assets/mascots/role-specific-variants/morning-wave-01.png';
+import welcomeFrame02 from '../assets/mascots/role-specific-variants/morning-wave-02.png';
+import welcomeFrame03 from '../assets/mascots/role-specific-variants/morning-wave-03.png';
+import welcomeFrame04 from '../assets/mascots/role-specific-variants/morning-wave-04.png';
+import welcomeVideo from '../assets/welcome-mascot-silent.mp4';
 
-const WebVideo = 'video' as unknown as React.ComponentType<any>;
+type WebVideoProps = { 'aria-label'?: string; autoPlay?: boolean; loop?: boolean; muted?: boolean; playsInline?: boolean; src: number | string; style?: object };
+const WebVideo = 'video' as unknown as React.ComponentType<WebVideoProps>;
 import { GoogleG } from '@/components/google-g';
 import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
@@ -13,10 +19,7 @@ import { colors, radii, spacing, typography } from '@/theme';
 
 const WELCOME_KEY = 'cravekeep.welcome.v11';
 const welcomeFrames = [
-  require('../assets/mascots/role-specific-variants/morning-wave-01.png'),
-  require('../assets/mascots/role-specific-variants/morning-wave-02.png'),
-  require('../assets/mascots/role-specific-variants/morning-wave-03.png'),
-  require('../assets/mascots/role-specific-variants/morning-wave-04.png'),
+  welcomeFrame01, welcomeFrame02, welcomeFrame03, welcomeFrame04,
 ];
 
 export default function Index() {
@@ -87,7 +90,7 @@ export default function Index() {
               loop
               muted
               playsInline
-              src={require('../assets/welcome-mascot-silent.mp4')}
+              src={welcomeVideo}
               style={styles.welcomeVideo}
             />
           ) : (

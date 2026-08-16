@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Card, Eyebrow, Screen, SectionTitle, Title } from '@/components/ui';
-import { colors, radii, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 import { useAuthStore } from '@/data/auth-store';
 
 const groups = [
