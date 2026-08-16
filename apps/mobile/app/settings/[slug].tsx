@@ -6,6 +6,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Switch, Text, View } from 're
 import { useEffect, useRef, useState } from 'react';
 import { Card, Screen, SectionTitle, Title } from '@/components/ui';
 import { colors, radii, spacing, typography } from '@/theme';
+import { useAuthStore } from '@/data/auth-store';
 
 const NOTIFICATION_SETTINGS_KEY = 'cravekeep.notifications.v1';
 
@@ -23,12 +24,13 @@ type Slug = keyof typeof pages;
 export default function SettingsDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const page = pages[(slug ?? 'about') as Slug] ?? pages.about;
+  const { user } = useAuthStore();
   const interactive = slug === 'notifications';
   const [notificationState, setNotificationState] = useState([true, true, false]);
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const [storageError, setStorageError] = useState<string>();
   const writeQueue = useRef<Promise<void>>(Promise.resolve());
-  const exportData = async () => { try { const keys = ['cravekeep.recipes.v1', 'cravekeep.imports.v1', 'cravekeep.groceries.v1', 'cravekeep.planning.v1', 'cravekeep.nutrition.v1', 'cravekeep.onboarding.profile.v3']; const entries = await AsyncStorage.multiGet(keys); const data = Object.fromEntries(entries.map(([key, value]) => { if (!value) return [key, null]; try { return [key, JSON.parse(value)]; } catch { return [key, value]; } })); await Share.share({ title: 'CraveKeep data export', message: JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2) }); } catch (reason) { setStorageError(reason instanceof Error ? reason.message : 'Your data could not be prepared for export.'); } };
+  const exportData = async () => { try { const keys = ['cravekeep.recipes.v1', 'cravekeep.imports.v1', 'cravekeep.groceries.v1', 'cravekeep.planning.v1', 'cravekeep.nutrition.v1', user ? 'cravekeep.onboarding.profile.v3:' + user.id : 'cravekeep.onboarding.profile.v3']; const entries = await AsyncStorage.multiGet(keys); const data = Object.fromEntries(entries.map(([key, value]) => { if (!value) return [key, null]; try { return [key, JSON.parse(value)]; } catch { return [key, value]; } })); await Share.share({ title: 'CraveKeep data export', message: JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2) }); } catch (reason) { setStorageError(reason instanceof Error ? reason.message : 'Your data could not be prepared for export.'); } };
   const actionFor = (title: string) => slug === 'help' ? title === 'Getting started' ? () => router.replace('/') : title === 'Send feedback' ? () => void Linking.openURL('mailto:hello@cravekeep.com?subject=CraveKeep%20feedback') : () => void Linking.openURL('mailto:support@cravekeep.com?subject=CraveKeep%20support') : slug === 'privacy' && title === 'Export my data' ? () => void exportData() : slug === 'sources' && (title === 'YouTube' || title === 'Pinterest') ? () => router.push('/capture/link') : slug === 'sources' && title === 'Websites and photos' ? () => router.push('/capture') : undefined;
   useEffect(() => { if (!interactive) return; void AsyncStorage.getItem(NOTIFICATION_SETTINGS_KEY).then((value) => { if (!value) { setNotificationsLoaded(true); return; } try { const parsed = JSON.parse(value); if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'boolean')) setNotificationState(parsed.slice(0, 3)); } catch { /* keep defaults */ } finally { setNotificationsLoaded(true); } }).catch(() => { setStorageError('Notification preferences could not be loaded. Default settings are shown.'); setNotificationsLoaded(true); }); }, [interactive]);
   useEffect(() => { if (!interactive || !notificationsLoaded) return; writeQueue.current = writeQueue.current.catch(() => undefined).then(() => AsyncStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(notificationState))).catch(() => setStorageError('Notification preferences changed but could not be saved on this device.')); }, [interactive, notificationState, notificationsLoaded]);
