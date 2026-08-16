@@ -63,7 +63,9 @@ Deno.serve(async (request) => {
   if (!user) return Response.json({ error: 'Authentication required.' }, { status: 401, headers: corsHeaders });
   let body: { query?: string; provider?: 'usda' | 'open_food_facts' | 'fatsecret' };
   try { body = await request.json(); } catch { return Response.json({ error: 'Invalid JSON body.' }, { status: 400, headers: corsHeaders }); }
-  const query = body.query?.trim().replace(/\s+/g, ' '); const provider = body.provider ?? 'usda';
+  const query = body.query?.trim().replace(/\s+/g, ' ');
+  const provider = body.provider ?? 'usda';
+  if (!['usda', 'open_food_facts', 'fatsecret'].includes(provider)) return Response.json({ error: 'Unsupported nutrition provider.' }, { status: 400, headers: corsHeaders });
   if (!query || query.length < 2 || query.length > 120) return Response.json({ error: 'Ingredient search must contain 2 to 120 characters.' }, { status: 400, headers: corsHeaders });
   if (provider === 'fatsecret') {
     try { return Response.json(await searchFatSecret(query), { headers: { ...corsHeaders, 'Cache-Control': 'no-store' } }); }
