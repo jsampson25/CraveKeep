@@ -34,6 +34,14 @@ jobs:
           sed 's/^/    /' lint-output.txt >> "$GITHUB_STEP_SUMMARY"
           exit 1
       - name: Typecheck
-        run: pnpm typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm typecheck 2>&1 | tee typecheck-output.txt
+      - name: Publish typecheck output
+        if: steps.typecheck.outcome == 'failure'
+        run: |
+          echo "## Typecheck output" >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' typecheck-output.txt >> "$GITHUB_STEP_SUMMARY"
+          exit 1
       - name: Test
         run: pnpm test
