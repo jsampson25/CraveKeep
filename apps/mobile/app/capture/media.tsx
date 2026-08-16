@@ -36,7 +36,17 @@ export default function MediaCaptureScreen() {
       setBusy(false);
       return;
     }
-    if (!result.canceled) setAsset(result.assets[0]);
+    if (result.canceled) {
+      setBusy(false);
+      return;
+    }
+    const selectedAsset = result.assets?.[0];
+    if (!selectedAsset) {
+      setMessage('The selected image could not be read. Please choose another photo.');
+      setBusy(false);
+      return;
+    }
+    setAsset(selectedAsset);
     setBusy(false);
   };
 
