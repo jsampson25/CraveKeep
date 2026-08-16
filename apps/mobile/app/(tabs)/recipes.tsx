@@ -5,15 +5,18 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Card, Eyebrow, Screen, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
+import { useAuthStore } from '@/data/auth-store';
 import { colors, radii, spacing } from '@/theme';
 import { RecipeArt } from '@/components/recipe-art';
 
 export default function RecipesScreen() {
   const { recipes, ready } = useRecipeStore();
+  const { user } = useAuthStore();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'favorites' | 'versions'>('all');
   const [communitySavedCount, setCommunitySavedCount] = useState(0);
   const [communitySavedTitles, setCommunitySavedTitles] = useState<string[]>([]);
+  const initials = (user?.user_metadata.display_name || user?.email || 'CK').slice(0, 2).toUpperCase();
   const loadCommunitySaves = useCallback(() => { void Promise.all([AsyncStorage.getItem('cravekeep.community.saves.v1'), AsyncStorage.getItem('cravekeep.community.posts.v1')]).then(([value, postsValue]) => { try { const saved = value ? JSON.parse(value) : []; const posts = postsValue ? JSON.parse(postsValue) : []; if (Array.isArray(saved)) { setCommunitySavedCount(saved.length); if (Array.isArray(posts)) setCommunitySavedTitles(posts.filter((post) => saved.includes(post.id)).slice(0, 3).map((post) => post.title)); } } catch { setCommunitySavedCount(0); setCommunitySavedTitles([]); } }); }, []);
   useFocusEffect(useCallback(() => { loadCommunitySaves(); }, [loadCommunitySaves]));
   const visibleRecipes = useMemo(() => {
@@ -26,7 +29,7 @@ export default function RecipesScreen() {
     });
   }, [filter, query, recipes]);
   return <Screen><ScrollView contentContainerStyle={styles.content}>
-    <View style={styles.header}><View><Eyebrow>YOUR COLLECTION</Eyebrow><Title>Recipes you’ll keep coming back to.</Title></View><View style={styles.avatar}><Text style={styles.avatarText}>JS</Text></View></View>
+    <View style={styles.header}><View><Eyebrow>YOUR COLLECTION</Eyebrow><Title>Recipes you’ll keep coming back to.</Title></View><View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View></View>
     <View style={styles.search}><Ionicons color={colors.muted} name="search" size={20} /><TextInput accessibilityLabel="Search recipes" onChangeText={setQuery} placeholder="Title, ingredient, or direction" placeholderTextColor={colors.muted} returnKeyType="search" style={styles.searchInput} value={query} />{query ? <Pressable accessibilityLabel="Clear recipe search" onPress={() => setQuery('')}><Ionicons color={colors.muted} name="close-circle" size={20} /></Pressable> : null}</View>
     <View accessibilityRole="tablist" style={styles.filters}>{(['all', 'favorites', 'versions'] as const).map((value) => <Pressable accessibilityRole="tab" accessibilityState={{ selected: filter === value }} key={value} onPress={() => setFilter(value)}><Text style={filter === value ? styles.filterActive : styles.filter}>{value === 'all' ? 'All' : value === 'favorites' ? 'Favorites' : 'Versions'}</Text></Pressable>)}</View>
     {communitySavedCount > 0 ? <Pressable accessibilityRole="button" onPress={() => router.push('/community')} style={styles.savedCommunity}><Ionicons color={colors.coral} name="bookmark" size={22} /><View style={styles.communityCopy}><Text style={styles.communityTitle}>{communitySavedCount} saved from Community</Text><Text style={styles.communityBody}>{communitySavedTitles.length ? communitySavedTitles.join(' · ') : 'Open Community to revisit your saved inspiration.'}</Text></View><Ionicons color={colors.coralDark} name="arrow-forward" size={18} /></Pressable> : null}<Pressable accessibilityRole="button" onPress={() => router.push('/community')} style={styles.community}><View style={styles.communityIcon}><Ionicons color={colors.white} name="people" size={19} /></View><View style={styles.communityCopy}><Text style={styles.communityTitle}>Need inspiration?</Text><Text style={styles.communityBody}>Browse recipes shared by the community.</Text></View><Ionicons color={colors.coralDark} name="arrow-forward" size={18} /></Pressable>
