@@ -26,8 +26,9 @@ export default function ProfileScreen() {
 
   const submit = async () => {
     setMessage(undefined);
-    if (!email.trim() || password.length < 8 || (mode === 'signup' && !displayName.trim())) {
-      setMessage('Enter a name, valid email, and a password with at least 8 characters.');
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    if (!validEmail || password.length < 8 || (mode === 'signup' && !displayName.trim())) {
+      setMessage('Enter a valid email, name, and a password with at least 8 characters.');
       return;
     }
     setBusy(true);
