@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { useAuthStore } from './auth-store';
 import { supabase } from './supabase';
 
@@ -31,6 +31,8 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
   const { user, ready: authReady } = useAuthStore();
   const [profile, setProfile] = useState(initial); const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false); const [error, setError] = useState<string>();
+  const profileRef = useRef(profile);
+  const writeQueue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     if (!authReady) return;
@@ -53,15 +55,18 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
           next = { ...next, householdName: household.data.name, householdMembers: (dependents.data ?? []).map(member => ({ id: member.id, name: member.display_name, type: member.member_type as 'adult' | 'child', allergies: member.allergies, preferences: member.preferences })) };
         }
       }
-      if (active) { setProfile(next); setReady(true); }
+      if (active) { profileRef.current = next; setProfile(next); setReady(true); }
     };
     void load().catch((reason: unknown) => { if (active) { setError(reason instanceof Error ? reason.message : 'Could not load onboarding.'); setReady(true); } });
     return () => { active = false; };
   }, [authReady, user]);
 
   const update = useCallback(async (patch: Partial<OnboardingProfile>) => {
-    let next = initial; setProfile((current) => { next = { ...current, ...patch }; return next; });
-    await AsyncStorage.setItem(KEY, JSON.stringify(next));
+    const next = { ...profileRef.current, ...patch };
+    profileRef.current = next;
+    setProfile(next);
+    writeQueue.current = writeQueue.current.catch(() => undefined).then(() => AsyncStorage.setItem(KEY, JSON.stringify(next))).catch(() => setError('Your setup is visible, but the latest change could not be saved on this device.'));
+    await writeQueue.current;
   }, []);
   const cloud = useCallback(async (work: () => Promise<{ error: { message: string } | null }>) => {
     if (!user || !supabase) return 'Sign in before saving your setup.';
