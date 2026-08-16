@@ -11,6 +11,8 @@ export type RecipeSource = {
   capturedAt: string;
 };
 
+export type RecipeStepTimer = { stepIndex: number; seconds: number; label: string };
+
 export type Ingredient = {
   id: string;
   quantity: string;
@@ -26,6 +28,7 @@ export type Recipe = {
   cookMinutes: number;
   ingredients: Ingredient[];
   steps: string[];
+  stepTimers?: RecipeStepTimer[];
   source: RecipeSource;
   privacy: 'private';
   favorite: boolean;
@@ -80,6 +83,18 @@ export function validateRecipeDraft(draft: RecipeDraft): RecipeValidationError[]
   return errors;
 }
 
+export function extractStepTimers(steps: string[]): RecipeStepTimer[] {
+  const durationPattern = /\\b(\\d+(?:\\.\\d+)?)\\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\\b/i;
+  return steps.flatMap((step, stepIndex) => {
+    const match = step.match(durationPattern);
+    if (!match) return [];
+    const amount = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    const seconds = unit.startsWith('h') ? Math.round(amount * 3600) : unit.startsWith('m') ? Math.round(amount * 60) : Math.round(amount);
+    return seconds > 0 ? [{ stepIndex, seconds, label: `Step ${stepIndex + 1}` }] : [];
+  });
+}
+
 export function createManualRecipe(draft: RecipeDraft, now = new Date()): Recipe {
   const errors = validateRecipeDraft(draft);
   if (errors.length) throw new Error(errors.map((error) => error.message).join(' '));
@@ -94,6 +109,7 @@ export function createManualRecipe(draft: RecipeDraft, now = new Date()): Recipe
       .filter((ingredient) => ingredient.name.trim())
       .map((ingredient) => ({ ...ingredient, name: ingredient.name.trim(), quantity: ingredient.quantity.trim() })),
     steps: draft.steps.map((step) => step.trim()).filter(Boolean),
+    stepTimers: extractStepTimers(draft.steps),
     source: { kind: 'manual', label: 'Created by you', capturedAt: timestamp },
     privacy: 'private',
     favorite: false,

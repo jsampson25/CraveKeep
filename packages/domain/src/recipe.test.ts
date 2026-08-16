@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareRecipeVersions, createImportedRecipe, createManualRecipe, createRecipeVersion, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
+import { compareRecipeVersions, createImportedRecipe, createManualRecipe, createRecipeVersion, extractStepTimers, scaleIngredientQuantity, validateRecipeDraft } from './recipe';
 
 const validDraft = {
   title: ' Tomato Toast ',
@@ -23,6 +23,10 @@ describe('manual recipe rules', () => {
     expect(recipe.privacy).toBe('private');
     expect(recipe.source.kind).toBe('manual');
     expect(recipe.ingredients[0]?.name).toBe('slices of bread');
+  });
+
+  it('extracts suggested timers from directions', () => {
+    expect(extractStepTimers(['Bake for 25 minutes.', 'Rest for 30 seconds.'])).toEqual([{ stepIndex: 0, seconds: 1500, label: 'Step 1' }, { stepIndex: 1, seconds: 30, label: 'Step 2' }]);
   });
 
   it('scales simple numeric quantities without inventing complex conversions', () => {
