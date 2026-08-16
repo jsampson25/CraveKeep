@@ -15,20 +15,23 @@ export default function MediaCaptureScreen() {
   const { user } = useAuthStore();
   const { createJob, updateJob } = useImportStore();
   const [asset, setAsset] = useState<ImagePicker.ImagePickerAsset>();
+  const [captureMode, setCaptureMode] = useState<'camera' | 'library'>(mode);
+  const [cameraBlocked, setCameraBlocked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string>();
 
-  const choose = async () => {
+  const choose = async (pickerMode: 'camera' | 'library' = mode) => {
     if (busy) return;
     setBusy(true);
     setMessage(undefined);
-    if (mode === 'camera') {
+    setCameraBlocked(false);
+    if (pickerMode === 'camera') {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) { setMessage('Camera permission is required to scan a recipe. You can choose a saved photo instead.'); setBusy(false); return; }
+      if (!permission.granted) { setCameraBlocked(true); setMessage('Camera permission is required to scan a recipe. You can choose a saved photo instead.'); setBusy(false); return; }
     }
     let result: ImagePicker.ImagePickerResult;
     try {
-      result = mode === 'camera'
+      result = pickerMode === 'camera'
         ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.9 })
         : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9, selectionLimit: 1 });
     } catch (error) {
@@ -46,6 +49,7 @@ export default function MediaCaptureScreen() {
       setBusy(false);
       return;
     }
+    setCaptureMode(pickerMode);
     setAsset(selectedAsset);
     setBusy(false);
   };
@@ -55,8 +59,8 @@ export default function MediaCaptureScreen() {
     setBusy(true);
     setMessage(undefined);
     try {
-      const title = asset.fileName || (mode === 'camera' ? 'Scanned recipe' : 'Recipe photo');
-      const job = await createJob({ host: mode === 'camera' ? 'Camera scan' : 'Photo import', title, mediaType: 'image', localUri: asset.uri });
+      const title = asset.fileName || (captureMode === 'camera' ? 'Scanned recipe' : 'Recipe photo');
+      const job = await createJob({ host: captureMode === 'camera' ? 'Camera scan' : 'Photo import', title, mediaType: 'image', localUri: asset.uri });
       if (user) {
         try {
           const storagePath = await uploadCaptureImage(asset, user.id, job.id);
@@ -76,7 +80,7 @@ export default function MediaCaptureScreen() {
     <Text style={styles.kicker}>{mode === 'camera' ? 'SCAN A RECIPE' : 'CHOOSE A PHOTO'}</Text><MotionSlot name="recipe-import" size={84} accessibilityLabel="Animated recipe capture state" /><Title>{asset ? 'Is this image readable?' : mode === 'camera' ? 'Frame the whole recipe.' : 'Choose your clearest image.'}</Title>
     {asset ? <Card style={styles.previewCard}><Image accessibilityLabel="Selected recipe image" resizeMode="contain" source={{ uri: asset.uri }} style={styles.preview} /><Text numberOfLines={1} style={styles.fileName}>{asset.fileName || 'Recipe image'}</Text></Card> : <Card style={styles.empty}><Ionicons color={colors.coral} name={mode === 'camera' ? 'camera-outline' : 'images-outline'} size={62} /><Text style={styles.body}>Include the title, ingredients, and directions. You can correct every field before saving.</Text></Card>}
     {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
-    {busy ? <ActivityIndicator color={colors.coral} /> : asset ? <><Button label="Use this image" onPress={() => void continueToReview()} /><Button label="Choose another" variant="secondary" onPress={() => void choose()} /></> : <Button label={mode === 'camera' ? 'Open camera' : 'Choose photo'} onPress={() => void choose()} />}
+    {busy ? <ActivityIndicator color={colors.coral} /> : asset ? <><Button label="Use this image" onPress={() => void continueToReview()} /><Button label="Choose another" variant="secondary" onPress={() => void choose(mode)} /></> : cameraBlocked ? <><Button label="Choose saved photo" onPress={() => void choose('library')} /><Button label="Try camera again" variant="secondary" onPress={() => void choose('camera')} /></> : <Button label={mode === 'camera' ? 'Open camera' : 'Choose photo'} onPress={() => void choose()} />}
     <View style={styles.privacy}><Ionicons color={colors.herb} name="lock-closed-outline" size={20} /><Text style={styles.privacyText}>{user ? 'Signed-in images upload to your private, owner-only storage folder.' : 'This image stays on this device until you sign in.'}</Text></View>
   </View></Screen>;
 }
