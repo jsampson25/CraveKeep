@@ -7,6 +7,7 @@ import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useAuthStore } from '@/data/auth-store';
 import { uploadCaptureImage } from '@/data/capture-assets';
+import { extractRecipeFromImage } from '@/data/recipe-extraction';
 import { useImportStore } from '@/data/import-store';
 import { colors, radii, spacing } from '@/theme';
 
@@ -65,6 +66,12 @@ export default function MediaCaptureScreen() {
         try {
           const storagePath = await uploadCaptureImage(asset, user.id, job.id);
           await updateJob(job.id, { source: { ...job.source, storagePath } });
+          try {
+            const extraction = await extractRecipeFromImage(storagePath, title);
+            await updateJob(job.id, extraction);
+          } catch {
+            await updateJob(job.id, { warnings: ['Recipe text could not be extracted yet. The image remains attached so you can complete the recipe manually.'] });
+          }
         } catch {
           await updateJob(job.id, { warnings: ['Cloud upload could not finish. The image remains available on this device.'] });
         }

@@ -19,3 +19,6 @@ enable_signup = true
 
 [functions.nutrition-lookup]
 verify_jwt = true
+
+[functions.extract-recipe]
+verify_jwt = true
