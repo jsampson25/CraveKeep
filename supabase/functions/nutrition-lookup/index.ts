@@ -67,9 +67,11 @@ Deno.serve(async (request) => {
   if (!supabaseUrl || !anonKey || !serviceKey || !authorization) return Response.json({ error: 'Authentication required.' }, { status: 401, headers: corsHeaders(request) });
   const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authorization } } }); const { data: { user } } = await userClient.auth.getUser();
   if (!user) return Response.json({ error: 'Authentication required.' }, { status: 401, headers: corsHeaders(request) });
-  let body: { query?: string; provider?: 'usda' | 'open_food_facts' | 'fatsecret' };
-  try { body = await request.json(); } catch { return Response.json({ error: 'Invalid JSON body.' }, { status: 400, headers: corsHeaders(request) }); }
-  const query = body.query?.trim().replace(/\s+/g, ' ');
+  let parsedBody: unknown;
+  try { parsedBody = await request.json(); } catch { return Response.json({ error: 'Invalid JSON body.' }, { status: 400, headers: corsHeaders(request) }); }
+  if (!parsedBody || typeof parsedBody !== 'object' || Array.isArray(parsedBody)) return Response.json({ error: 'Request body must be a JSON object.' }, { status: 400, headers: corsHeaders(request) });
+  const body = parsedBody as { query?: unknown; provider?: unknown };
+  const query = typeof body.query === 'string' ? body.query.trim().replace(/\s+/g, ' ') : '';
   const provider = body.provider ?? 'usda';
   if (!['usda', 'open_food_facts', 'fatsecret'].includes(provider)) return Response.json({ error: 'Unsupported nutrition provider.' }, { status: 400, headers: corsHeaders(request) });
   if (!query || query.length < 2 || query.length > 120) return Response.json({ error: 'Ingredient search must contain 2 to 120 characters.' }, { status: 400, headers: corsHeaders(request) });
