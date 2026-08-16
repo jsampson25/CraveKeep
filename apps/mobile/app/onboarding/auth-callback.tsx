@@ -37,7 +37,7 @@ export default function AuthCallbackScreen() {
       }
       router.replace('/');
     };
-    void finish();
+    void finish().catch((reason) => setError(reason instanceof Error ? reason.message : 'Secure sign-in could not finish. Please try again.'));
   }, [callbackUrl, params.code, params.error, params.error_code, params.error_description]);
 
   return <View style={styles.screen}>{error ? <><View style={styles.icon}><Ionicons color={colors.coralDark} name="alert-circle-outline" size={34} /></View><Text style={styles.title}>Sign-in couldn’t finish.</Text><Text style={styles.body}>{error}</Text><Button label="Back to sign-in options" onPress={() => router.replace('/onboarding/account')} /></> : <><ActivityIndicator color={colors.coral} size="large" /><Text style={styles.title}>Finishing secure sign-in…</Text><Text style={styles.body}>CraveKeep is connecting your account.</Text></>}</View>;
