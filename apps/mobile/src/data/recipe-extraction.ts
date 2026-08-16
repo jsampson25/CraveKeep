@@ -14,5 +14,5 @@ export async function extractRecipeFromLink(url: string, title: string): Promise
   const { data, error } = await supabase.functions.invoke('extract-link', { body: { url, title } });
   if (error) throw error;
   if (!data || typeof data !== 'object' || !('status' in data) || !('draft' in data)) throw new Error('The extraction response was incomplete.');
-  return data as Pick<CaptureJob, 'status' | 'draft' | 'warnings' | 'recoveryCode'>;
+  return data as Pick<CaptureJob, 'status' | 'draft' | 'warnings' | 'recoveryCode' | 'source'> & { source?: Partial<SourcePreview> };
 }
