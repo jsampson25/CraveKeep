@@ -15,7 +15,8 @@ const chapters = [
 
 export default function RecipeVideoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const recipe = useRecipeStore((state) => state.findRecipe(id));
+  const { findRecipe } = useRecipeStore();
+  const recipe = findRecipe(id);
 
   if (!recipe) {
     return (
