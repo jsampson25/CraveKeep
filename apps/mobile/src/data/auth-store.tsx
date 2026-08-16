@@ -47,6 +47,10 @@ export function completeOAuthCode(code: string): Promise<AuthResult> {
     return error ? { error: error.message } : {};
   })();
   oauthExchanges.set(code, exchange);
+  void exchange.then(
+    () => { if (oauthExchanges.get(code) === exchange) oauthExchanges.delete(code); },
+    () => { if (oauthExchanges.get(code) === exchange) oauthExchanges.delete(code); }
+  );
   return exchange;
 }
 
@@ -84,8 +88,10 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
 
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? { error: error.message } : {};
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) return { error: error.message };
+    if (data.session) setSession(data.session);
+    return {};
   }, []);
 
   const resetPassword = useCallback(async (email: string): Promise<AuthResult> => {
@@ -115,13 +121,16 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
       options: { data: { display_name: displayName.trim() } }
     });
     if (error) return { error: error.message };
+    if (data.session) setSession(data.session);
     return { confirmationRequired: !data.session };
   }, []);
 
   const signOut = useCallback(async (): Promise<AuthResult> => {
     if (!supabase) return {};
     const { error } = await supabase.auth.signOut();
-    return error ? { error: error.message } : {};
+    if (error) return { error: error.message };
+    setSession(null);
+    return {};
   }, []);
 
   const signInWithProvider = useCallback(async (provider: 'apple' | 'google'): Promise<AuthResult> => {
