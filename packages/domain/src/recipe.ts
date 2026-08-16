@@ -84,7 +84,7 @@ export function validateRecipeDraft(draft: RecipeDraft): RecipeValidationError[]
 }
 
 export function extractStepTimers(steps: string[]): RecipeStepTimer[] {
-  const durationPattern = /\\b(\\d+(?:\\.\\d+)?)\\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\\b/i;
+  const durationPattern = /\b(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b/i;
   return steps.flatMap((step, stepIndex) => {
     const match = step.match(durationPattern);
     if (!match) return [];
