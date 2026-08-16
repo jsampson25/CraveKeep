@@ -15,9 +15,10 @@ const appendLocalSession = (session: CookSession) => {
 };
 
 export async function fetchCookSessions(recipeId: string, ownerId?: string): Promise<CookSession[]> {
+  await localWriteQueue.catch(() => undefined);
   const local = (await readLocalSessions()).filter((session) => session.recipeId === recipeId);
   if (!ownerId || !supabase || !/^[0-9a-f-]{36}$/i.test(recipeId)) return local.sort((a, b) => b.cookedAt.localeCompare(a.cookedAt));
-  const { data, error } = await supabase.from('cook_sessions').select('id, recipe_id, taste, effort, repeat_intent, notes, cooked_at').eq('recipe_id', recipeId).order('cooked_at', { ascending: false });
+  const { data, error } = await supabase.from('cook_sessions').select('id, recipe_id, taste, effort, repeat_intent, notes, cooked_at').eq('owner_id', ownerId).eq('recipe_id', recipeId).order('cooked_at', { ascending: false });
   if (error) throw error;
   const cloud = data.map((row) => ({ id: row.id, recipeId: row.recipe_id, taste: row.taste, effort: row.effort, repeatIntent: row.repeat_intent, notes: row.notes, cookedAt: row.cooked_at }));
   const signatures = new Set(cloud.map((session) => `${session.cookedAt}|${session.taste}|${session.effort}|${session.repeatIntent}|${session.notes}`));
