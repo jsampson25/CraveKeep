@@ -8,6 +8,7 @@ export type SourcePreview = {
   url?: string;
   platform?: 'website' | 'pinterest' | 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'vimeo';
   externalId?: string;
+  imageUrl?: string;
   localUri?: string;
   storagePath?: string;
   host: string;
