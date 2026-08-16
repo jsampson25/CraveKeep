@@ -34,8 +34,13 @@ const parseJsonLd = (html: string) => {
 };
 const instructionText = (value: unknown) => Array.isArray(value) ? value.map((item) => typeof item === 'string' ? item.trim() : item && typeof item === 'object' ? text((item as Record<string, unknown>).text) : '').filter(Boolean) : [];
 const ingredientText = (value: unknown) => Array.isArray(value) ? value.map((item) => text(item)).filter(Boolean) : [];
+const metaContent = (html: string, selector: string) => {
+  const match = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${selector}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i')) ?? html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${selector}["'][^>]*>`, 'i'));
+  return match?.[1]?.trim() ?? '';
+};
+const htmlTitle = (html: string) => html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.replace(/<[^>]+>/g, '').trim() ?? '';
 
-Deno.serve(async (request) => {
+Deno.serve(async (request: Request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) });
   if (request.method !== 'POST') return Response.json({ error: 'Use POST.' }, { status: 405, headers: corsHeaders(request) });
   const supabaseUrl = Deno.env.get('SUPABASE_URL'); const anonKey = Deno.env.get('SUPABASE_ANON_KEY'); const authorization = request.headers.get('Authorization');
@@ -53,7 +58,16 @@ Deno.serve(async (request) => {
     if (!response.ok) throw new Error('upstream');
     const html = await response.text();
     const recipe = parseJsonLd(html);
-    if (!recipe) return Response.json({ status: 'needs_review', draft: { title, description: '', servings: 1, prepMinutes: 0, cookMinutes: 0, ingredients: [], steps: [] }, warnings: ['This link did not expose standard recipe metadata. The original source is attached for manual completion.'], recoveryCode: 'missing_recipe_data' } satisfies ExtractionResponse, { headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' } });
+    if (!recipe) {
+      const host = parsed.hostname.toLowerCase();
+      const isVideo = host.includes('youtube.') || host === 'youtu.be' || host.includes('vimeo.') || host.includes('tiktok.');
+      const pageTitle = metaContent(html, 'og:title') || htmlTitle(html) || title;
+      const description = metaContent(html, 'og:description') || metaContent(html, 'description');
+      const warning = isVideo
+        ? 'Video captured successfully. Recipe details require transcript access; review the video and add ingredients and directions before saving.'
+        : 'This link did not expose standard recipe metadata. The original source is attached for manual completion.';
+      return Response.json({ status: 'needs_review', draft: { title: pageTitle.slice(0, 200), description, servings: 1, prepMinutes: 0, cookMinutes: 0, ingredients: [], steps: [] }, warnings: [warning], recoveryCode: 'missing_recipe_data' } satisfies ExtractionResponse, { headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' } });
+    }
     const ingredients = ingredientText(recipe.recipeIngredient);
     const steps = instructionText(recipe.recipeInstructions);
     const draft: RecipeDraft = { title: text(recipe.name) || title, description: text(recipe.description), servings: numberValue(recipe.recipeYield) || 1, prepMinutes: numberValue(recipe.prepTime), cookMinutes: numberValue(recipe.cookTime), ingredients: ingredients.map((name, index) => ({ id: `link_i${index + 1}`, quantity: '', name })), steps };
