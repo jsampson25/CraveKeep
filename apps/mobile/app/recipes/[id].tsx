@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Screen, SectionTitle, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
+import { useGroceryStore } from '@/data/grocery-store';
 import { useNutritionStore } from '@/data/nutrition-store';
 import { useAuthStore } from '@/data/auth-store';
 import { fetchCookSessions, type CookSession } from '@/data/cook-sessions';
@@ -16,6 +17,9 @@ export default function RecipeDetailScreen() {
   const { recipes, findRecipe, toggleFavorite, toggleCookbook } = useRecipeStore();
   const { findEstimate } = useNutritionStore();
   const { user } = useAuthStore();
+  const { items: groceryItems, replaceItems } = useGroceryStore();
+  const [groceryBusy, setGroceryBusy] = useState(false);
+  const [groceryMessage, setGroceryMessage] = useState<string>();
   const [cookSessions, setCookSessions] = useState<CookSession[]>([]);
   const [historyError, setHistoryError] = useState(false);
   useEffect(() => {
@@ -25,6 +29,35 @@ export default function RecipeDetailScreen() {
   }, [id, user?.id]);
   const recipe = findRecipe(id);
   if (!recipe) return <Screen style={styles.missing}><Title>Recipe not found</Title><Text style={styles.body}>It may have been removed from this device.</Text><Button label="Back to recipes" onPress={() => router.replace('/(tabs)/recipes')} /></Screen>;
+  const addIngredientsToGrocery = async () => {
+    if (!recipe.ingredients.length || groceryBusy) return;
+    setGroceryBusy(true);
+    setGroceryMessage(undefined);
+    try {
+      const byKey = new Map(groceryItems.map((item) => [item.key, item]));
+      recipe.ingredients.forEach((ingredient) => {
+        const key = ingredient.name.trim().toLowerCase().replace(/\s+/g, ' ');
+        if (!key) return;
+        const existing = byKey.get(key);
+        byKey.set(key, {
+          key,
+          name: ingredient.name.trim(),
+          quantity: ingredient.quantity.trim(),
+          aisle: existing?.aisle ?? 'other',
+          note: existing?.note || `From ${recipe.title}`,
+          sourceRecipeIds: Array.from(new Set([...(existing?.sourceRecipeIds ?? []), recipe.id])),
+          checked: existing?.checked ?? false,
+          uncertain: !ingredient.quantity.trim() || existing?.uncertain === true
+        });
+      });
+      await replaceItems(Array.from(byKey.values()));
+      setGroceryMessage(`${recipe.ingredients.length} ingredient${recipe.ingredients.length === 1 ? '' : 's'} added to your grocery list.`);
+    } catch (reason) {
+      setGroceryMessage(reason instanceof Error ? reason.message : 'Ingredients could not be added to groceries.');
+    } finally {
+      setGroceryBusy(false);
+    }
+  };
   const nutrition = findEstimate(id);
   const original = recipe.originalRecipeId ? findRecipe(recipe.originalRecipeId) : undefined;
   const originalNutrition = original ? findEstimate(original.id) : undefined;
@@ -45,10 +78,10 @@ export default function RecipeDetailScreen() {
     <Button label="Share to Community" variant="secondary" onPress={() => router.push(`/community/share?title=${encodeURIComponent(recipe.title)}`)} />
     <Button label={recipe.version === 1 ? 'Make it healthier' : 'Create another version'} onPress={() => router.push(`/recipes/${recipe.id}/remix`)} />
     <Card><Text style={styles.sourceLabel}>NUTRITION ESTIMATE</Text>{nutrition ? <><Text style={styles.source}>{nutrition.perServing.calories} calories · {nutrition.perServing.proteinGrams}g protein</Text><Text style={styles.body}>Per serving · {Math.round(nutrition.coverage * 100)}% coverage · {nutrition.confidence} confidence</Text>{nutritionDifference ? <Text style={styles.private}>Compared with original: {nutritionDifference.calories > 0 ? '+' : ''}{nutritionDifference.calories} cal · {nutritionDifference.proteinGrams > 0 ? '+' : ''}{nutritionDifference.proteinGrams}g protein</Text> : null}</> : <Text style={styles.body}>Review ingredient matches to calculate a transparent estimate.</Text>}<Pressable accessibilityRole="button" onPress={() => router.push(`/recipes/${recipe.id}/nutrition`)}><Text style={styles.nutritionLink}>{nutrition ? 'Review calculation' : 'Calculate nutrition'}</Text></Pressable>{nutrition ? <Pressable accessibilityRole="button" onPress={() => router.push(`/recipes/${recipe.id}/fit`)}><Text style={styles.nutritionLink}>Fit this recipe to my day</Text></Pressable> : null}</Card>
-    <SectionTitle>Ingredients</SectionTitle>{recipe.ingredients.length ? recipe.ingredients.map((ingredient) => <View key={ingredient.id} style={styles.line}><View style={styles.check} /><Text style={styles.quantity}>{ingredient.quantity}</Text><Text style={styles.flexText}>{ingredient.name}</Text></View>) : <Text style={styles.body}>No ingredients have been added yet.</Text>}
+    <View style={styles.sectionHeader}><SectionTitle>Ingredients</SectionTitle><Button disabled={groceryBusy || !recipe.ingredients.length} label={groceryBusy ? 'Adding…' : 'Add to groceries'} variant="secondary" onPress={() => void addIngredientsToGrocery()} /></View>{groceryMessage ? <Text accessibilityRole="alert" style={styles.groceryMessage}>{groceryMessage}</Text> : null}{recipe.ingredients.length ? recipe.ingredients.map((ingredient) => <View key={ingredient.id} style={styles.line}><View style={styles.check} /><Text style={styles.quantity}>{ingredient.quantity}</Text><Text style={styles.flexText}>{ingredient.name}</Text></View>) : <Text style={styles.body}>No ingredients have been added yet.</Text>}
     <SectionTitle>Directions</SectionTitle>{recipe.steps.length ? recipe.steps.map((step, index) => <View key={`${index}-${step}`} style={styles.step}><View style={styles.stepNumber}><Text style={styles.stepNumberText}>{index + 1}</Text></View><Text style={styles.flexText}>{step}</Text></View>) : <Text style={styles.body}>No directions have been added yet. You can add them by editing this recipe.</Text>}
     <Button label="Start cooking" onPress={() => router.push(`/cook/${recipe.id}`)} />
     <Button label={recipe.cookbookIds.includes('weeknight') ? 'Remove from Weeknight Wins' : 'Add to Weeknight Wins'} variant="secondary" onPress={() => toggleCookbook(recipe.id, 'weeknight')} />
   </ScrollView></Screen>;
 }
-const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between' }, actions: { flexDirection: 'row', gap: spacing.sm }, circle: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.paperRaised, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, art: { height: 220, borderRadius: radii.large, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mintSoft }, body: { color: colors.muted, lineHeight: 22 }, nutritionLink: { color: colors.coralDark, fontWeight: '900', marginTop: spacing.sm }, versionBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, paddingVertical: 6, borderRadius: radii.round, backgroundColor: colors.lavenderSoft }, versionText: { color: colors.coralDark, fontSize: 12, fontWeight: '800' }, versionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginVertical: spacing.sm }, versionChoice: { borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, paddingHorizontal: 14, paddingVertical: 8 }, versionChoiceActive: { backgroundColor: colors.coral, borderColor: colors.coral }, versionChoiceText: { color: colors.charcoal, fontWeight: '800' }, versionChoiceTextActive: { color: colors.white }, historySummary: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }, repeatBadge: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs }, historyDate: { color: colors.muted, fontSize: 13, marginTop: spacing.sm }, historyNotes: { color: colors.charcoal, fontStyle: 'italic', lineHeight: 21, marginTop: spacing.sm }, meta: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }, metaText: { color: colors.charcoal, fontWeight: '700' }, private: { color: colors.herb, fontWeight: '700' }, sourceLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '800', letterSpacing: 1 }, source: { color: colors.charcoal, fontSize: 17, fontWeight: '800' }, line: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.line }, check: { width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: colors.muted }, quantity: { minWidth: 62, color: colors.charcoal, fontWeight: '700' }, flexText: { flex: 1, color: colors.charcoal, fontSize: 16, lineHeight: 23 }, step: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start', paddingVertical: spacing.sm }, stepNumber: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.coral, alignItems: 'center', justifyContent: 'center' }, stepNumberText: { color: colors.white, fontWeight: '800' }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg } });
+const styles = StyleSheet.create({ content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between' }, actions: { flexDirection: 'row', gap: spacing.sm }, circle: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.paperRaised, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }, art: { height: 220, borderRadius: radii.large, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mintSoft }, body: { color: colors.muted, lineHeight: 22 }, nutritionLink: { color: colors.coralDark, fontWeight: '900', marginTop: spacing.sm }, versionBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm, paddingVertical: 6, borderRadius: radii.round, backgroundColor: colors.lavenderSoft }, versionText: { color: colors.coralDark, fontSize: 12, fontWeight: '800' }, versionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginVertical: spacing.sm }, versionChoice: { borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, paddingHorizontal: 14, paddingVertical: 8 }, versionChoiceActive: { backgroundColor: colors.coral, borderColor: colors.coral }, versionChoiceText: { color: colors.charcoal, fontWeight: '800' }, versionChoiceTextActive: { color: colors.white }, historySummary: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }, repeatBadge: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs }, historyDate: { color: colors.muted, fontSize: 13, marginTop: spacing.sm }, historyNotes: { color: colors.charcoal, fontStyle: 'italic', lineHeight: 21, marginTop: spacing.sm }, meta: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }, metaText: { color: colors.charcoal, fontWeight: '700' }, private: { color: colors.herb, fontWeight: '700' }, sourceLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '800', letterSpacing: 1 }, source: { color: colors.charcoal, fontSize: 17, fontWeight: '800' }, line: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.line }, check: { width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: colors.muted }, quantity: { minWidth: 62, color: colors.charcoal, fontWeight: '700' }, flexText: { flex: 1, color: colors.charcoal, fontSize: 16, lineHeight: 23 }, step: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start', paddingVertical: spacing.sm }, stepNumber: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.coral, alignItems: 'center', justifyContent: 'center' }, stepNumberText: { color: colors.white, fontWeight: '800' }, sectionHeader: { gap: spacing.sm }, groceryMessage: { color: colors.herb, fontWeight: '800' }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg } });
