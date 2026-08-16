@@ -2,12 +2,9 @@
 
 The migrations define private recipes, structured ingredients and steps, persistent capture jobs, and owner-only row-level security. No service-role key belongs in this repository or the mobile client.
 
-The repository is linked to Supabase project `ymenpwsrmdnnwsykoayo`. The live project currently has both tracked migrations applied:
+The repository is linked to Supabase project `ymenpwsrmdnnwsykoayo`. The migration folder is the source of truth for the complete schema, including profiles, private recipes and captures, nutrition, meal planning, groceries, pantry, cooking history, onboarding, and household data. Do not assume the linked project is current without running the dry run.
 
-- `20260811000100_foundation.sql`
-- `20260811024409_optimize_rls_auth_uid.sql`
-
-To verify or apply future migrations:
+Before a production release, verify and apply the tracked migrations:
 
 ```bash
 supabase db push --linked --dry-run
