@@ -32,13 +32,21 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
   const [profile, setProfile] = useState(initial); const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false); const [error, setError] = useState<string>();
   const profileRef = useRef(profile);
+  const storageKeyRef = useRef(KEY);
   const writeQueue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     if (!authReady) return;
     let active = true;
+    const storageKey = user ? KEY + ':' + user.id : KEY;
+    storageKeyRef.current = storageKey;
     const load = async () => {
-      const local = await AsyncStorage.getItem(KEY);
+      let local = await AsyncStorage.getItem(storageKey);
+      let migratedAnonymous = false;
+      if (!local && user) {
+        local = await AsyncStorage.getItem(KEY);
+        migratedAnonymous = Boolean(local);
+      }
       let next = local ? { ...initial, ...JSON.parse(local) as OnboardingProfile } : initial;
       if (user && supabase) {
         const [identity, food, nutrition, household] = await Promise.all([
@@ -55,7 +63,15 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
           next = { ...next, householdName: household.data.name, householdMembers: (dependents.data ?? []).map(member => ({ id: member.id, name: member.display_name, type: member.member_type as 'adult' | 'child', allergies: member.allergies, preferences: member.preferences })) };
         }
       }
-      if (active) { profileRef.current = next; setProfile(next); setReady(true); }
+      if (active) {
+        profileRef.current = next;
+        setProfile(next);
+        if (user && migratedAnonymous) {
+          await AsyncStorage.setItem(storageKey, JSON.stringify(next));
+          await AsyncStorage.removeItem(KEY);
+        }
+        setReady(true);
+      }
     };
     void load().catch((reason: unknown) => { if (active) { setError(reason instanceof Error ? reason.message : 'Could not load onboarding.'); setReady(true); } });
     return () => { active = false; };
@@ -65,7 +81,7 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     const next = { ...profileRef.current, ...patch };
     profileRef.current = next;
     setProfile(next);
-    writeQueue.current = writeQueue.current.catch(() => undefined).then(() => AsyncStorage.setItem(KEY, JSON.stringify(next))).catch(() => setError('Your setup is visible, but the latest change could not be saved on this device.'));
+    writeQueue.current = writeQueue.current.catch(() => undefined).then(() => AsyncStorage.setItem(storageKeyRef.current, JSON.stringify(next))).catch(() => setError('Your setup is visible, but the latest change could not be saved on this device.'));
     await writeQueue.current;
   }, []);
   const cloud = useCallback(async (work: () => Promise<{ error: { message: string } | null }>) => {
