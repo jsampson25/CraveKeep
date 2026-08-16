@@ -16,3 +16,6 @@ enabled = true
 site_url = "cravekeep://auth/callback"
 additional_redirect_urls = ["exp://127.0.0.1:8081", "http://localhost:8081"]
 enable_signup = true
+
+[functions.nutrition-lookup]
+verify_jwt = true

@@ -13,7 +13,7 @@ supabase db push
 
 Always review the dry run before applying a migration to a shared environment, then run `supabase db advisors --linked --type all`.
 
-`nutrition-lookup` is an authenticated Edge Function. It identifies CraveKeep to Open Food Facts as `CraveKeep/0.1 (api@cravekeep.com)`, caches explicit searches for 24 hours, and never exposes future provider credentials to the client.
+`nutrition-lookup` is an authenticated Edge Function. Browser calls are limited to `https://cravekeep.com` and `https://www.cravekeep.com` by default; set the server-side `CRAVEKEEP_ALLOWED_ORIGINS` secret as a comma-separated origin list when adding another web host. Native requests without an `Origin` header remain supported. It identifies CraveKeep to Open Food Facts as `CraveKeep/0.1 (api@cravekeep.com)`, caches explicit searches for 24 hours, and never exposes future provider credentials to the client.
 
 FatSecret lookups use OAuth 2 client credentials from `FATSECRET_CLIENT_ID` and `FATSECRET_CLIENT_SECRET`. Full FatSecret responses are never cached because its API documentation limits storable fields; normalized results retain provider and serving IDs for later retrieval.
 
