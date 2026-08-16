@@ -23,6 +23,7 @@ export default function NewRecipeScreen() {
   const [steps, setSteps] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string>();
 
   const draft = useMemo<RecipeDraft>(() => ({ title, description, servings: Number(servings), prepMinutes: Number(prepMinutes), cookMinutes: Number(cookMinutes), ingredients: toIngredients(ingredients), steps: steps.split('\n').filter(Boolean) }), [cookMinutes, description, ingredients, prepMinutes, servings, steps, title]);
   const errors = submitted ? validateRecipeDraft(draft) : [];
@@ -31,10 +32,10 @@ export default function NewRecipeScreen() {
   const save = async () => {
     setSubmitted(true);
     if (validateRecipeDraft(draft).length) return;
-    setSaving(true);
-    const recipe = createManualRecipe(draft);
-    const saved = await addRecipe(recipe);
-    router.replace(`/recipes/${saved.id}`);
+    setSaving(true); setSaveError(undefined);
+    try { const recipe = createManualRecipe(draft); const saved = await addRecipe(recipe); router.replace(`/recipes/${saved.id}`); }
+    catch (reason) { setSaveError(reason instanceof Error ? reason.message : 'Recipe could not be saved. Please try again.'); }
+    finally { setSaving(false); }
   };
 
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
@@ -46,7 +47,8 @@ export default function NewRecipeScreen() {
     <Field label="Ingredients" value={ingredients} onChangeText={setIngredients} placeholder={'2 | chicken breasts\n1 tbsp | olive oil\n1 | lemon'} multiline numberOfLines={7} textAlignVertical="top" error={message('ingredients')} />
     <Text style={styles.hint}>Use one line per ingredient. Put a | between quantity and ingredient.</Text>
     <Field label="Directions" value={steps} onChangeText={setSteps} placeholder={'Season the chicken.\nSear until golden.\nRest for five minutes.'} multiline numberOfLines={8} textAlignVertical="top" error={message('steps')} />
+    {saveError ? <Text accessibilityRole="alert" style={styles.error}>{saveError}</Text> : null}
     <Button label={saving ? 'Saving…' : 'Save original'} onPress={save} disabled={saving} />
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
-const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, private: { color: colors.herb, fontWeight: '700' }, intro: { color: colors.muted, lineHeight: 21 }, row: { flexDirection: 'row', gap: spacing.sm }, hint: { color: colors.muted, marginTop: -spacing.sm, fontSize: 12 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, private: { color: colors.herb, fontWeight: '700' }, intro: { color: colors.muted, lineHeight: 21 }, row: { flexDirection: 'row', gap: spacing.sm }, hint: { color: colors.muted, marginTop: -spacing.sm, fontSize: 12 }, error: { color: colors.coralDark, fontWeight: '700' } });
