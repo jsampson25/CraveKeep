@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { createElement } from 'react';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button, Card, Screen, Title } from '@/components/ui';
 import { useRecipeStore } from '@/data/recipe-store';
@@ -27,6 +29,13 @@ export default function RecipeVideoScreen() {
     );
   }
 
+  const embedUrl = recipe.source.platform === 'youtube' && recipe.source.externalId
+    ? `https://www.youtube.com/embed/${recipe.source.externalId}?playsinline=1&rel=0`
+    : recipe.source.platform === 'vimeo' && recipe.source.externalId
+      ? `https://player.vimeo.com/video/${recipe.source.externalId}`
+      : undefined;
+  const openSource = () => { if (recipe.source.url) void WebBrowser.openBrowserAsync(recipe.source.url); };
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
@@ -39,11 +48,9 @@ export default function RecipeVideoScreen() {
         </View>
 
         <View style={styles.player}>
-          <MotionSlot name="onboarding-recipe-card" size={130} accessibilityLabel="Animated recipe card preview" />
-          <View style={styles.playButton}>
-            <Ionicons name="play" size={28} color={colors.white} />
-          </View>
-          <Text style={styles.playerLabel}>CraveKeep Kitchen</Text>
+          {embedUrl && Platform.OS === 'web'
+            ? createElement('iframe', { title: `${recipe.title} video`, src: embedUrl, allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share', allowFullScreen: true, style: styles.iframe })
+            : <><MotionSlot name="onboarding-recipe-card" size={130} accessibilityLabel="Animated recipe card preview" /><Pressable accessibilityRole="button" onPress={openSource} style={styles.playButton}><Ionicons name="play" size={28} color={colors.white} /></Pressable><Text style={styles.playerLabel}>{recipe.source.platform ? `Open on ${recipe.source.platform}` : 'Open original video'}</Text></>}
         </View>
 
         <View style={styles.titleBlock}>
@@ -93,6 +100,7 @@ const styles = StyleSheet.create({
   headerTitle: { ...typography.label, color: colors.charcoal, fontSize: 16 },
   circle: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paperRaised, borderWidth: 1, borderColor: colors.line },
   player: { height: 280, borderRadius: radii.large, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal, overflow: 'hidden' },
+  iframe: { width: '100%', height: '100%', borderWidth: 0 },
   playButton: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral, marginTop: -4 },
   playerLabel: { color: colors.white, fontWeight: '800', marginTop: spacing.sm },
   titleBlock: { gap: spacing.xs },

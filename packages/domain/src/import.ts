@@ -58,7 +58,9 @@ export function createSourcePreview(value: string): SourcePreview {
   const platform = host === 'pinterest.com' ? 'pinterest' : host === 'youtube.com' || host === 'youtu.be' ? 'youtube' : host === 'tiktok.com' ? 'tiktok' : host === 'instagram.com' ? 'instagram' : host === 'facebook.com' ? 'facebook' : host === 'vimeo.com' ? 'vimeo' : 'website';
   const externalId = platform === 'youtube'
     ? parsed.searchParams.get('v') ?? (parsed.pathname.startsWith('/shorts/') ? parsed.pathname.split('/')[2] : parsed.pathname.split('/').filter(Boolean).pop())
-    : platform === 'pinterest' ? parsed.pathname.match(/(?:pin|pin\.it)\/([0-9]+)/)?.[1] : undefined;
+    : platform === 'pinterest' ? parsed.pathname.match(/(?:pin|pin\.it)\/([0-9]+)/)?.[1]
+      : platform === 'vimeo' ? parsed.pathname.split('/').filter(Boolean).pop()
+      : undefined;
   return {
     url,
     host,
