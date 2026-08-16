@@ -26,6 +26,7 @@ export default function EditRecipeScreen() {
   const [steps, setSteps] = useState(recipe?.steps.join('\n') ?? '');
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string>();
   const draft = useMemo<RecipeDraft>(() => ({ title, description, servings: Number(servings), prepMinutes: Number(prepMinutes), cookMinutes: Number(cookMinutes), ingredients: toIngredients(ingredients), steps: steps.split('\n').map((step) => step.trim()).filter(Boolean) }), [cookMinutes, description, ingredients, prepMinutes, servings, steps, title]);
   const errors = submitted ? validateRecipeDraft(draft) : [];
   const message = (field: (typeof errors)[number]['field']) => errors.find((error) => error.field === field)?.message;
@@ -33,9 +34,10 @@ export default function EditRecipeScreen() {
   const save = async () => {
     setSubmitted(true);
     if (validateRecipeDraft(draft).length) return;
-    setSaving(true);
-    await updateRecipe({ ...recipe, ...draft, title: draft.title.trim(), description: draft.description.trim(), updatedAt: new Date().toISOString() });
-    router.back();
+    setSaving(true); setSaveError(undefined);
+    try { await updateRecipe({ ...recipe, ...draft, title: draft.title.trim(), description: draft.description.trim(), updatedAt: new Date().toISOString() }); router.back(); }
+    catch (reason) { setSaveError(reason instanceof Error ? reason.message : 'Recipe changes could not be saved. Please try again.'); }
+    finally { setSaving(false); }
   };
   return <Screen><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
     <View style={styles.header}><Pressable accessibilityLabel="Close recipe editor" onPress={() => router.back()}><Ionicons color={colors.charcoal} name="close" size={28} /></Pressable><Text style={styles.private}><Ionicons name="lock-closed" /> Private original</Text></View>
@@ -46,8 +48,9 @@ export default function EditRecipeScreen() {
     <Field label="Ingredients" value={ingredients} onChangeText={setIngredients} multiline numberOfLines={7} textAlignVertical="top" error={message('ingredients')} />
     <Text style={styles.hint}>Use one line per ingredient with a | between quantity and name.</Text>
     <Field label="Directions" value={steps} onChangeText={setSteps} multiline numberOfLines={8} textAlignVertical="top" error={message('steps')} />
+    {saveError ? <Text accessibilityRole="alert" style={styles.error}>{saveError}</Text> : null}
     <Button disabled={saving} label={saving ? 'Saving…' : 'Save changes'} onPress={() => void save()} />
   </ScrollView></KeyboardAvoidingView></Screen>;
 }
 
-const styles = StyleSheet.create({ flex: { flex: 1 }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, private: { color: colors.herb, fontWeight: '700' }, intro: { color: colors.muted, lineHeight: 21 }, row: { flexDirection: 'row', gap: spacing.sm }, hint: { color: colors.muted, marginTop: -spacing.sm, fontSize: 12 } });
+const styles = StyleSheet.create({ flex: { flex: 1 }, missing: { padding: spacing.lg, justifyContent: 'center', gap: spacing.lg }, content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 60 }, header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, private: { color: colors.herb, fontWeight: '700' }, intro: { color: colors.muted, lineHeight: 21 }, row: { flexDirection: 'row', gap: spacing.sm }, hint: { color: colors.muted, marginTop: -spacing.sm, fontSize: 12 }, error: { color: colors.coralDark, fontWeight: '700' } });
