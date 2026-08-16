@@ -2,6 +2,8 @@ export type RecipeId = string;
 
 export type RecipeSource = {
   kind: 'manual' | 'sample' | 'imported';
+  platform?: 'website' | 'pinterest' | 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'vimeo';
+  externalId?: string;
   label: string;
   url?: string;
   creator?: string;
@@ -101,11 +103,11 @@ export function createManualRecipe(draft: RecipeDraft, now = new Date()): Recipe
   };
 }
 
-export function createImportedRecipe(draft: RecipeDraft, source: { url?: string; label: string; creator?: string }, now = new Date()): Recipe {
+export function createImportedRecipe(draft: RecipeDraft, source: { url?: string; label: string; creator?: string; platform?: RecipeSource['platform']; externalId?: string }, now = new Date()): Recipe {
   const recipe = createManualRecipe(draft, now);
   return {
     ...recipe,
-    source: { kind: 'imported', label: source.label, url: source.url, creator: source.creator, capturedAt: recipe.createdAt }
+    source: { kind: 'imported', label: source.label, url: source.url, creator: source.creator, platform: source.platform, externalId: source.externalId, capturedAt: recipe.createdAt }
   };
 }
 

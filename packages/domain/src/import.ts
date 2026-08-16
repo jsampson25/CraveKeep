@@ -6,6 +6,8 @@ export type ImportStatus = 'queued' | 'processing' | 'needs_review' | 'completed
 
 export type SourcePreview = {
   url?: string;
+  platform?: 'website' | 'pinterest' | 'youtube' | 'tiktok' | 'instagram' | 'facebook' | 'vimeo';
+  externalId?: string;
   localUri?: string;
   storagePath?: string;
   host: string;
@@ -52,9 +54,15 @@ export function createSourcePreview(value: string): SourcePreview {
   const host = parsed.hostname.replace(/^www\./, '');
   const socialHosts = ['instagram.com', 'tiktok.com', 'pinterest.com', 'facebook.com'];
   const videoHosts = ['youtube.com', 'youtu.be', 'vimeo.com'];
+  const platform = host === 'pinterest.com' ? 'pinterest' : host === 'youtube.com' || host === 'youtu.be' ? 'youtube' : host === 'tiktok.com' ? 'tiktok' : host === 'instagram.com' ? 'instagram' : host === 'facebook.com' ? 'facebook' : host === 'vimeo.com' ? 'vimeo' : 'website';
+  const externalId = platform === 'youtube'
+    ? parsed.searchParams.get('v') ?? (parsed.pathname.startsWith('/shorts/') ? parsed.pathname.split('/')[2] : parsed.pathname.split('/').filter(Boolean).pop())
+    : platform === 'pinterest' ? parsed.pathname.match(/(?:pin|pin\\.it)\\/([0-9]+)/)?.[1] : undefined;
   return {
     url,
     host,
+    platform,
+    externalId,
     title: host === 'cravekeep.com' ? 'Lemon Herb Chicken' : `Recipe from ${host}`,
     creator: host === 'cravekeep.com' ? 'CraveKeep Kitchen' : undefined,
     mediaType: videoHosts.some((item) => host.endsWith(item)) ? 'video' : socialHosts.some((item) => host.endsWith(item)) ? 'social' : 'webpage'
