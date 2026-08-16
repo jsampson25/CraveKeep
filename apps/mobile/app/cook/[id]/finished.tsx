@@ -30,7 +30,7 @@ export default function FinishedCookingScreen() {
       await saveCookSession({ id: `cook_${cookedAt}_${Math.random().toString(36).slice(2, 8)}`, recipeId: recipe.id, taste, effort, repeatIntent, notes: notes.trim(), cookedAt }, user?.id);
       router.replace(`/recipes/${recipe.id}`);
     } catch {
-      setMessage('Your result is saved on this device, but cloud sync could not finish.');
+      setMessage('We could not save the cooking result. Please try again.');
       setSaving(false);
     }
   };
