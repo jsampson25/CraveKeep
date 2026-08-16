@@ -40,6 +40,10 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     let active = true;
     const storageKey = user ? KEY + ':' + user.id : KEY;
     storageKeyRef.current = storageKey;
+    profileRef.current = initial;
+    setProfile(initial);
+    setReady(false);
+    setError(undefined);
     const load = async () => {
       let local = await AsyncStorage.getItem(storageKey);
       let migratedAnonymous = false;
