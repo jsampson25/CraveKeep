@@ -18,7 +18,9 @@ export function RecipeArt({ compact = false, favorite = false, imageUrl, storage
   }, []);
   useEffect(() => {
     setResolvedImageUrl(imageUrl);
-    if (imageUrl || !storagePath || !supabase) return;
+    const isTemporaryUri = Boolean(imageUrl && /^(file|content):\/\//i.test(imageUrl));
+    if ((!storagePath && imageUrl) || !storagePath || !supabase) return;
+    if (!isTemporaryUri && imageUrl) return;
     let active = true;
     void supabase.storage.from('recipe-imports').createSignedUrl(storagePath, 3600).then(({ data }) => { if (active && data?.signedUrl) setResolvedImageUrl(data.signedUrl); });
     return () => { active = false; };
