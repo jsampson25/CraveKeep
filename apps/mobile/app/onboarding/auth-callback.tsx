@@ -20,15 +20,17 @@ export default function AuthCallbackScreen() {
     if (!hasCallback) return;
     started.current = true;
     const finish = async () => {
+      let completedFromUrl = false;
       if (callbackUrl) {
         const result = await completeOAuthRedirect(callbackUrl);
         if (result.error) { setError(result.error); return; }
+        completedFromUrl = true;
       } else if (params.error || params.error_code) {
         setError(params.error_description || params.error || 'Google sign-in was not completed.');
         return;
       }
       if (!supabase) { setError('Cloud authentication is not configured in this build.'); return; }
-      if (params.code) {
+      if (!completedFromUrl && params.code) {
         const result = await completeOAuthCode(params.code);
         if (result.error) { setError(result.error); return; }
       } else {

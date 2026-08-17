@@ -17,7 +17,7 @@ import { useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-const WELCOME_KEY = 'cravekeep.welcome.v11';
+const WELCOME_KEY = 'cravekeep.welcome.v12';
 const welcomeFrames = [
   welcomeFrame01, welcomeFrame02, welcomeFrame03, welcomeFrame04,
 ];
