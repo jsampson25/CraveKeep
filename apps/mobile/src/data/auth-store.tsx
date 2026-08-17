@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform } from 'react-native';
 import { isSupabaseConfigured, supabase } from './supabase';
 
-type AuthResult = { error?: string; confirmationRequired?: boolean; cancelled?: boolean };
+type AuthResult = { error?: string; confirmationRequired?: boolean; cancelled?: boolean; redirecting?: boolean };
 
 type AuthStoreValue = {
   user: User | null;
@@ -140,6 +140,10 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
       : Linking.createURL('onboarding/auth-callback');
     const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo, skipBrowserRedirect: true } });
     if (error || !data.url) return { error: error?.message ?? 'The secure sign-in page could not be opened.' };
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.assign(data.url);
+      return { redirecting: true };
+    }
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     if (result.type !== 'success') return result.type === 'cancel' ? { cancelled: true } : { error: 'Sign-in did not finish. Please try again.' };
     return completeOAuthRedirect(result.url);

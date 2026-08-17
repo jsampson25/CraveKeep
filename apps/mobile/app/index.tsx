@@ -67,7 +67,7 @@ export default function Index() {
     setBusy(provider); setMessage(undefined);
     try {
       const result = await signInWithProvider(provider);
-      if (result.error) setMessage(result.error); else if (!result.cancelled) router.replace('/');
+      if (result.error) setMessage(result.error); else if (!result.cancelled && !result.redirecting) router.replace('/');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Sign-in could not start.'); }
     finally { setBusy(undefined); }
   };
