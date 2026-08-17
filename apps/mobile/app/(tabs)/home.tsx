@@ -16,7 +16,10 @@ import eveningBackground from '../../assets/brand/home-evening.jpg';
 export default function HomeScreen() {
   const { recipes, ready, error } = useRecipeStore(); const { user } = useAuthStore(); const { profile } = useOnboardingStore(); const latest = recipes[0];
   const dailyTargets = [{ label: 'Calories', value: profile.calories.toLocaleString(), unit: 'kcal', color: colors.coral, soft: '#FFF0ED' }, { label: 'Protein', value: profile.protein.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.mint, soft: colors.mintSoft }, { label: 'Carbs', value: profile.carbs.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.lemon, soft: colors.lemonSoft }, { label: 'Fat', value: profile.fat.replace(/[^0-9]/g, '') || '—', unit: 'g', color: colors.lavender, soft: colors.lavenderSoft }];
-  const displayName = user?.user_metadata.display_name as string | undefined; const firstName = displayName?.split(/\s+/)[0] ?? 'there'; const initials = (displayName ?? user?.email ?? 'CK').slice(0, 2).toUpperCase();
+  const metadataName = (user?.user_metadata.display_name || user?.user_metadata.full_name || user?.user_metadata.name) as string | undefined;
+  const emailName = user?.email?.split('@')[0]?.replace(/[._-]+/g, ' ');
+  const displayName = profile.displayName.trim() || metadataName?.trim() || emailName?.trim() || 'Friend';
+  const firstName = displayName.split(/\s+/)[0]; const initials = displayName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
   const hour = new Date().getHours();
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
   const greeting = timeOfDay === 'morning' ? 'Good morning' : timeOfDay === 'afternoon' ? 'Good afternoon' : 'Good evening';
@@ -26,7 +29,7 @@ export default function HomeScreen() {
   const isEvening = timeOfDay === 'evening';
   return <Screen><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.header}><Image accessibilityLabel="CraveKeep" resizeMode="contain" source={brandLogo} style={styles.logo} /><View style={styles.headerActions}><Pressable accessibilityLabel='Open notifications' accessibilityRole='button' onPress={() => router.push('/notifications')} style={styles.iconButton}><Ionicons color={colors.charcoal} name='notifications-outline' size={20} /></Pressable><Pressable accessibilityLabel='Open profile' accessibilityRole='button' onPress={() => router.push('/profile')} style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></Pressable></View></View>
-    <ImageBackground accessibilityLabel={`${greeting} scenic background`} imageStyle={styles.welcomeImage} resizeMode="cover" source={welcomeBackground} style={styles.welcome}>
+    <ImageBackground accessibilityLabel={`${greeting} scenic background`} imageStyle={styles.welcomeImage} resizeMode="contain" source={welcomeBackground} style={styles.welcome}>
       <View style={[styles.welcomeShade, isEvening && styles.eveningShade]} />
       <View style={styles.welcomeCopy}><Text style={[styles.welcomeTitle, isEvening && styles.welcomeTitleEvening]}>{greeting}, {firstName}.</Text><Text style={[styles.welcomeSubtitle, isEvening && styles.welcomeSubtitleEvening]}>{sceneTitle}</Text></View>
     </ImageBackground>
