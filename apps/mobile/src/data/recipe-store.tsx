@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SAMPLE_RECIPE, type Recipe } from '@cravekeep/domain';
+import type { Recipe } from '@cravekeep/domain';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import { useAuthStore } from './auth-store';
 import { fetchCloudRecipes, saveCloudRecipe, setCloudFavorite, updateCloudRecipe } from './cloud-recipes';
@@ -41,12 +41,12 @@ export function RecipeStoreProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((stored) => {
-        const next = stored ? JSON.parse(stored) as Recipe[] : [SAMPLE_RECIPE];
+        const next = stored ? JSON.parse(stored) as Recipe[] : [];
         if (!Array.isArray(next)) throw new Error('Invalid saved recipes');
         recipesRef.current = next;
         setRecipes(next);
       })
-      .catch(() => { recipesRef.current = [SAMPLE_RECIPE]; setRecipes([SAMPLE_RECIPE]); setError('Your local recipes could not be loaded. A sample is available while you retry.'); })
+      .catch(() => { recipesRef.current = []; setRecipes([]); setError('Your local recipes could not be loaded.'); })
       .finally(() => setReady(true));
   }, []);
 
