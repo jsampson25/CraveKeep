@@ -39,8 +39,7 @@ export default function KitchenSetupScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.topRow}><Pressable accessibilityLabel="Open notifications" onPress={() => router.push('/notifications')} style={styles.iconButton}><Ionicons color={colors.charcoal} name="notifications-outline" size={20} /></Pressable><Pressable onPress={() => router.replace('/(tabs)/home')}><Text style={styles.skip}>Go to Home</Text></Pressable></View>
       <View style={styles.hero}>
-        <View style={styles.heroCopy}><Text style={styles.heroTitle}>Welcome to your{'
-'}kitchen, <Text style={styles.accent}>{firstName}</Text></Text><Text style={styles.heroBody}>Let’s make CraveKeep yours.</Text></View>
+        <View style={styles.heroCopy}><Text style={styles.heroTitle}>Welcome to your</Text><Text style={styles.heroTitle}>kitchen, <Text style={styles.accent}>{firstName}</Text></Text><Text style={styles.heroBody}>Let’s make CraveKeep yours.</Text></View>
         <MotionSlot name="onboarding-preferences" size={148} accessibilityLabel="CraveKeep mascot welcoming you to your kitchen" />
       </View>
 
