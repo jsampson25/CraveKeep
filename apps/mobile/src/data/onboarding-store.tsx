@@ -99,8 +99,21 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
       setError(message); return message;
     } finally { setSaving(false); }
   }, [user]);
-  const usernameAvailable = useCallback(async (handle: string) => { if (!supabase || !user) return false; const result = await supabase.rpc('is_username_available', { candidate: handle }); return !result.error && result.data; }, [user]);
-  const saveProfile = useCallback(() => cloud(async () => supabase!.from('profiles').upsert({ id: user!.id, display_name: profile.displayName.trim(), username: profile.handle.trim().toLowerCase().replace(/^@/, ''), updated_at: new Date().toISOString() })), [cloud, profile.displayName, profile.handle, user]);
+  const usernameAvailable = useCallback(async (handle: string) => {
+    if (!supabase || !user) throw new Error('Sign in before choosing a username.');
+    const candidate = handle.trim().toLowerCase().replace(/^@/, '');
+    const result = await supabase.rpc('is_username_available', { candidate });
+    if (!result.error && typeof result.data === 'boolean') return result.data;
+    const fallback = await supabase.from('profiles').select('id').ilike('username', candidate).neq('id', user.id).limit(1);
+    if (fallback.error) throw new Error('We could not check that username. Please try again.');
+    return (fallback.data ?? []).length === 0;
+  }, [user]);
+  const saveProfile = useCallback(() => cloud(async () => {
+    const current = profileRef.current;
+    const result = await supabase!.from('profiles').upsert({ id: user!.id, display_name: current.displayName.trim(), username: current.handle.trim().toLowerCase().replace(/^@/, ''), updated_at: new Date().toISOString() });
+    if (result.error?.code === '23505') return { error: { message: 'That username was just taken. Try another suggestion.' } };
+    return result;
+  }), [cloud, user]);
   const saveFoodProfile = useCallback(() => cloud(async () => { const current = profileRef.current; return supabase!.from('food_profiles').upsert({ owner_id: user!.id, loved_foods: current.loves, avoided_foods: current.avoids, never_suggest_foods: current.neverSuggest, allergies: current.allergies, dietary_preferences: current.dietaryPreference === 'None' || current.dietaryPreference === 'No dietary preference' ? [] : [current.dietaryPreference], cooking_time: current.cookingTime || 'No preference', cooking_skill: current.skill || 'Comfortable', appliances: current.appliances.split(',').map(x => x.trim()).filter(Boolean), updated_at: new Date().toISOString() }); }), [cloud, user]);
   const saveNutritionGoals = useCallback(() => cloud(async () => supabase!.from('nutrition_goals').upsert({ owner_id: user!.id, goal: profile.goal, calculation_mode: profile.calculationMode, calories: profile.calories, protein_grams: grams(profile.protein), carbohydrate_grams: grams(profile.carbs), fat_grams: grams(profile.fat), fiber_grams: grams(profile.fiber), age: profile.age, sex_for_calculation: profile.sexForCalculation, height_cm: profile.heightCm, current_weight_kg: profile.currentWeightKg, target_weight_kg: profile.targetWeightKg, activity_level: profile.activityLevel, weekly_average: profile.weeklyAverage, flexible_day: profile.flexibleDay, updated_at: new Date().toISOString() })), [cloud, profile, user]);
   const saveHousehold = useCallback(async () => {
