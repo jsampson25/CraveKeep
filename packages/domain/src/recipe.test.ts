@@ -21,6 +21,7 @@ describe('manual recipe rules', () => {
     const recipe = createManualRecipe(validDraft, new Date('2026-08-10T12:00:00.000Z'));
     expect(recipe.title).toBe('Tomato Toast');
     expect(recipe.privacy).toBe('private');
+    expect(recipe.source.mediaType).toBe('webpage');
     expect(recipe.source.kind).toBe('manual');
     expect(recipe.ingredients[0]?.name).toBe('slices of bread');
   });
@@ -35,7 +36,7 @@ describe('manual recipe rules', () => {
   });
 
   it('keeps attribution on an imported original', () => {
-    const recipe = createImportedRecipe(validDraft, { url: 'https://example.com/recipe', label: 'example.com', creator: 'Example Cook' });
+    const recipe = createImportedRecipe(validDraft, { url: 'https://example.com/recipe', label: 'example.com', creator: 'Example Cook', mediaType: 'webpage' });
     expect(recipe.source.kind).toBe('imported');
     expect(recipe.source.url).toBe('https://example.com/recipe');
     expect(recipe.privacy).toBe('private');
