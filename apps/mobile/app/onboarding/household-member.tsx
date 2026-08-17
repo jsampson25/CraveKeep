@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   input: { height: 48, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, backgroundColor: colors.paperRaised, color: colors.charcoal, fontSize: 15 },
   segment: { flexDirection: 'row', padding: 3, borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, backgroundColor: colors.paperRaised },
   segmentButton: { flex: 1, minHeight: 38, alignItems: 'center', justifyContent: 'center', borderRadius: radii.small },
-  segmentActive: { borderWidth: 1, borderColor: colors.coral, backgroundColor: colors.coralSoft },
+  segmentActive: { borderWidth: 1, borderColor: colors.coral, backgroundColor: '#FFF0ED' },
   segmentText: { color: colors.muted, fontWeight: '700' }, segmentTextActive: { color: colors.coralDark },
   selectBox: { minHeight: 48, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, backgroundColor: colors.paperRaised },
   chips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
