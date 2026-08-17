@@ -23,7 +23,7 @@ export default function SettingsScreen() {
   const complete = async () => {
     setMessage('Preparing your kitchen…');
     const finishError = await finish();
-    if (!finishError) router.replace('/(tabs)/home');
+    if (!finishError) router.replace('/onboarding/kitchen-setup');
     else setMessage(finishError);
   };
 
