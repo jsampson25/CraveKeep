@@ -4,24 +4,104 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { MotionSlot } from '@/components/animations/MotionSlot';
-import { Button, Field } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-type Draft = { name: string; type: 'adult'|'child'; allergies: string; preferences: string };
-const empty: Draft = { name:'', type:'adult', allergies:'', preferences:'' };
-export default function HouseholdScreen(){
-  const {profile,update,saveHousehold,saving,error}=useOnboardingStore(); const [adding,setAdding]=useState(false); const [draft,setDraft]=useState(empty); const [message,setMessage]=useState<string>();
-  const add=()=>{if(!draft.name.trim()){setMessage('Enter the household member’s name.');return;}void update({householdMembers:[...profile.householdMembers,{id:`local-${Date.now()}`,name:draft.name.trim(),type:draft.type,allergies:draft.allergies.split(',').map(x=>x.trim()).filter(Boolean),preferences:draft.preferences.split(',').map(x=>x.trim()).filter(Boolean)}]});setDraft(empty);setAdding(false);setMessage(undefined)};
-  const next=async()=>{if(!profile.householdName.trim()){setMessage('Name your household or choose continue solo.');return;}setMessage('Saving your household…');try{if(!await saveHousehold())router.push('/onboarding/nutrition-goals')}catch(reason){setMessage(reason instanceof Error?reason.message:'We could not save your household. Please try again.')}};
-  const solo=async()=>{setMessage('Saving your kitchen…');try{await update({householdName:`${profile.displayName||'My'}’s Kitchen`,householdMembers:[]});if(!await saveHousehold())router.push('/onboarding/nutrition-goals')}catch(reason){setMessage(reason instanceof Error?reason.message:'We could not save your kitchen. Please try again.')}};
-  return <OnboardingShell title="Your household" percent={92} footer={<View style={styles.footer}><Button disabled={saving} label={saving?'Saving…':'Save household'} onPress={()=>void next()}/><Button disabled={saving} label="Continue solo" variant="quiet" onPress={()=>void solo()}/></View>}>
-    <View style={styles.heroBlock}><MotionSlot name="onboarding-preferences" size={76} accessibilityLabel="Animated household preferences" /><View style={styles.heroCopy}><Text style={styles.hero}>Plan once. Serve everyone.</Text><Text style={styles.body}>Household members can have their own preferences, allergies, and portions. This step is optional.</Text></View></View>
-    <View style={styles.houseCard}><View style={styles.houseIcon}><Ionicons color={colors.herb} name="home" size={28}/></View><View style={styles.flex}><Field label="Household name" onChangeText={householdName=>void update({householdName})} placeholder="The Sampson Kitchen" value={profile.householdName}/></View></View>
-    <View><Text style={styles.section}>Members</Text><View style={styles.list}><View style={styles.member}><View style={styles.avatar}><Text style={styles.initial}>{(profile.displayName||'Y').slice(0,1).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.memberName}>{profile.displayName||'You'} <Text style={styles.you}>(You)</Text></Text><Text style={styles.small}>Uses your private food and nutrition profile</Text></View><Text style={styles.role}>Owner</Text></View>{profile.householdMembers.map(member=><View key={member.id} style={styles.member}><View style={[styles.avatar,member.type==='child'&&styles.child]}><Text style={styles.initial}>{member.name.slice(0,1).toUpperCase()}</Text></View><View style={styles.flex}><Text style={styles.memberName}>{member.name}</Text><Text numberOfLines={1} style={styles.small}>{member.preferences.length?`Likes: ${member.preferences.join(', ')}`:'No food preferences yet'}</Text>{member.allergies.length?<Text style={styles.allergy}>Allergy: {member.allergies.join(', ')}</Text>:null}</View><Pressable accessibilityLabel={`Remove ${member.name}`} onPress={()=>void update({householdMembers:profile.householdMembers.filter(value=>value.id!==member.id)})}><Ionicons color={colors.muted} name="close-circle-outline" size={23}/></Pressable></View>)}</View></View>
-    {adding?<View style={styles.form}><Text style={styles.section}>Add a household member</Text><Field autoCapitalize="words" label="Name" onChangeText={name=>setDraft(current=>({...current,name}))} value={draft.name}/><Text style={styles.label}>Member type</Text><View style={styles.options}>{(['adult','child'] as const).map(type=><Pressable key={type} onPress={()=>setDraft(current=>({...current,type}))} style={[styles.option,draft.type===type&&styles.optionActive]}><Text style={[styles.optionText,draft.type===type&&styles.optionTextActive]}>{type==='adult'?'Adult':'Child'}</Text></Pressable>)}</View><Field label="Allergies (comma separated)" onChangeText={allergies=>setDraft(current=>({...current,allergies}))} placeholder="Peanuts, dairy" value={draft.allergies}/><Field label="Foods they like (comma separated)" onChangeText={preferences=>setDraft(current=>({...current,preferences}))} placeholder="Pasta, chicken, broccoli" value={draft.preferences}/><View style={styles.formButtons}><View style={styles.flex}><Button label="Cancel" variant="quiet" onPress={()=>setAdding(false)}/></View><View style={styles.flex}><Button label="Add member" onPress={add}/></View></View></View>:<Pressable onPress={()=>setAdding(true)} style={styles.add}><Ionicons color={colors.coralDark} name="add-circle-outline" size={23}/><View style={styles.flex}><Text style={styles.addTitle}>Add someone in your household</Text><Text style={styles.small}>Set up their needs without creating an account</Text></View></Pressable>}
-    <View><Text style={styles.section}>Shared together</Text><View style={styles.controls}>{[['book-outline','Recipes'],['calendar-outline','Meal plans'],['basket-outline','Groceries']].map(([icon,label])=><View key={label} style={styles.control}><Ionicons color={colors.herb} name={icon as keyof typeof Ionicons.glyphMap} size={25}/><Text style={styles.controlText}>{label}</Text></View>)}</View></View>
-    <View style={styles.notice}><Ionicons color={colors.herb} name="shield-checkmark-outline" size={24}/><Text style={styles.noticeText}>Health details remain private. Sharing controls can be changed later in Household settings.</Text></View>{message||error?<Text accessibilityRole="alert" style={styles.error}>{message||error}</Text>:null}
+export default function HouseholdScreen() {
+  const { profile, update, saveHousehold, saving, error } = useOnboardingStore();
+  const [message, setMessage] = useState<string>();
+  const ownerName = profile.displayName.trim() || 'You';
+  const householdSize = profile.householdMembers.length + 1;
+
+  const addMember = (type: 'adult' | 'child') => {
+    router.push({ pathname: '/onboarding/household-member', params: { type } });
+  };
+  const removeMember = (id: string) => {
+    void update({ householdMembers: profile.householdMembers.filter(member => member.id !== id) });
+  };
+  const continueOn = async () => {
+    setMessage('Saving your household…');
+    const householdName = profile.householdName.trim() || `${ownerName}’s Kitchen`;
+    await update({ householdName });
+    const saveError = await saveHousehold();
+    if (!saveError) router.push('/onboarding/nutrition-goals');
+    else setMessage(saveError);
+  };
+
+  return <OnboardingShell
+    title={<Text>Who are we{"\n"}cooking for?</Text>}
+    percent={76}
+    footer={<Button disabled={saving} label={saving ? 'Saving…' : 'Continue'} onPress={() => void continueOn()} />}
+  >
+    <Text style={styles.subtitle}>Personalize meals for everyone at home.</Text>
+    <View style={styles.people}>
+      <View style={[styles.personCard, styles.selectedCard]}>
+        <View style={styles.avatar}><Text style={styles.avatarText}>{ownerName.slice(0, 1).toUpperCase()}</Text></View>
+        <Ionicons color={colors.herb} name="checkmark-circle" size={20} style={styles.check} />
+        <Text numberOfLines={1} style={styles.personName}>{ownerName}</Text>
+        <Text style={styles.personType}>(You)</Text>
+      </View>
+      <Pressable onPress={() => addMember('adult')} style={styles.personCard}>
+        <View style={styles.addCircle}><Ionicons color={colors.charcoal} name="add" size={29} /></View>
+        <Text style={styles.personName}>Add</Text><Text style={styles.personType}>adult</Text>
+      </Pressable>
+      <Pressable onPress={() => addMember('child')} style={styles.personCard}>
+        <View style={styles.addCircle}><Ionicons color={colors.charcoal} name="person" size={24} /></View>
+        <Text style={styles.personName}>Add</Text><Text style={styles.personType}>child</Text>
+      </Pressable>
+    </View>
+
+    {profile.householdMembers.length ? <View style={styles.memberList}>
+      {profile.householdMembers.map(member => <View key={member.id} style={styles.memberRow}>
+        <View style={[styles.smallAvatar, member.type === 'child' && styles.childAvatar]}><Text style={styles.smallAvatarText}>{member.name.slice(0, 1).toUpperCase()}</Text></View>
+        <Pressable style={styles.memberCopy} onPress={() => router.push({ pathname: '/onboarding/household-member', params: { memberId: member.id } })}>
+          <Text style={styles.memberName}>{member.name}</Text>
+          <Text numberOfLines={1} style={styles.memberDetail}>{member.preferences.length} loved · {member.avoids.length} avoided · {member.allergies.length} allergies</Text>
+        </Pressable>
+        <Pressable accessibilityLabel={`Edit ${member.name}`} onPress={() => router.push({ pathname: '/onboarding/household-member', params: { memberId: member.id } })}><Ionicons color={colors.coralDark} name="create-outline" size={21} /></Pressable>
+        <Pressable accessibilityLabel={`Remove ${member.name}`} onPress={() => removeMember(member.id)}><Ionicons color={colors.muted} name="close-circle-outline" size={21} /></Pressable>
+      </View>)}
+    </View> : null}
+
+    <View style={styles.sizeRow}>
+      <Text style={styles.sizeLabel}>Household size</Text>
+      <View style={styles.counter}><Pressable disabled={profile.householdMembers.length === 0} onPress={() => removeMember(profile.householdMembers.at(-1)!.id)} style={styles.counterButton}><Ionicons color={colors.charcoal} name="remove" size={20} /></Pressable><Text style={styles.count}>{householdSize}</Text><Pressable onPress={() => addMember('adult')} style={styles.counterButton}><Ionicons color={colors.charcoal} name="add" size={20} /></Pressable></View>
+    </View>
+
+    <View style={styles.mascotCard}>
+      <MotionSlot name="onboarding-preferences" size={116} accessibilityLabel="CraveKeep mascot introducing household meal planning" />
+      <View style={styles.sign}><Text style={styles.signText}>Great meals{"\n"}for your{"\n"}whole crew!</Text><View style={styles.faces}><Text>☺  ☺  ☺</Text></View></View>
+    </View>
+    {message || error ? <Text accessibilityRole="alert" style={styles.error}>{message || error}</Text> : null}
   </OnboardingShell>;
 }
-const styles=StyleSheet.create({footer:{gap:4},heroBlock:{flexDirection:'row',alignItems:'center',gap:spacing.sm},heroCopy:{flex:1},hero:{...typography.title,fontSize:25,color:colors.charcoal},body:{color:colors.muted,lineHeight:20},houseCard:{flexDirection:'row',alignItems:'center',gap:12,padding:12,borderWidth:1,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:colors.paperRaised},houseIcon:{width:52,height:52,borderRadius:26,alignItems:'center',justifyContent:'center',backgroundColor:colors.mintSoft},flex:{flex:1},section:{marginBottom:spacing.sm,...typography.label,fontSize:16,color:colors.charcoal},list:{overflow:'hidden',borderWidth:1,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:colors.paperRaised},member:{minHeight:74,padding:11,flexDirection:'row',alignItems:'center',gap:10,borderBottomWidth:StyleSheet.hairlineWidth,borderBottomColor:colors.line},avatar:{width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center',backgroundColor:colors.charcoal},child:{backgroundColor:colors.herb},initial:{color:colors.white,fontWeight:'900'},memberName:{fontWeight:'800'},you:{color:colors.muted,fontWeight:'500'},small:{color:colors.muted,fontSize:11,lineHeight:16},allergy:{color:colors.coralDark,fontSize:11,fontWeight:'800'},role:{padding:6,borderRadius:radii.round,backgroundColor:colors.herbSoft,color:colors.mint,fontSize:10},add:{flexDirection:'row',alignItems:'center',gap:10,padding:14,borderWidth:1,borderStyle:'dashed',borderColor:colors.coral,borderRadius:radii.medium},addTitle:{fontWeight:'800',color:colors.coralDark},form:{padding:spacing.md,gap:spacing.md,borderWidth:1,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:colors.paperRaised},label:{fontWeight:'700',color:colors.charcoal},options:{flexDirection:'row',gap:8},option:{flex:1,minHeight:43,alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:colors.line,borderRadius:radii.small},optionActive:{backgroundColor:colors.charcoal},optionText:{fontWeight:'700'},optionTextActive:{color:colors.white},formButtons:{flexDirection:'row',gap:8},controls:{flexDirection:'row',gap:8},control:{flex:1,alignItems:'center',padding:12,borderWidth:1,borderColor:colors.line,borderRadius:radii.medium},controlText:{marginTop:4,fontWeight:'700',fontSize:11},notice:{flexDirection:'row',gap:10,padding:12,borderWidth:1,borderColor:colors.lemon,borderRadius:radii.medium},noticeText:{flex:1,color:colors.muted,fontSize:11,lineHeight:16},error:{color:colors.coralDark,textAlign:'center'}});
+
+const styles = StyleSheet.create({
+  subtitle: { marginTop: -spacing.md, color: colors.muted, fontSize: 13 },
+  people: { flexDirection: 'row', gap: spacing.sm },
+  personCard: { flex: 1, minHeight: 128, alignItems: 'center', justifyContent: 'center', padding: spacing.sm, borderWidth: 1, borderColor: colors.line, borderRadius: radii.medium, backgroundColor: colors.paperRaised },
+  selectedCard: { borderColor: colors.herb, backgroundColor: colors.herbSoft },
+  avatar: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal },
+  avatarText: { color: colors.white, fontSize: 21, fontWeight: '900' },
+  check: { position: 'absolute', top: 8, right: 8 },
+  addCircle: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, backgroundColor: colors.background },
+  personName: { marginTop: 8, color: colors.charcoal, fontWeight: '800' },
+  personType: { color: colors.muted, fontSize: 12 },
+  memberList: { overflow: 'hidden', borderWidth: 1, borderColor: colors.line, borderRadius: radii.medium, backgroundColor: colors.paperRaised },
+  memberRow: { minHeight: 64, paddingHorizontal: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
+  smallAvatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal },
+  childAvatar: { backgroundColor: colors.herb },
+  smallAvatarText: { color: colors.white, fontWeight: '900' },
+  memberCopy: { flex: 1 }, memberName: { fontWeight: '800', color: colors.charcoal }, memberDetail: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sizeLabel: { ...typography.label, color: colors.charcoal },
+  counter: { flexDirection: 'row', alignItems: 'center', overflow: 'hidden', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised },
+  counterButton: { width: 42, height: 38, alignItems: 'center', justifyContent: 'center' },
+  count: { minWidth: 30, textAlign: 'center', color: colors.charcoal, fontSize: 18, fontWeight: '900' },
+  mascotCard: { minHeight: 152, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: spacing.sm },
+  sign: { minWidth: 132, marginBottom: 8, padding: spacing.md, borderWidth: 2, borderColor: '#B98243', borderRadius: radii.small, backgroundColor: '#FFF8E8', transform: [{ rotate: '-1deg' }] },
+  signText: { color: colors.charcoal, textAlign: 'center', fontSize: 17, lineHeight: 20, fontWeight: '700' },
+  faces: { marginTop: 8, alignItems: 'center' },
+  error: { color: colors.coralDark, textAlign: 'center' }
+});
