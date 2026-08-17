@@ -9,7 +9,7 @@ const corsHeaders = (request: Request) => {
 };
 
 type RecipeDraft = { title: string; description: string; servings: number; prepMinutes: number; cookMinutes: number; ingredients: { id: string; quantity: string; name: string }[]; steps: string[] };
-type ExtractionResponse = { status: 'needs_review'; draft: RecipeDraft; warnings: string[]; recoveryCode?: 'missing_recipe_data' };
+type ExtractionResponse = { status: 'needs_review'; draft: RecipeDraft; warnings: string[]; recoveryCode?: 'missing_recipe_data'; source?: { storagePath?: string } };
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) });
@@ -53,6 +53,6 @@ Deno.serve(async (request) => {
   } catch {
     return Response.json({ error: 'The recipe image could not be read reliably.' }, { status: 422, headers: corsHeaders(request) });
   }
-  const payload: ExtractionResponse = { status: 'needs_review', draft, warnings: ['Review the extracted text and quantities before saving.'] };
+  const payload: ExtractionResponse = { status: 'needs_review', draft, warnings: ['Review the extracted text and quantities before saving.'], source: { storagePath: body.storagePath } };
   return Response.json(payload, { headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' } });
 });
