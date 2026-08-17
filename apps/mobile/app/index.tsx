@@ -69,7 +69,7 @@ export default function Index() {
   if (user) return <Redirect href={profile.completed ? '/(tabs)/home' : '/onboarding/profile'} />;
 
   const begin = async () => {
-    try { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/email?mode=signup'); }
+    try { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/account'); }
     catch { setMessage('Could not start onboarding. Please try again.'); }
   };
 
