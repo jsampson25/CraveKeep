@@ -12,7 +12,7 @@ export type OnboardingProfile = {
   age?: number; sexForCalculation?: 'female' | 'male'; heightCm?: number;
   currentWeightKg?: number; targetWeightKg?: number; activityLevel?: string;
   weeklyAverage: boolean; flexibleDay: boolean; householdName: string;
-  householdMembers: { id: string; name: string; type: 'adult' | 'child'; allergies: string[]; preferences: string[] }[];
+  householdMembers: { id: string; name: string; type: 'adult' | 'child'; allergies: string[]; preferences: string[]; avoids: string[]; dietaryPreferences: string[] }[];
 };
 
 const initial: OnboardingProfile = {
@@ -64,7 +64,7 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
         if (nutrition.data) next = { ...next, goal: nutrition.data.goal, calculationMode: nutrition.data.calculation_mode as OnboardingProfile['calculationMode'], calories: nutrition.data.calories, protein: `${nutrition.data.protein_grams} g`, carbs: `${nutrition.data.carbohydrate_grams} g`, fat: `${nutrition.data.fat_grams} g`, fiber: `${nutrition.data.fiber_grams} g`, age: nutrition.data.age ?? undefined, sexForCalculation: nutrition.data.sex_for_calculation as OnboardingProfile['sexForCalculation'], heightCm: nutrition.data.height_cm ?? undefined, currentWeightKg: nutrition.data.current_weight_kg ?? undefined, targetWeightKg: nutrition.data.target_weight_kg ?? undefined, activityLevel: nutrition.data.activity_level ?? undefined, weeklyAverage: nutrition.data.weekly_average, flexibleDay: nutrition.data.flexible_day };
         if (household.data) {
           const dependents = await supabase.from('household_dependents').select('*').eq('household_id', household.data.id).order('created_at');
-          next = { ...next, householdName: household.data.name, householdMembers: (dependents.data ?? []).map(member => ({ id: member.id, name: member.display_name, type: member.member_type as 'adult' | 'child', allergies: member.allergies, preferences: member.preferences })) };
+          next = { ...next, householdName: household.data.name, householdMembers: (dependents.data ?? []).map(member => ({ id: member.id, name: member.display_name, type: member.member_type as 'adult' | 'child', allergies: member.allergies ?? [], preferences: member.loved_foods ?? member.preferences ?? [], avoids: member.avoided_foods ?? [], dietaryPreferences: member.dietary_preferences ?? [] })) };
         }
       }
       if (active) {
@@ -117,7 +117,8 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     const removed = await supabase.from('household_dependents').delete().eq('household_id', householdId!);
     if (removed.error) return removed.error.message;
     if (profile.householdMembers.length) {
-      const inserted = await supabase.from('household_dependents').insert(profile.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences })));
+      const current = profileRef.current;
+      const inserted = await supabase.from('household_dependents').insert(current.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences, loved_foods: member.preferences, avoided_foods: member.avoids, dietary_preferences: member.dietaryPreferences })));
       if (inserted.error) return inserted.error.message;
     }
     return undefined;
