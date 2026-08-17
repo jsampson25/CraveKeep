@@ -53,9 +53,9 @@ export function createSourcePreview(value: string): SourcePreview {
   const url = normalizeRecipeUrl(value);
   const parsed = new URL(url);
   const host = parsed.hostname.replace(/^www\./, '');
-  const socialHosts = ['instagram.com', 'tiktok.com', 'pinterest.com', 'facebook.com'];
+  const socialHosts = ['instagram.com', 'tiktok.com', 'pinterest.com', 'pin.it', 'facebook.com'];
   const videoHosts = ['youtube.com', 'youtu.be', 'vimeo.com'];
-  const platform = host === 'pinterest.com' ? 'pinterest' : host === 'youtube.com' || host === 'youtu.be' ? 'youtube' : host === 'tiktok.com' ? 'tiktok' : host === 'instagram.com' ? 'instagram' : host === 'facebook.com' ? 'facebook' : host === 'vimeo.com' ? 'vimeo' : 'website';
+  const platform = (host === 'pinterest.com' || host === 'pin.it') ? 'pinterest' : host === 'youtube.com' || host === 'youtu.be' ? 'youtube' : host === 'tiktok.com' ? 'tiktok' : host === 'instagram.com' ? 'instagram' : host === 'facebook.com' ? 'facebook' : host === 'vimeo.com' ? 'vimeo' : 'website';
   const externalId = platform === 'youtube'
     ? parsed.searchParams.get('v') ?? (parsed.pathname.startsWith('/shorts/') ? parsed.pathname.split('/')[2] : parsed.pathname.split('/').filter(Boolean).pop())
     : platform === 'pinterest' ? parsed.pathname.match(/(?:pin|pin\.it)\/([0-9]+)/)?.[1]

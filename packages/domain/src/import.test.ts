@@ -15,6 +15,8 @@ describe('link capture rules', () => {
     expect(createSourcePreview('https://www.tiktok.com/@cook/video/123456789').externalId).toBe('123456789');
     expect(createSourcePreview('https://www.instagram.com/reel/ABC123/').externalId).toBe('ABC123');
     expect(createSourcePreview('https://www.facebook.com/reel/987654321').externalId).toBe('987654321');
+    expect(createSourcePreview('https://pin.it/abc123').platform).toBe('pinterest');
+    expect(createSourcePreview('https://pin.it/abc123').mediaType).toBe('social');
   });
 
   it('returns honest recovery instead of inventing recipe data', () => {
