@@ -136,7 +136,7 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
   const signInWithProvider = useCallback(async (provider: 'apple' | 'google'): Promise<AuthResult> => {
     if (!supabase) return { error: 'Cloud sync is not configured on this build.' };
     const redirectTo = Platform.OS === 'web' && typeof window !== 'undefined'
-      ? `${window.location.origin}/onboarding/auth-callback`
+      ? `${window.location.origin}/`
       : Linking.createURL('onboarding/auth-callback');
     const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo, skipBrowserRedirect: true } });
     if (error || !data.url) return { error: error?.message ?? 'The secure sign-in page could not be opened.' };

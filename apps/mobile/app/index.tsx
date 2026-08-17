@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,7 +13,7 @@ import welcomeVideo from '../assets/welcome-mascot-silent.mp4';
 type WebVideoProps = { 'aria-label'?: string; autoPlay?: boolean; loop?: boolean; muted?: boolean; playsInline?: boolean; src: number | string; style?: object };
 const WebVideo = 'video' as unknown as React.ComponentType<WebVideoProps>;
 import { GoogleG } from '@/components/google-g';
-import { useAuthStore } from '@/data/auth-store';
+import { completeOAuthRedirect, useAuthStore } from '@/data/auth-store';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
@@ -24,12 +24,14 @@ const welcomeFrames = [
 
 export default function Index() {
   const { configured, ready: authReady, signInWithProvider, user } = useAuthStore();
+  const callbackParams = useLocalSearchParams<{ code?: string; error?: string; error_description?: string }>();
   const { ready: onboardingReady, profile } = useOnboardingStore();
   const [ready, setReady] = useState(false);
   const [seen, setSeen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [busy, setBusy] = useState<'apple' | 'google'>();
   const [message, setMessage] = useState<string>();
+  const [oauthHandled, setOauthHandled] = useState(false);
   const reveal = useRef(new Animated.Value(0)).current;
   const copy = useRef(new Animated.Value(0)).current;
 
@@ -40,6 +42,15 @@ export default function Index() {
       setReady(true);
     });
   }, []);
+
+  useEffect(() => {
+    const hasCallback = Platform.OS === 'web' && Boolean(callbackParams.code || callbackParams.error);
+    if (!hasCallback || oauthHandled || typeof window === 'undefined') return;
+    setOauthHandled(true);
+    void completeOAuthRedirect(window.location.href).then((result) => {
+      if (result.error) setMessage(result.error);
+    }).catch((error) => setMessage(error instanceof Error ? error.message : 'Secure sign-in could not finish.'));
+  }, [callbackParams.code, callbackParams.error, oauthHandled]);
 
   useEffect(() => {
     if (!ready || seen) return;
