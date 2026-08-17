@@ -17,7 +17,7 @@ const choices = [
 
 export default function DietaryPreferencesScreen() {
   const { profile, update } = useOnboardingStore();
-  const next = () => { if (profile.dietaryPreference) router.push('/onboarding/food-profile'); };
+  const next = () => { if (profile.dietaryPreference) router.push('/onboarding/foods-you-love'); };
   return <OnboardingShell title={<>Tell us about your food <Text style={styles.accent}>preferences</Text></>} percent={29} footer={<Button disabled={!profile.dietaryPreference} label="Continue" onPress={next} />}>
     <Text style={styles.subtitle}>Select the option that best fits you.</Text>
     <View style={styles.grid}>{choices.map(choice => {
