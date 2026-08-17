@@ -76,7 +76,7 @@ export default function RecipeVideoScreen() {
         </View>
 
         {chapters.map((chapter, index) => (
-          <Pressable key={chapter.title} accessibilityRole="button" style={styles.chapter}>
+          <Pressable key={chapter.title} accessibilityLabel={`Cook step ${index + 1}: ${chapter.title}`} accessibilityRole="button" onPress={() => router.push({ pathname: `/cook/${recipe.id}`, params: { step: String(index) } } as never)} style={styles.chapter}>
             <View style={[styles.chapterNumber, { backgroundColor: chapter.color }]}><Text style={styles.chapterNumberText}>{index + 1}</Text></View>
             <View style={styles.chapterCopy}><Text style={styles.chapterTitle}>{chapter.title}</Text><Text style={styles.chapterTime}>{chapter.time}</Text></View>
             <Ionicons name="chevron-forward" size={18} color={colors.muted} />

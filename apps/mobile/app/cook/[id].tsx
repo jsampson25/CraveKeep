@@ -11,12 +11,17 @@ type CookTimer = { id: string; label: string; seconds: number; running: boolean 
 const formatTimer = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 export default function CookModeScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, step } = useLocalSearchParams<{ id: string; step?: string }>();
   const recipe = useRecipeStore().findRecipe(id);
   const [stepIndex, setStepIndex] = useState(0);
   const [ingredientsOpen, setIngredientsOpen] = useState(true);
   const [prepared, setPrepared] = useState<string[]>([]);
   const [timers, setTimers] = useState<CookTimer[]>([]);
+  useEffect(() => {
+    const parsedStep = Number(step);
+    if (!recipe || step === undefined || !Number.isFinite(parsedStep)) return;
+    setStepIndex(Math.min(Math.max(parsedStep, 0), Math.max(recipe.steps.length - 1, 0)));
+  }, [recipe?.id, recipe?.steps.length, step]);
   useEffect(() => {
     if (!timers.some((timer) => timer.running && timer.seconds > 0)) return;
     const interval = setInterval(() => setTimers((current) => current.map((timer) => timer.running && timer.seconds > 0 ? { ...timer, seconds: timer.seconds - 1 } : timer)), 1000);
