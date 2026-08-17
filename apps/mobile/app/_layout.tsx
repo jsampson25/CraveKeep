@@ -33,6 +33,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding/nutrition-goals" />
           <Stack.Screen name="onboarding/household" />
           <Stack.Screen name="onboarding/settings" />
+          <Stack.Screen name="onboarding/kitchen-setup" />
           <Stack.Screen name="capture" options={{ presentation: 'modal' }} />
           <Stack.Screen name="capture/link" />
           <Stack.Screen name="capture/media" />
