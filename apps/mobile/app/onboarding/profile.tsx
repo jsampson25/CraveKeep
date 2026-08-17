@@ -21,7 +21,7 @@ export default function OnboardingProfileScreen() {
     try {
       if (!await usernameAvailable(handle)) return setMessage('That username is already taken. Try another one.');
       setMessage(undefined); await update({ handle });
-      if (!await saveProfile()) router.push('/onboarding/food-profile');
+      if (!await saveProfile()) router.push('/onboarding/main-goal');
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : 'We could not save your profile. Please try again.');
     }
