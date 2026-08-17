@@ -66,7 +66,7 @@ export default function HouseholdScreen() {
 
     <View style={styles.sizeRow}>
       <Text style={styles.sizeLabel}>Household size</Text>
-      <View style={styles.counter}><Pressable disabled={profile.householdMembers.length === 0} onPress={() => removeMember(profile.householdMembers.at(-1)!.id)} style={styles.counterButton}><Ionicons color={colors.charcoal} name="remove" size={20} /></Pressable><Text style={styles.count}>{householdSize}</Text><Pressable onPress={() => addMember('adult')} style={styles.counterButton}><Ionicons color={colors.charcoal} name="add" size={20} /></Pressable></View>
+      <View style={styles.counter}><Pressable disabled={profile.householdMembers.length === 0} onPress={() => removeMember(profile.householdMembers[profile.householdMembers.length - 1].id)} style={styles.counterButton}><Ionicons color={colors.charcoal} name="remove" size={20} /></Pressable><Text style={styles.count}>{householdSize}</Text><Pressable onPress={() => addMember('adult')} style={styles.counterButton}><Ionicons color={colors.charcoal} name="add" size={20} /></Pressable></View>
     </View>
 
     <View style={styles.mascotCard}>
