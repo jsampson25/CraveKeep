@@ -17,7 +17,7 @@ export type OnboardingProfile = {
 
 const initial: OnboardingProfile = {
   completed: false, displayName: '', handle: '', loves: [], avoids: [], neverSuggest: [],
-  allergies: [], dietaryPreference: '', cookingTime: '', skill: '',
+  allergies: [], dietaryPreference: '', cookingTime: 'No preference', skill: 'Comfortable',
   appliances: '', goal: '', calculationMode: 'manual', calories: 2000,
   protein: '100 g', carbs: '225 g', fat: '67 g', fiber: '25 g', weeklyAverage: true,
   flexibleDay: true, householdName: 'My Kitchen', householdMembers: []
@@ -101,7 +101,7 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
   }, [user]);
   const usernameAvailable = useCallback(async (handle: string) => { if (!supabase || !user) return false; const result = await supabase.rpc('is_username_available', { candidate: handle }); return !result.error && result.data; }, [user]);
   const saveProfile = useCallback(() => cloud(async () => supabase!.from('profiles').upsert({ id: user!.id, display_name: profile.displayName.trim(), username: profile.handle.trim().toLowerCase().replace(/^@/, ''), updated_at: new Date().toISOString() })), [cloud, profile.displayName, profile.handle, user]);
-  const saveFoodProfile = useCallback(() => cloud(async () => supabase!.from('food_profiles').upsert({ owner_id: user!.id, loved_foods: profile.loves, avoided_foods: profile.avoids, never_suggest_foods: profile.neverSuggest, allergies: profile.allergies, dietary_preferences: profile.dietaryPreference === 'None' ? [] : [profile.dietaryPreference], cooking_time: profile.cookingTime, cooking_skill: profile.skill, appliances: profile.appliances.split(',').map(x => x.trim()).filter(Boolean), updated_at: new Date().toISOString() })), [cloud, profile, user]);
+  const saveFoodProfile = useCallback(() => cloud(async () => { const current = profileRef.current; return supabase!.from('food_profiles').upsert({ owner_id: user!.id, loved_foods: current.loves, avoided_foods: current.avoids, never_suggest_foods: current.neverSuggest, allergies: current.allergies, dietary_preferences: current.dietaryPreference === 'None' || current.dietaryPreference === 'No dietary preference' ? [] : [current.dietaryPreference], cooking_time: current.cookingTime || 'No preference', cooking_skill: current.skill || 'Comfortable', appliances: current.appliances.split(',').map(x => x.trim()).filter(Boolean), updated_at: new Date().toISOString() }); }), [cloud, user]);
   const saveNutritionGoals = useCallback(() => cloud(async () => supabase!.from('nutrition_goals').upsert({ owner_id: user!.id, goal: profile.goal, calculation_mode: profile.calculationMode, calories: profile.calories, protein_grams: grams(profile.protein), carbohydrate_grams: grams(profile.carbs), fat_grams: grams(profile.fat), fiber_grams: grams(profile.fiber), age: profile.age, sex_for_calculation: profile.sexForCalculation, height_cm: profile.heightCm, current_weight_kg: profile.currentWeightKg, target_weight_kg: profile.targetWeightKg, activity_level: profile.activityLevel, weekly_average: profile.weeklyAverage, flexible_day: profile.flexibleDay, updated_at: new Date().toISOString() })), [cloud, profile, user]);
   const saveHousehold = useCallback(async () => {
     if (!user || !supabase) return 'Sign in before saving your setup.';
