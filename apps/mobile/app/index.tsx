@@ -56,10 +56,10 @@ export default function Index() {
 
   if (!ready || !authReady || !onboardingReady) return <View style={styles.loading} />;
   if (user) return <Redirect href={profile.completed ? '/(tabs)/home' : '/onboarding/profile'} />;
-  if (seen) return <Redirect href="/onboarding/account" />;
+  if (seen) return <Redirect href="/" />;
 
   const begin = async () => {
-    try { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/account'); }
+    try { await AsyncStorage.setItem(WELCOME_KEY, 'seen'); router.replace('/onboarding/email?mode=signup'); }
     catch { setMessage('Could not start onboarding. Please try again.'); }
   };
 
