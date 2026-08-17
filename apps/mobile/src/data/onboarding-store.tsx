@@ -105,19 +105,19 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
   const saveNutritionGoals = useCallback(() => cloud(async () => supabase!.from('nutrition_goals').upsert({ owner_id: user!.id, goal: profile.goal, calculation_mode: profile.calculationMode, calories: profile.calories, protein_grams: grams(profile.protein), carbohydrate_grams: grams(profile.carbs), fat_grams: grams(profile.fat), fiber_grams: grams(profile.fiber), age: profile.age, sex_for_calculation: profile.sexForCalculation, height_cm: profile.heightCm, current_weight_kg: profile.currentWeightKg, target_weight_kg: profile.targetWeightKg, activity_level: profile.activityLevel, weekly_average: profile.weeklyAverage, flexible_day: profile.flexibleDay, updated_at: new Date().toISOString() })), [cloud, profile, user]);
   const saveHousehold = useCallback(async () => {
     if (!user || !supabase) return 'Sign in before saving your setup.';
+    const current = profileRef.current;
     const existing = await supabase.from('households').select('id').eq('owner_id', user.id).limit(1).maybeSingle();
     let householdId = existing.data?.id;
     if (householdId) {
-      const renameError = await cloud(async () => supabase!.from('households').update({ name: profile.householdName.trim(), updated_at: new Date().toISOString() }).eq('id', householdId!));
+      const renameError = await cloud(async () => supabase!.from('households').update({ name: current.householdName.trim(), updated_at: new Date().toISOString() }).eq('id', householdId!));
       if (renameError) return renameError;
     } else {
-      const created = await supabase.rpc('create_my_household', { household_name: profile.householdName.trim() });
+      const created = await supabase.rpc('create_my_household', { household_name: current.householdName.trim() });
       if (created.error) return created.error.message; householdId = created.data;
     }
     const removed = await supabase.from('household_dependents').delete().eq('household_id', householdId!);
     if (removed.error) return removed.error.message;
-    if (profile.householdMembers.length) {
-      const current = profileRef.current;
+    if (current.householdMembers.length) {
       const inserted = await supabase.from('household_dependents').insert(current.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences, loved_foods: member.preferences, avoided_foods: member.avoids, dietary_preferences: member.dietaryPreferences })));
       if (inserted.error) return inserted.error.message;
     }
