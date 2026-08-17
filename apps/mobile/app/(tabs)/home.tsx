@@ -48,13 +48,13 @@ export default function HomeScreen() {
   const todayMeals = useMemo(() => meals.filter(meal => meal.date === today), [meals, today]);
   const dinnerMeal = todayMeals.find(meal => meal.slot === 'dinner');
   const dinnerRecipe = recipes.find(recipe => recipe.id === dinnerMeal?.recipeId);
-  const nutritionTargets: DailyNutritionTargets = targets ?? {
+  const nutritionTargets = useMemo<DailyNutritionTargets>(() => targets ?? ({
     calories: profile.calories,
     proteinGrams: numberFromTarget(profile.protein),
     carbohydrateGrams: numberFromTarget(profile.carbs),
     fatGrams: numberFromTarget(profile.fat),
     sodiumMilligrams: 2300
-  };
+  }), [profile.calories, profile.carbs, profile.fat, profile.protein, targets]);
   const daySummary = useMemo(() => summarizePlannedDay(todayMeals, estimates, nutritionTargets), [estimates, nutritionTargets, todayMeals]);
   const nutritionValues = nutritionMode === 'consumed' ? daySummary.eaten : daySummary.planned;
   const isNewUser = recipes.length === 0 && meals.length === 0 && groceries.length === 0 && pantry.length === 0;
@@ -178,7 +178,8 @@ function PantrySnapshot({ items }: { items: { name: string; quantity: string; ex
 }
 
 function EmptyAction({ number, title, detail, icon, action, route, tone }: { number: string; title: string; detail: string; icon: keyof typeof Ionicons.glyphMap; action: string; route: '/(tabs)/plan' | '/(tabs)/groceries' | '/pantry'; tone: 'gold' | 'green' | 'purple' }) {
-  return <View style={[styles.emptyAction, styles[tone + 'Tone']]}><View style={styles.numberBadge}><Text style={styles.numberText}>{number}</Text></View><View style={styles.emptyActionCopy}><Text style={styles.emptyActionTitle}>{title}</Text><Text style={styles.emptyActionDetail}>{detail}</Text><Pressable onPress={() => router.push(route)} style={styles.emptyActionButton}><Text style={styles.emptyActionButtonText}>{action}</Text></Pressable></View><Ionicons color={tone === 'gold' ? colors.citrus : tone === 'green' ? colors.herb : colors.lavender} name={icon} size={58} /></View>;
+  const toneStyle = tone === 'gold' ? styles.goldTone : tone === 'green' ? styles.greenTone : styles.purpleTone;
+  return <View style={[styles.emptyAction, toneStyle]}><View style={styles.numberBadge}><Text style={styles.numberText}>{number}</Text></View><View style={styles.emptyActionCopy}><Text style={styles.emptyActionTitle}>{title}</Text><Text style={styles.emptyActionDetail}>{detail}</Text><Pressable onPress={() => router.push(route)} style={styles.emptyActionButton}><Text style={styles.emptyActionButtonText}>{action}</Text></Pressable></View><Ionicons color={tone === 'gold' ? colors.citrus : tone === 'green' ? colors.herb : colors.lavender} name={icon} size={58} /></View>;
 }
 
 const styles = StyleSheet.create({
