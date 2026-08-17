@@ -60,6 +60,9 @@ export function createSourcePreview(value: string): SourcePreview {
     ? parsed.searchParams.get('v') ?? (parsed.pathname.startsWith('/shorts/') ? parsed.pathname.split('/')[2] : parsed.pathname.split('/').filter(Boolean).pop())
     : platform === 'pinterest' ? parsed.pathname.match(/(?:pin|pin\.it)\/([0-9]+)/)?.[1]
       : platform === 'vimeo' ? parsed.pathname.split('/').filter(Boolean).pop()
+      : platform === 'tiktok' ? parsed.pathname.match(/(?:video|v)\/(\d+)/)?.[1]
+      : platform === 'instagram' ? parsed.pathname.match(/(?:reel|p|tv)\/([^/]+)/)?.[1]
+      : platform === 'facebook' ? parsed.searchParams.get('v') ?? parsed.pathname.match(/(?:reel|videos)\/(\d+)/)?.[1]
       : undefined;
   return {
     url,

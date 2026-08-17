@@ -26,7 +26,13 @@ export default function RecipeVideoScreen() {
     ? `https://www.youtube.com/embed/${recipe.source.externalId}?playsinline=1&rel=0`
     : recipe.source.platform === 'vimeo' && recipe.source.externalId
       ? `https://player.vimeo.com/video/${recipe.source.externalId}`
-      : undefined;
+      : recipe.source.platform === 'tiktok' && recipe.source.externalId
+        ? `https://www.tiktok.com/player/v1/${recipe.source.externalId}`
+        : recipe.source.platform === 'instagram' && recipe.source.externalId
+          ? `https://www.instagram.com/reel/${recipe.source.externalId}/embed`
+          : recipe.source.platform === 'facebook' && recipe.source.url
+            ? `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(recipe.source.url)}&show_text=false`
+            : undefined;
   const openSource = () => { if (recipe.source.url) void WebBrowser.openBrowserAsync(recipe.source.url); };
   const platformLabel = recipe.source.platform ? recipe.source.platform[0].toUpperCase() + recipe.source.platform.slice(1) : 'Original source';
   const chapterColors = [colors.coral, colors.mint, colors.lemon, colors.lavender];

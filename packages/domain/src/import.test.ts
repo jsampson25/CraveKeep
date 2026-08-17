@@ -11,6 +11,12 @@ describe('link capture rules', () => {
     expect(() => normalizeRecipeUrl('http://192.168.1.5/secret')).toThrow('Local and private network');
   });
 
+  it('identifies social video post IDs for embeddable sources', () => {
+    expect(createSourcePreview('https://www.tiktok.com/@cook/video/123456789').externalId).toBe('123456789');
+    expect(createSourcePreview('https://www.instagram.com/reel/ABC123/').externalId).toBe('ABC123');
+    expect(createSourcePreview('https://www.facebook.com/reel/987654321').externalId).toBe('987654321');
+  });
+
   it('returns honest recovery instead of inventing recipe data', () => {
     const result = extractDeterministically(createSourcePreview('https://example.com/dinner'));
     expect(result.status).toBe('needs_review');
