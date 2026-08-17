@@ -64,18 +64,10 @@ export default function RecipeVideoScreen() {
 
         <Card style={styles.progressCard}>
           <View style={styles.progressTop}>
-            <Text style={styles.progressLabel}>YOUR PROGRESS</Text>
-            <Text style={styles.progressValue}>0:00 / 3:18</Text>
+            <Text style={styles.progressLabel}>{embedUrl ? 'SOURCE PLAYER' : 'SOURCE LINK'}</Text>
+            <Ionicons name={embedUrl ? 'play-circle-outline' : 'open-outline'} size={20} color={colors.coralDark} />
           </View>
-          <View style={styles.progressTrack}><View style={styles.progressFill} /></View>
-          <View style={styles.controls}>
-            <Ionicons name="play-skip-back" size={18} color={colors.charcoal} />
-            <Ionicons name="play" size={18} color={colors.coralDark} />
-            <Ionicons name="play-skip-forward" size={18} color={colors.charcoal} />
-            <View style={styles.controlSpacer} />
-            <Ionicons name="speedometer-outline" size={18} color={colors.charcoal} />
-            <Ionicons name="expand-outline" size={18} color={colors.charcoal} />
-          </View>
+          <Text style={styles.body}>{embedUrl ? 'Playback controls and progress are provided by the embedded source player.' : 'Open the original source to watch this recipe video.'}</Text>
         </Card>
 
         <View style={styles.sectionHeader}>
@@ -113,13 +105,8 @@ const styles = StyleSheet.create({
   sourceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingTop: spacing.xs },
   sourceLink: { color: colors.coralDark, fontWeight: '800', flexShrink: 1 },
   progressCard: { gap: spacing.sm },
-  progressTop: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   progressLabel: { color: colors.coralDark, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  progressValue: { color: colors.muted, fontSize: 12, fontWeight: '700' },
-  progressTrack: { height: 8, borderRadius: 4, backgroundColor: colors.lavenderSoft, overflow: 'hidden' },
-  progressFill: { width: '18%', height: '100%', borderRadius: 4, backgroundColor: colors.coral },
-  controls: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  controlSpacer: { flex: 1 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.sm },
   sectionTitle: { ...typography.title, color: colors.charcoal, fontSize: 20 },
   sectionMeta: { color: colors.muted, fontWeight: '700' },
