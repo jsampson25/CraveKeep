@@ -75,11 +75,12 @@ Deno.serve(async (request: Request) => {
     const recipe = parseJsonLd(html);
     if (!recipe) {
       const host = parsed.hostname.toLowerCase();
-      const isVideo = host.includes('youtube.') || host === 'youtu.be' || host.includes('vimeo.') || host.includes('tiktok.');
+      const isVideo = host.includes('youtube.') || host === 'youtu.be' || host.includes('vimeo.') || host.includes('tiktok.') || host.includes('instagram.') || host.includes('facebook.');
       const pageTitle = metaContent(html, 'og:title') || htmlTitle(html) || title;
       const description = metaContent(html, 'og:description') || metaContent(html, 'description');
       const imageUrl = metaContent(html, 'og:image');
-      const isPinterest = parsed.hostname.toLowerCase() === 'pinterest.com' || parsed.hostname.toLowerCase() === 'pin.it';
+      const normalizedHost = parsed.hostname.toLowerCase().replace(/^www\./, '');
+      const isPinterest = normalizedHost === 'pinterest.com' || normalizedHost === 'pin.it';
       if (isPinterest && imageUrl && Deno.env.get('OPENAI_API_KEY')) {
         const extracted = await extractPinterestImage(imageUrl, pageTitle, Deno.env.get('OPENAI_API_KEY')!);
         if (extracted) return Response.json({ status: 'needs_review', draft: extracted, warnings: ['Review the Pinterest image extraction and quantities before saving.'], source: { imageUrl } } satisfies ExtractionResponse, { headers: { ...corsHeaders(request), 'Cache-Control': 'no-store' } });
