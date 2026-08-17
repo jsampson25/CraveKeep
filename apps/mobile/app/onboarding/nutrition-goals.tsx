@@ -28,8 +28,12 @@ export default function NutritionGoalsScreen() {
   const [message, setMessage] = useState<string>();
 
   const setTarget = (key: typeof rows[number]['key'], value: string) => {
-    if (key === 'calories') void update({ calories: Number(value.replace(/\D/g, '')) || 0, calculationMode: 'manual' });
-    else void update({ [key]: `${value.replace(/\D/g, '')} g`, calculationMode: 'manual' });
+    const digits = value.replace(/\D/g, '');
+    if (key === 'calories') void update({ calories: Number(digits) || 0, calculationMode: 'manual' });
+    if (key === 'protein') void update({ protein: `${digits} g`, calculationMode: 'manual' });
+    if (key === 'carbs') void update({ carbs: `${digits} g`, calculationMode: 'manual' });
+    if (key === 'fat') void update({ fat: `${digits} g`, calculationMode: 'manual' });
+    if (key === 'fiber') void update({ fiber: `${digits} g`, calculationMode: 'manual' });
   };
   const usePreset = async (preset: typeof presets[number]) => {
     await update({ calories: preset.calories, protein: preset.protein, carbs: preset.carbs, fat: preset.fat, fiber: preset.fiber, calculationMode: 'calculated' });
