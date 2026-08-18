@@ -7,7 +7,7 @@ import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-const crewScene = require('@/assets/onboarding/mascots/household-crew.webp');
+const crewScene = require('../../assets/onboarding/mascots/household-crew.webp');
 
 export default function HouseholdScreen() {
   const { profile, update, saveHousehold, saving, error } = useOnboardingStore();
