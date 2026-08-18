@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
@@ -20,15 +19,11 @@ const choices = [
 type DietaryIconName = typeof choices[number]['icon'];
 
 function DietaryIcon({ name, color }: { name: DietaryIconName; color: string }) {
-  const common = { fill: 'none', stroke: color, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeWidth: 1.9 };
-  return <Svg accessibilityLabel={`${name} symbol`} height={25} viewBox="0 0 28 28" width={25}>
-    {name === 'vegetarian' ? <><Path {...common} d="M5 17C5 9 11 5 22 5c0 10-5 16-13 16" /><Path {...common} d="M7 22c3-6 7-9 13-13" /></> : null}
-    {name === 'vegan' ? <><Path {...common} d="M14 23V11" /><Path {...common} d="M14 15C8 15 5 11 5 6c6 0 9 3 9 9Z" /><Path {...common} d="M14 12c0-5 3-8 9-8 0 6-3 9-9 9Z" /></> : null}
-    {name === 'pescatarian' ? <><Path {...common} d="M4 14c4-5 9-7 15-4l4-3v14l-4-3c-6 3-11 1-15-4Z" /><Circle cx="16.8" cy="13" fill={color} r="1" /></> : null}
-    {name === 'gluten-free' ? <><Circle {...common} cx="14" cy="14" r="10.5" /><SvgText fill={color} fontSize="8.5" fontWeight="800" textAnchor="middle" x="14" y="17">GF</SvgText><Line {...common} x1="6.5" x2="21.5" y1="21.5" y2="6.5" /></> : null}
-    {name === 'dairy-free' ? <><Path {...common} d="M10 4h8v4l2 3v12H8V11l2-3V4Z" /><Line {...common} x1="6" x2="22" y1="22" y2="6" /></> : null}
-    {name === 'low-carb' ? <><Path {...common} d="M7 12c0-4 3-7 7-7s7 3 7 7v10H7V12Z" /><Path {...common} d="M10 12h8" /><Path {...common} d="M11 17h6" /><Path {...common} d="m10 3 4-2 4 2" /><Line {...common} x1="5" x2="23" y1="23" y2="5" /></> : null}
-  </Svg>;
+  if (name === 'gluten-free') return <View accessibilityLabel="Gluten-free GF symbol" style={[styles.symbolBadge, { borderColor: color }]}><Text style={[styles.symbolLetters, { color }]}>GF</Text><View style={[styles.symbolSlash, { backgroundColor: color }]} /></View>;
+  if (name === 'dairy-free') return <View accessibilityLabel="Dairy-free symbol" style={styles.symbolCanvas}><MaterialCommunityIcons color={color} name="bottle-tonic-outline" size={25} /><View style={[styles.symbolSlash, { backgroundColor: color }]} /></View>;
+  if (name === 'low-carb') return <View accessibilityLabel="Low-carb symbol" style={styles.symbolCanvas}><MaterialCommunityIcons color={color} name="bread-slice-outline" size={26} /><View style={[styles.symbolSlash, { backgroundColor: color }]} /></View>;
+  const icon = name === 'vegetarian' ? 'leaf-outline' : name === 'vegan' ? 'nutrition-outline' : 'fish-outline';
+  return <Ionicons accessibilityLabel={`${name} symbol`} color={color} name={icon} size={24} />;
 }
 
 export default function DietaryPreferencesScreen() {
@@ -47,4 +42,4 @@ export default function DietaryPreferencesScreen() {
     <View style={styles.mascotStage}><Image accessibilityLabel="CraveKeep mascot holding a fresh salad and presenting food preferences" resizeMode="contain" source={mascot} style={styles.mascot} /></View>
   </OnboardingShell>;
 }
-const styles=StyleSheet.create({accent:{color:colors.coral},subtitle:{marginTop:-spacing.sm,color:'#536179',fontSize:15,lineHeight:21},grid:{flexDirection:'row',flexWrap:'wrap',gap:9},card:{width:'48.5%',height:164,padding:10,borderWidth:1.5,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:'#FFFFFF',overflow:'hidden'},selected:{borderColor:colors.herb,backgroundColor:colors.herbSoft},cardHeader:{height:40,paddingRight:20,flexDirection:'row',alignItems:'center',gap:8},iconWrap:{width:36,height:36,borderRadius:11,alignItems:'center',justifyContent:'center',flexShrink:0},photo:{width:'100%',height:101,marginTop:3,alignSelf:'center'},title:{flex:1,color:colors.charcoal,...typography.label,fontSize:15,lineHeight:17},check:{position:'absolute',right:7,top:7,zIndex:3,backgroundColor:'#FFFFFF',borderRadius:11},anything:{minHeight:54,paddingHorizontal:13,flexDirection:'row',alignItems:'center',gap:9,borderWidth:1,borderColor:colors.line,borderRadius:radii.small,backgroundColor:'#FFFFFF'},anythingText:{flex:1,color:colors.charcoal,fontWeight:'700',fontSize:14},notice:{padding:13,flexDirection:'row',alignItems:'center',gap:10,borderWidth:1,borderColor:'#E8C697',borderRadius:radii.small,backgroundColor:'#FFF8EE'},noticeText:{flex:1,color:'#536179',fontSize:13,lineHeight:18},mascotStage:{height:244,marginTop:-4,alignItems:'center',justifyContent:'flex-end'},mascot:{width:206,height:242}});
+const styles=StyleSheet.create({accent:{color:colors.coral},subtitle:{marginTop:-spacing.sm,color:'#536179',fontSize:15,lineHeight:21},grid:{flexDirection:'row',flexWrap:'wrap',gap:9},card:{width:'48.5%',height:164,padding:10,borderWidth:1.5,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:'#FFFFFF',overflow:'hidden'},selected:{borderColor:colors.herb,backgroundColor:colors.herbSoft},cardHeader:{height:40,paddingRight:20,flexDirection:'row',alignItems:'center',gap:8},iconWrap:{width:36,height:36,borderRadius:11,alignItems:'center',justifyContent:'center',flexShrink:0},symbolCanvas:{width:27,height:27,alignItems:'center',justifyContent:'center'},symbolBadge:{width:25,height:25,borderRadius:13,borderWidth:1.8,alignItems:'center',justifyContent:'center'},symbolLetters:{fontSize:10,fontWeight:'900',letterSpacing:-0.5},symbolSlash:{position:'absolute',width:2,height:31,borderRadius:2,transform:[{rotate:'45deg'}]},photo:{width:'100%',height:101,marginTop:3,alignSelf:'center'},title:{flex:1,color:colors.charcoal,...typography.label,fontSize:15,lineHeight:17},check:{position:'absolute',right:7,top:7,zIndex:3,backgroundColor:'#FFFFFF',borderRadius:11},anything:{minHeight:54,paddingHorizontal:13,flexDirection:'row',alignItems:'center',gap:9,borderWidth:1,borderColor:colors.line,borderRadius:radii.small,backgroundColor:'#FFFFFF'},anythingText:{flex:1,color:colors.charcoal,fontWeight:'700',fontSize:14},notice:{padding:13,flexDirection:'row',alignItems:'center',gap:10,borderWidth:1,borderColor:'#E8C697',borderRadius:radii.small,backgroundColor:'#FFF8EE'},noticeText:{flex:1,color:'#536179',fontSize:13,lineHeight:18},mascotStage:{height:244,marginTop:-4,alignItems:'center',justifyContent:'flex-end'},mascot:{width:206,height:242}});
