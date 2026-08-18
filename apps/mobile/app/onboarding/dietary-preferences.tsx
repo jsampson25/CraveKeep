@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
@@ -8,13 +9,27 @@ import { colors, radii, spacing, typography } from '@/theme';
 import mascot from '../../assets/onboarding/mascots/food-preferences-guide.webp';
 
 const choices = [
-  { value: 'Vegetarian', icon: 'leaf', color: colors.herb, image: require('../../assets/onboarding/preferences/pref-0.webp') },
-  { value: 'Vegan', icon: 'nutrition', color: colors.herb, image: require('../../assets/onboarding/preferences/pref-1.webp') },
-  { value: 'Pescatarian', icon: 'fish', color: '#2572A8', image: require('../../assets/onboarding/preferences/pref-2.webp') },
-  { value: 'Gluten-free', icon: 'flower', color: '#D88A18', image: require('../../assets/onboarding/preferences/pref-3.webp') },
-  { value: 'Dairy-free', icon: 'water', color: '#7A4BA0', image: require('../../assets/onboarding/preferences/pref-4.webp') },
-  { value: 'Low carb', icon: 'remove-circle-outline', color: colors.coralDark, image: require('../../assets/onboarding/preferences/pref-5.webp') },
+  { value: 'Vegetarian', icon: 'vegetarian', color: colors.herb, image: require('../../assets/onboarding/preferences/pref-0.webp') },
+  { value: 'Vegan', icon: 'vegan', color: colors.herb, image: require('../../assets/onboarding/preferences/pref-1.webp') },
+  { value: 'Pescatarian', icon: 'pescatarian', color: '#2572A8', image: require('../../assets/onboarding/preferences/pref-2.webp') },
+  { value: 'Gluten-free', icon: 'gluten-free', color: '#D88A18', image: require('../../assets/onboarding/preferences/pref-3.webp') },
+  { value: 'Dairy-free', icon: 'dairy-free', color: '#7A4BA0', image: require('../../assets/onboarding/preferences/pref-4.webp') },
+  { value: 'Low carb', icon: 'low-carb', color: colors.coralDark, image: require('../../assets/onboarding/preferences/pref-5.webp') },
 ] as const;
+
+type DietaryIconName = typeof choices[number]['icon'];
+
+function DietaryIcon({ name, color }: { name: DietaryIconName; color: string }) {
+  const common = { fill: 'none', stroke: color, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeWidth: 1.9 };
+  return <Svg accessibilityLabel={`${name} symbol`} height={25} viewBox="0 0 28 28" width={25}>
+    {name === 'vegetarian' ? <><Path {...common} d="M5 17C5 9 11 5 22 5c0 10-5 16-13 16" /><Path {...common} d="M7 22c3-6 7-9 13-13" /></> : null}
+    {name === 'vegan' ? <><Path {...common} d="M14 23V11" /><Path {...common} d="M14 15C8 15 5 11 5 6c6 0 9 3 9 9Z" /><Path {...common} d="M14 12c0-5 3-8 9-8 0 6-3 9-9 9Z" /></> : null}
+    {name === 'pescatarian' ? <><Path {...common} d="M4 14c4-5 9-7 15-4l4-3v14l-4-3c-6 3-11 1-15-4Z" /><Circle cx="16.8" cy="13" fill={color} r="1" /></> : null}
+    {name === 'gluten-free' ? <><Circle {...common} cx="14" cy="14" r="10.5" /><SvgText fill={color} fontSize="8.5" fontWeight="800" textAnchor="middle" x="14" y="17">GF</SvgText><Line {...common} x1="6.5" x2="21.5" y1="21.5" y2="6.5" /></> : null}
+    {name === 'dairy-free' ? <><Path {...common} d="M10 4h8v4l2 3v12H8V11l2-3V4Z" /><Line {...common} x1="6" x2="22" y1="22" y2="6" /></> : null}
+    {name === 'low-carb' ? <><Path {...common} d="M7 12c0-4 3-7 7-7s7 3 7 7v10H7V12Z" /><Path {...common} d="M10 12h8" /><Path {...common} d="M11 17h6" /><Path {...common} d="m10 3 4-2 4 2" /><Line {...common} x1="5" x2="23" y1="23" y2="5" /></> : null}
+  </Svg>;
+}
 
 export default function DietaryPreferencesScreen() {
   const { profile, update } = useOnboardingStore();
@@ -24,7 +39,7 @@ export default function DietaryPreferencesScreen() {
     <View style={styles.grid}>{choices.map(choice => {
       const selected = profile.dietaryPreference === choice.value;
       return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={choice.value} onPress={() => void update({ dietaryPreference: choice.value })} style={[styles.card, selected && styles.selected]}>
-        <View style={styles.cardHeader}><View style={[styles.iconWrap, { backgroundColor: `${choice.color}14` }]}><Ionicons color={choice.color} name={choice.icon} size={21} /></View><Text style={styles.title}>{choice.value}</Text></View><Image accessibilityLabel={`${choice.value} meal example`} resizeMode="contain" source={choice.image} style={styles.photo} />{selected ? <Ionicons color={colors.herb} name="checkmark-circle" size={21} style={styles.check} /> : null}
+        <View style={styles.cardHeader}><View style={[styles.iconWrap, { backgroundColor: `${choice.color}14` }]}><DietaryIcon color={choice.color} name={choice.icon} /></View><Text style={styles.title}>{choice.value}</Text></View><Image accessibilityLabel={`${choice.value} meal example`} resizeMode="contain" source={choice.image} style={styles.photo} />{selected ? <Ionicons color={colors.herb} name="checkmark-circle" size={21} style={styles.check} /> : null}
       </Pressable>;
     })}</View>
     <Pressable accessibilityRole="button" accessibilityState={{ selected: profile.dietaryPreference === 'No dietary preference' }} onPress={() => void update({ dietaryPreference: 'No dietary preference' })} style={[styles.anything, profile.dietaryPreference === 'No dietary preference' && styles.selected]}><Ionicons color={colors.coral} name="happy-outline" size={22} /><Text style={styles.anythingText}>No preferences / Anything</Text>{profile.dietaryPreference === 'No dietary preference' ? <Ionicons color={colors.herb} name="checkmark-circle" size={20} /> : null}</Pressable>
