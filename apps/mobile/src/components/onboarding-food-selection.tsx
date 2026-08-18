@@ -11,7 +11,7 @@ import foodsAvoidMascot from '../../assets/onboarding/mascots/foods-dont-like-gu
 
 type PreferenceKey = 'loves' | 'avoids';
 type Props = { preferenceKey: PreferenceKey; percent: number; title: string; accent: string; subtitle: string; continueLabel?: string; onContinue: () => void };
-const foodPhotos: Record<string, number> = {
+export const foodPhotos: Record<string, number> = {
   'Chicken breast': require('../../assets/onboarding/food-items/meat-0.webp'),
   'Chicken thighs': require('../../assets/onboarding/food-items/meat-1.webp'),
   'Ground chicken': require('../../assets/onboarding/food-items/meat-2.webp'),
