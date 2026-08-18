@@ -66,7 +66,6 @@ export default function HouseholdScreen() {
 
     <View style={styles.mascotCard}>
       <Image accessibilityLabel="Two CraveKeep mascots holding a sign for the whole crew" resizeMode="contain" source={crewScene} style={styles.mascotArt} />
-      <View pointerEvents="none" style={styles.signCopy}><Text style={styles.signHeadline}>Great meals{`\n`}for the whole crew!</Text></View>
     </View>
     {message || error ? <Text accessibilityRole="alert" style={styles.error}>{message || error}</Text> : null}
   </OnboardingShell>;
@@ -90,5 +89,5 @@ const styles = StyleSheet.create({
   sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, sizeLabel: { ...typography.label, color: colors.charcoal },
   counter: { flexDirection: 'row', alignItems: 'center', overflow: 'hidden', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised }, counterButton: { width: 42, height: 38, alignItems: 'center', justifyContent: 'center' }, count: { minWidth: 30, textAlign: 'center', color: colors.charcoal, fontSize: 18, fontWeight: '900' },
   mascotCard: { minHeight: 290, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }, mascotArt: { width: '100%', height: 290 },
-  signCopy: { position: 'absolute', top: 82, left: '38%', width: '24%', alignItems: 'center' }, signHeadline: { color: colors.charcoal, textAlign: 'center', fontSize: 13, lineHeight: 15, fontWeight: '800' }, error: { color: colors.coralDark, textAlign: 'center' }
+  error: { color: colors.coralDark, textAlign: 'center' }
 });
