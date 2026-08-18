@@ -28,16 +28,29 @@ function DietaryIcon({ name, color }: { name: DietaryIconName; color: string }) 
 
 export default function DietaryPreferencesScreen() {
   const { profile, update } = useOnboardingStore();
-  const next = () => { if (profile.dietaryPreference) router.push('/onboarding/foods-you-love'); };
-  return <OnboardingShell title={<>Tell us about your food <Text style={styles.accent}>preferences</Text></>} percent={29} footer={<Button disabled={!profile.dietaryPreference} label="Continue" onPress={next} />}>
+  // Keep the existing persisted field compatible while allowing multiple choices.
+  // The delimiter is internal; the selection is always treated as a list here.
+  const selectedPreferences = (profile.dietaryPreference ?? '').split('|').filter(Boolean);
+  const hasNoPreference = selectedPreferences.includes('No dietary preference');
+  const togglePreference = (value: string) => {
+    const next = selectedPreferences.includes(value)
+      ? selectedPreferences.filter(item => item !== value)
+      : [...selectedPreferences.filter(item => item !== 'No dietary preference'), value];
+    void update({ dietaryPreference: next.join('|') });
+  };
+  const toggleNoPreference = () => {
+    void update({ dietaryPreference: hasNoPreference ? '' : 'No dietary preference' });
+  };
+  const next = () => { if (selectedPreferences.length > 0) router.push('/onboarding/foods-you-love'); };
+  return <OnboardingShell title={<>Tell us about your food <Text style={styles.accent}>preferences</Text></>} percent={29} footer={<Button disabled={selectedPreferences.length === 0} label="Continue" onPress={next} />}>
     <Text style={styles.subtitle}>Select all that apply.</Text>
     <View style={styles.grid}>{choices.map(choice => {
-      const selected = profile.dietaryPreference === choice.value;
-      return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={choice.value} onPress={() => void update({ dietaryPreference: choice.value })} style={[styles.card, selected && styles.selected]}>
+      const selected = selectedPreferences.includes(choice.value);
+      return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={choice.value} onPress={() => togglePreference(choice.value)} style={[styles.card, selected && styles.selected]}>
         <View style={styles.cardHeader}><View style={[styles.iconWrap, { backgroundColor: `${choice.color}14` }]}><DietaryIcon color={choice.color} name={choice.icon} /></View><Text style={styles.title}>{choice.value}</Text></View><Image accessibilityLabel={`${choice.value} meal example`} resizeMode="contain" source={choice.image} style={styles.photo} />{selected ? <Ionicons color={colors.herb} name="checkmark-circle" size={21} style={styles.check} /> : null}
       </Pressable>;
     })}</View>
-    <Pressable accessibilityRole="button" accessibilityState={{ selected: profile.dietaryPreference === 'No dietary preference' }} onPress={() => void update({ dietaryPreference: 'No dietary preference' })} style={[styles.anything, profile.dietaryPreference === 'No dietary preference' && styles.selected]}><Ionicons color={colors.coral} name="happy-outline" size={22} /><Text style={styles.anythingText}>No preferences / Anything</Text>{profile.dietaryPreference === 'No dietary preference' ? <Ionicons color={colors.herb} name="checkmark-circle" size={20} /> : null}</Pressable>
+    <Pressable accessibilityRole="button" accessibilityState={{ selected: hasNoPreference }} onPress={toggleNoPreference} style={[styles.anything, hasNoPreference && styles.selected]}><Ionicons color={colors.coral} name="happy-outline" size={22} /><Text style={styles.anythingText}>No preferences / Anything</Text>{hasNoPreference ? <Ionicons color={colors.herb} name="checkmark-circle" size={20} /> : null}</Pressable>
     <View style={styles.notice}><Ionicons color={colors.herb} name="leaf-outline" size={23} /><Text style={styles.noticeText}>You can update these anytime in your settings.</Text></View>
     <View style={styles.mascotStage}><Image accessibilityLabel="CraveKeep mascot holding a fresh salad and presenting food preferences" resizeMode="contain" source={mascot} style={styles.mascot} /></View>
   </OnboardingShell>;
