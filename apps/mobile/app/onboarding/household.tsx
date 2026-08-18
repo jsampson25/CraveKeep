@@ -89,6 +89,6 @@ const styles = StyleSheet.create({
   memberCopy: { flex: 1 }, memberName: { fontWeight: '800', color: colors.charcoal }, memberDetail: { color: colors.muted, fontSize: 11, marginTop: 2 },
   sizeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, sizeLabel: { ...typography.label, color: colors.charcoal },
   counter: { flexDirection: 'row', alignItems: 'center', overflow: 'hidden', borderWidth: 1, borderColor: colors.line, borderRadius: radii.round, backgroundColor: colors.paperRaised }, counterButton: { width: 42, height: 38, alignItems: 'center', justifyContent: 'center' }, count: { minWidth: 30, textAlign: 'center', color: colors.charcoal, fontSize: 18, fontWeight: '900' },
-  mascotCard: { minHeight: 260, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }, mascotArt: { width: '100%', height: 270 },
-  signCopy: { position: 'absolute', top: 92, left: '37%', width: '26%', alignItems: 'center' }, signHeadline: { color: colors.charcoal, textAlign: 'center', fontSize: 12, lineHeight: 14, fontWeight: '800' }, error: { color: colors.coralDark, textAlign: 'center' }
+  mascotCard: { minHeight: 290, position: 'relative', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }, mascotArt: { width: '100%', height: 290 },
+  signCopy: { position: 'absolute', top: 82, left: '38%', width: '24%', alignItems: 'center' }, signHeadline: { color: colors.charcoal, textAlign: 'center', fontSize: 13, lineHeight: 15, fontWeight: '800' }, error: { color: colors.coralDark, textAlign: 'center' }
 });
