@@ -11,12 +11,14 @@ const goals = [
   { value: 'save-time', title: 'Save time', detail: 'Simplify my cooking', icon: 'time', color: '#D88A18', soft: colors.lemonSoft },
   { value: 'lose', title: 'Lose weight', detail: 'Reach my goal weight', icon: 'scale', color: '#7A4BA0', soft: colors.lavenderSoft },
   { value: 'muscle', title: 'Build muscle', detail: 'High-protein meals', icon: 'barbell', color: colors.coralDark, soft: '#FFF0ED' },
+  { value: 'organize', title: 'Organize my recipes', detail: 'Keep everything in one place', icon: 'folder-open', color: '#2F70D0', soft: '#EEF5FF' },
+  { value: 'plan', title: 'Plan meals more easily', detail: 'Stress-free meal planning', icon: 'calendar', color: colors.coralDark, soft: '#FFF0ED' },
 ] as const;
 
 export default function MainGoalScreen() {
   const { profile, update } = useOnboardingStore();
   const next = () => { if (profile.goal) router.push('/onboarding/dietary-preferences'); };
-  return <OnboardingShell title={<>What’s your main <Text style={styles.accent}>goal?</Text></>} percent={18} footer={<Button disabled={!profile.goal} label="Continue" onPress={next} />}>
+  return <OnboardingShell title={<>What’s your main <Text style={styles.accent}>goal?</Text></>} percent={15} footer={<Button disabled={!profile.goal} label="Continue" onPress={next} />}>
     <Text style={styles.subtitle}>We’ll personalize CraveKeep just for you.</Text>
     <View style={styles.grid}>{goals.map(goal => {
       const selected = profile.goal === goal.value;
@@ -27,4 +29,4 @@ export default function MainGoalScreen() {
     })}</View>
   </OnboardingShell>;
 }
-const styles=StyleSheet.create({accent:{color:colors.coral},subtitle:{marginTop:-spacing.sm,color:colors.muted,fontSize:14,lineHeight:20},grid:{flexDirection:'row',flexWrap:'wrap',gap:10},card:{width:'48.4%',minHeight:158,padding:13,justifyContent:'flex-end',borderWidth:1.5,borderRadius:radii.medium,backgroundColor:colors.paperRaised},cardTop:{position:'absolute',left:13,right:13,top:13,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},icon:{width:42,height:42,borderRadius:14,alignItems:'center',justifyContent:'center'},title:{color:colors.charcoal,...typography.label,fontSize:15},detail:{marginTop:4,color:colors.muted,fontSize:11,lineHeight:15}});
+const styles=StyleSheet.create({accent:{color:colors.coral},subtitle:{marginTop:-spacing.sm,color:colors.muted,fontSize:14,lineHeight:20},grid:{flexDirection:'row',flexWrap:'wrap',gap:10},card:{width:'48.4%',minHeight:150,padding:13,justifyContent:'flex-end',borderWidth:1.5,borderRadius:radii.medium,backgroundColor:'#FFFFFF'},cardTop:{position:'absolute',left:13,right:13,top:13,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},icon:{width:42,height:42,borderRadius:14,alignItems:'center',justifyContent:'center'},title:{color:colors.charcoal,...typography.label,fontSize:15},detail:{marginTop:4,color:colors.muted,fontSize:11,lineHeight:15}});
