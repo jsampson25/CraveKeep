@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { MotionSlot } from '@/components/animations/MotionSlot';
@@ -8,106 +8,64 @@ import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
 
-const rows = [
-  { key: 'calories', label: 'Calories', unit: 'kcal', color: '#718786' },
-  { key: 'protein', label: 'Protein', unit: 'g', color: '#287CB7' },
-  { key: 'carbs', label: 'Carbs', unit: 'g', color: colors.herb },
-  { key: 'fat', label: 'Fat', unit: 'g', color: '#D69021' },
-  { key: 'fiber', label: 'Fiber', unit: 'g', color: '#944A91' },
-] as const;
-
-const presets = [
-  { name: 'Balanced', detail: 'A flexible everyday starting point', calories: 1900, protein: '130 g', carbs: '220 g', fat: '60 g', fiber: '28 g' },
-  { name: 'Higher protein', detail: 'Supports fullness and muscle goals', calories: 1900, protein: '155 g', carbs: '190 g', fat: '58 g', fiber: '30 g' },
-  { name: 'Lower carb', detail: 'More protein and healthy fats', calories: 1900, protein: '145 g', carbs: '145 g', fat: '82 g', fiber: '28 g' },
-] as const;
+type Step = 'about' | 'activity' | 'recommended';
+const goals = [{ value: 'lose', label: 'Lose weight', icon: 'trending-down-outline' }, { value: 'maintain', label: 'Maintain weight', icon: 'scale-outline' }, { value: 'gain', label: 'Gain weight', icon: 'trending-up-outline' }, { value: 'muscle', label: 'Build muscle', icon: 'barbell-outline' }];
+const activities = ['Mostly seated', 'Lightly active', 'Moderately active', 'Very active', 'Highly active'];
+const multiplier = [1.2, 1.375, 1.55, 1.725, 1.9];
 
 export default function NutritionGoalsScreen() {
   const { profile, update, saveNutritionGoals, saving, error } = useOnboardingStore();
-  const [mode, setMode] = useState<'manual' | 'quick'>('manual');
-  const [message, setMessage] = useState<string>();
+  const [step, setStep] = useState<Step>('about');
+  const [unit, setUnit] = useState<'US' | 'Metric'>('US');
+  const [birthDate, setBirthDate] = useState('');
+  const [sex, setSex] = useState<'female' | 'male' | undefined>(profile.sexForCalculation);
+  const [height, setHeight] = useState(profile.heightCm ? String(Math.round(profile.heightCm)) : '');
+  const [weight, setWeight] = useState(profile.currentWeightKg ? String(Math.round(profile.currentWeightKg * 2.20462)) : '');
+  const [targetWeight, setTargetWeight] = useState(profile.targetWeightKg ? String(Math.round(profile.targetWeightKg * 2.20462)) : '');
+  const [goal, setGoal] = useState(profile.goal || 'lose');
+  const [activity, setActivity] = useState(profile.activityLevel || activities[2]);
+  const [pace, setPace] = useState('Moderate');
+  const [customize, setCustomize] = useState(false);
+  const [customCalories, setCustomCalories] = useState('');
+  const [customProtein, setCustomProtein] = useState('');
+  const [customCarbs, setCustomCarbs] = useState('');
+  const [customFat, setCustomFat] = useState('');
+  const [message, setMessage] = useState('');
 
-  const setTarget = (key: typeof rows[number]['key'], value: string) => {
-    const digits = value.replace(/\D/g, '');
-    if (key === 'calories') void update({ calories: Number(digits) || 0, calculationMode: 'manual' });
-    if (key === 'protein') void update({ protein: `${digits} g`, calculationMode: 'manual' });
-    if (key === 'carbs') void update({ carbs: `${digits} g`, calculationMode: 'manual' });
-    if (key === 'fat') void update({ fat: `${digits} g`, calculationMode: 'manual' });
-    if (key === 'fiber') void update({ fiber: `${digits} g`, calculationMode: 'manual' });
+  const age = useMemo(() => { const match = birthDate.match(/(\d{4})/); return match ? Math.max(13, new Date().getFullYear() - Number(match[1])) : profile.age ?? 35; }, [birthDate, profile.age]);
+  const recommendation = useMemo(() => {
+    const pounds = Number(weight) || (profile.currentWeightKg ? profile.currentWeightKg * 2.20462 : 191);
+    const inches = Number(height) || 70;
+    const base = sex === 'female' ? 10 * (pounds / 2.20462) + 6.25 * (inches * 2.54) - 5 * age - 161 : 10 * (pounds / 2.20462) + 6.25 * (inches * 2.54) - 5 * age + 5;
+    let calories = Math.round(base * multiplier[Math.max(0, activities.indexOf(activity))]);
+    if (goal === 'lose') calories -= pace === 'Faster' ? 500 : pace === 'Gentle' ? 250 : 400;
+    if (goal === 'gain' || goal === 'muscle') calories += 250;
+    calories = Math.min(6000, Math.max(1200, Math.round(calories / 50) * 50));
+    const protein = Math.round((goal === 'muscle' ? pounds * 0.85 : pounds * 0.72));
+    const fat = Math.round((calories * 0.28) / 9);
+    const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
+    return { calories, protein, carbs, fat, fiber: 25 };
+  }, [activity, age, goal, pace, profile.currentWeightKg, sex, weight, height]);
+
+  const next = () => {
+    setMessage('');
+    if (step === 'about') { if (!sex || !height || !weight) { setMessage('Complete your sex, height, and current weight.'); return; } setStep('activity'); }
+    else if (step === 'activity') setStep('recommended');
+    else void save();
   };
-  const usePreset = async (preset: typeof presets[number]) => {
-    await update({ calories: preset.calories, protein: preset.protein, carbs: preset.carbs, fat: preset.fat, fiber: preset.fiber, calculationMode: 'calculated' });
-    setMessage(`${preset.name} targets selected. You can still adjust them manually.`);
-    setMode('manual');
-  };
-  const next = async () => {
+  const save = async () => {
     setMessage('Saving your nutrition goals…');
+    const values = customize ? { calories: Number(customCalories) || recommendation.calories, protein: (Number(customProtein) || recommendation.protein) + ' g', carbs: (Number(customCarbs) || recommendation.carbs) + ' g', fat: (Number(customFat) || recommendation.fat) + ' g' } : { calories: recommendation.calories, protein: recommendation.protein + ' g', carbs: recommendation.carbs + ' g', fat: recommendation.fat + ' g' };
+    await update({ age, sexForCalculation: sex, heightCm: unit === 'US' ? Number(height) * 2.54 : Number(height), currentWeightKg: unit === 'US' ? Number(weight) / 2.20462 : Number(weight), targetWeightKg: unit === 'US' ? Number(targetWeight) / 2.20462 : Number(targetWeight), goal, activityLevel: activity, calories: values.calories, protein: values.protein, carbs: values.carbs, fat: values.fat, fiber: recommendation.fiber + ' g', calculationMode: customize ? 'manual' : 'calculated' });
     const saveError = await saveNutritionGoals();
-    if (!saveError) router.push('/onboarding/settings');
-    else setMessage(saveError);
+    if (saveError) setMessage(saveError); else router.push('/onboarding/settings');
   };
-
-  return <OnboardingShell
-    title={<Text>Set your <Text style={styles.accent}>nutrition</Text>{'\n'}goals</Text>}
-    percent={94}
-    footer={<Button disabled={saving} label={saving ? 'Saving…' : 'Save & continue'} onPress={() => void next()} />}
-  >
-    <View style={styles.tabs}>
-      <Pressable accessibilityRole="tab" accessibilityState={{ selected: mode === 'manual' }} onPress={() => setMode('manual')} style={[styles.tab, mode === 'manual' && styles.tabActive]}><Text style={[styles.tabText, mode === 'manual' && styles.tabTextActive]}>Manual targets</Text></Pressable>
-      <Pressable accessibilityRole="tab" accessibilityState={{ selected: mode === 'quick' }} onPress={() => setMode('quick')} style={[styles.tab, mode === 'quick' && styles.tabActive]}><Text style={[styles.tabText, mode === 'quick' && styles.tabTextActive]}>Quick options</Text></Pressable>
-    </View>
-
-    {mode === 'manual' ? <View>
-      <View style={styles.sectionRow}><Text style={styles.section}>Daily targets</Text><Text style={styles.learn}>Learn more</Text></View>
-      <View style={styles.targetCard}>{rows.map((row, index) => {
-        const value = row.key === 'calories' ? String(profile.calories) : profile[row.key].replace(/\D/g, '');
-        return <View key={row.key} style={[styles.targetRow, index === rows.length - 1 && styles.lastRow]}>
-          <View style={[styles.dot, { backgroundColor: row.color }]} /><Text style={styles.targetLabel}>{row.label}</Text>
-          <TextInput accessibilityLabel={`${row.label} daily target`} keyboardType="number-pad" onChangeText={text => setTarget(row.key, text)} selectTextOnFocus style={styles.targetInput} value={value} />
-          <Text style={styles.unit}>{row.unit}</Text>
-        </View>;
-      })}</View>
-    </View> : <View style={styles.presetList}>
-      <Text style={styles.quickIntro}>Choose a starting point. You can fine-tune every number afterward.</Text>
-      {presets.map(preset => <Pressable key={preset.name} onPress={() => void usePreset(preset)} style={styles.preset}>
-        <View style={styles.presetIcon}><Ionicons color={colors.coralDark} name={preset.name === 'Higher protein' ? 'barbell-outline' : preset.name === 'Lower carb' ? 'leaf-outline' : 'restaurant-outline'} size={22} /></View>
-        <View style={styles.presetCopy}><Text style={styles.presetName}>{preset.name}</Text><Text style={styles.presetDetail}>{preset.detail}</Text></View>
-        <Ionicons color={colors.muted} name="chevron-forward" size={19} />
-      </Pressable>)}
-    </View>}
-
-    <View style={styles.tip}>
-      <Ionicons color={colors.herb} name="leaf-outline" size={25} />
-      <Text style={styles.tipText}>These targets help us build meals that fit you.</Text>
-      <MotionSlot name="onboarding-preferences" size={76} accessibilityLabel="CraveKeep mascot holding a nutrition card" />
-    </View>
-    {message ? <Text style={styles.message}>{message}</Text> : null}
-    {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-    <Text style={styles.disclaimer}>Targets are general wellness estimates and can be changed anytime. They are not medical advice.</Text>
+  const title = step === 'about' ? <>Tell us <Text style={styles.accent}>about you</Text></> : step === 'activity' ? <>Activity & <Text style={styles.accent}>weight goal</Text></> : <>Your recommended <Text style={styles.accent}>nutrition goals</Text></>;
+  return <OnboardingShell title={title} percent={step === 'about' ? 91 : step === 'activity' ? 94 : 97} footer={<Button disabled={saving} label={step === 'recommended' ? (saving ? 'Saving…' : 'Save & continue') : 'Continue'} onPress={next} />}>
+    {step === 'about' ? <><Text style={styles.subtitle}>We’ll use this to create your recommended nutrition targets.</Text><View style={styles.segment}>{(['US', 'Metric'] as const).map(value => <Pressable key={value} onPress={() => setUnit(value)} style={[styles.segmentButton, unit === value && styles.active]}><Text style={styles.segmentText}>{value}</Text></Pressable>)}</View><TextInput placeholder="Date of birth (e.g. March 25, 1985)" value={birthDate} onChangeText={setBirthDate} style={styles.input}/><Text style={styles.label}>Sex used for calorie estimate</Text><View style={styles.segment}>{(['female', 'male'] as const).map(value => <Pressable key={value} onPress={() => setSex(value)} style={[styles.segmentButton, sex === value && styles.active]}><Text style={styles.segmentText}>{value === 'female' ? 'Female' : 'Male'}</Text></Pressable>)}</View><Text style={styles.label}>Height</Text><TextInput keyboardType="numeric" placeholder={unit === 'US' ? 'Height in inches' : 'Height in cm'} value={height} onChangeText={setHeight} style={styles.input}/><Text style={styles.label}>Current weight</Text><TextInput keyboardType="numeric" placeholder={unit === 'US' ? 'Weight in pounds' : 'Weight in kg'} value={weight} onChangeText={setWeight} style={styles.input}/><Text style={styles.label}>Goal weight</Text><TextInput keyboardType="numeric" placeholder={unit === 'US' ? 'Goal weight in pounds' : 'Goal weight in kg'} value={targetWeight} onChangeText={setTargetWeight} style={styles.input}/><MotionSlot name="onboarding-preferences" size={110} accessibilityLabel="CraveKeep mascot holding a nutrition card" /></> : null}
+    {step === 'activity' ? <><Text style={styles.subtitle}>Help us estimate what your body needs each day.</Text><Text style={styles.label}>What’s your primary goal?</Text><View style={styles.grid}>{goals.map(item => <Pressable key={item.value} onPress={() => setGoal(item.value)} style={[styles.option, goal === item.value && styles.active]}><Ionicons color={colors.charcoal} name={item.icon as any} size={22}/><Text style={styles.optionText}>{item.label}</Text></Pressable>)}</View><Text style={styles.label}>Typical activity level</Text><View style={styles.list}>{activities.map(item => <Pressable key={item} onPress={() => setActivity(item)} style={[styles.row, activity === item && styles.active]}><Text style={styles.optionText}>{item}</Text></Pressable>)}</View><Text style={styles.label}>Desired weekly pace</Text><View style={styles.segment}>{['Gentle', 'Moderate', 'Faster'].map(item => <Pressable key={item} onPress={() => setPace(item)} style={[styles.segmentButton, pace === item && styles.active]}><Text style={styles.segmentText}>{item}</Text></Pressable>)}</View><MotionSlot name="onboarding-preferences" size={120} accessibilityLabel="CraveKeep mascot holding an activity checklist" /></> : null}
+    {step === 'recommended' ? <><Text style={styles.subtitle}>Based on your age, height, weight, activity, and goal, we recommend:</Text><View style={styles.calorieCard}><Text style={styles.calories}>{customize ? customCalories || recommendation.calories : recommendation.calories}</Text><Text style={styles.unit}>calories / day</Text></View><View style={styles.targetCard}>{[['Protein',customize ? customProtein || recommendation.protein : recommendation.protein],['Carbs',customize ? customCarbs || recommendation.carbs : recommendation.carbs],['Fat',customize ? customFat || recommendation.fat : recommendation.fat],['Fiber',recommendation.fiber]].map(([label,value]) => <View key={label} style={styles.targetRow}><Text style={styles.optionText}>{label}</Text>{customize && label !== 'Fiber' ? <TextInput keyboardType="numeric" value={String(value)} onChangeText={text => label === 'Protein' ? setCustomProtein(text) : label === 'Carbs' ? setCustomCarbs(text) : setCustomFat(text)} style={styles.targetInput}/> : <Text style={styles.value}>{value} g</Text>}</View>)}</View><View style={styles.segment}><Pressable onPress={() => setCustomize(false)} style={[styles.segmentButton, !customize && styles.active]}><Text style={styles.segmentText}>Use recommended</Text></Pressable><Pressable onPress={() => { setCustomize(true); setCustomCalories(String(recommendation.calories)); setCustomProtein(String(recommendation.protein)); setCustomCarbs(String(recommendation.carbs)); setCustomFat(String(recommendation.fat)); }} style={[styles.segmentButton, customize && styles.active]}><Text style={styles.segmentText}>Customize targets</Text></Pressable></View><Pressable onPress={() => router.push('/onboarding/settings')}><Text style={styles.skip}>Skip nutrition tracking</Text></Pressable><MotionSlot name="onboarding-preferences" size={125} accessibilityLabel="CraveKeep mascot holding recommended nutrition goals" /></> : null}
+    {message ? <Text style={styles.message}>{message}</Text> : null}{error ? <Text style={styles.error}>{error}</Text> : null}
   </OnboardingShell>;
 }
-
-const styles = StyleSheet.create({
-  accent: { color: colors.coralDark },
-  tabs: { flexDirection: 'row', gap: 6 },
-  tab: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, backgroundColor: colors.paperRaised },
-  tabActive: { borderColor: colors.coral, backgroundColor: '#FFF0ED' },
-  tabText: { color: colors.muted, fontSize: 12, fontWeight: '700' }, tabTextActive: { color: colors.coralDark },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
-  section: { ...typography.label, color: colors.charcoal, fontSize: 14 }, learn: { color: colors.coralDark, fontSize: 11, fontWeight: '700' },
-  targetCard: { overflow: 'hidden', borderWidth: 1, borderColor: colors.line, borderRadius: radii.medium, backgroundColor: colors.paperRaised },
-  targetRow: { minHeight: 51, paddingHorizontal: spacing.md, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  lastRow: { borderBottomWidth: 0 }, dot: { width: 8, height: 8, marginRight: 10, borderRadius: 4 },
-  targetLabel: { flex: 1, color: colors.charcoal, fontSize: 13, fontWeight: '700' },
-  targetInput: { minWidth: 72, paddingVertical: 8, color: colors.charcoal, fontSize: 15, fontWeight: '900', textAlign: 'right' },
-  unit: { width: 35, marginLeft: 5, color: colors.muted, fontSize: 11 },
-  presetList: { gap: spacing.sm }, quickIntro: { color: colors.muted, fontSize: 13, lineHeight: 18 },
-  preset: { minHeight: 72, padding: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.line, borderRadius: radii.medium, backgroundColor: colors.paperRaised },
-  presetIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF0ED' },
-  presetCopy: { flex: 1 }, presetName: { color: colors.charcoal, fontWeight: '900' }, presetDetail: { marginTop: 3, color: colors.muted, fontSize: 11 },
-  tip: { minHeight: 112, paddingLeft: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 9, overflow: 'hidden', borderWidth: 1, borderColor: '#E8C697', borderRadius: radii.medium, backgroundColor: '#FFF8EE' },
-  tipText: { flex: 1, color: colors.charcoal, fontSize: 12, lineHeight: 17 },
-  message: { padding: 9, color: colors.herb, textAlign: 'center', backgroundColor: colors.herbSoft, borderRadius: radii.small },
-  error: { color: colors.coralDark, textAlign: 'center' },
-  disclaimer: { color: colors.muted, fontSize: 10, lineHeight: 14, textAlign: 'center' }
-});
+const styles=StyleSheet.create({accent:{color:colors.coralDark},subtitle:{marginTop:-spacing.sm,color:colors.muted,fontSize:14,lineHeight:19},label:{...typography.label,color:colors.charcoal,fontSize:12},input:{minHeight:46,paddingHorizontal:12,borderWidth:1,borderColor:colors.line,borderRadius:radii.small,color:colors.charcoal,backgroundColor:'#FFF'},segment:{flexDirection:'row',gap:6},segmentButton:{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:colors.line,borderRadius:radii.small,backgroundColor:'#FFF'},active:{borderColor:colors.coral,backgroundColor:'#FFF0ED'},segmentText:{color:colors.charcoal,fontSize:12,fontWeight:'800'},grid:{flexDirection:'row',flexWrap:'wrap',gap:7},option:{width:'48%',minHeight:54,padding:9,alignItems:'center',justifyContent:'center',gap:5,borderWidth:1,borderColor:colors.line,borderRadius:radii.small,backgroundColor:'#FFF'},optionText:{color:colors.charcoal,fontSize:12,fontWeight:'800',textAlign:'center'},list:{gap:7},row:{minHeight:44,padding:12,borderWidth:1,borderColor:colors.line,borderRadius:radii.small,backgroundColor:'#FFF'},calorieCard:{padding:16,alignItems:'center',borderWidth:1,borderColor:'#E8C697',borderRadius:radii.medium,backgroundColor:'#FFF8EE'},calories:{color:colors.coralDark,fontSize:38,fontWeight:'900'},unit:{color:colors.charcoal,fontWeight:'800'},targetCard:{overflow:'hidden',borderWidth:1,borderColor:colors.line,borderRadius:radii.medium,backgroundColor:'#FFF'},targetRow:{minHeight:45,paddingHorizontal:12,flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderBottomWidth:1,borderBottomColor:colors.line},targetInput:{minWidth:65,textAlign:'right',color:colors.charcoal,fontWeight:'800'},value:{color:colors.charcoal,fontWeight:'900'},message:{padding:9,color:colors.herb,textAlign:'center'},error:{color:colors.coralDark,textAlign:'center'},skip:{margin:10,color:colors.coralDark,textAlign:'center',textDecorationLine:'underline'}});
