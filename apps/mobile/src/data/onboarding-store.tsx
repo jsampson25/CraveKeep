@@ -63,7 +63,11 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
         if (food.data) next = { ...next, loves: food.data.loved_foods, avoids: food.data.avoided_foods, neverSuggest: food.data.never_suggest_foods, allergies: food.data.allergies, dietaryPreference: food.data.dietary_preferences[0] ?? 'None', cookingTime: food.data.cooking_time, skill: food.data.cooking_skill, appliances: food.data.appliances.join(', ') };
         if (nutrition.data) next = { ...next, goal: nutrition.data.goal, calculationMode: nutrition.data.calculation_mode as OnboardingProfile['calculationMode'], calories: nutrition.data.calories, protein: `${nutrition.data.protein_grams} g`, carbs: `${nutrition.data.carbohydrate_grams} g`, fat: `${nutrition.data.fat_grams} g`, fiber: `${nutrition.data.fiber_grams} g`, age: nutrition.data.age ?? undefined, sexForCalculation: nutrition.data.sex_for_calculation as OnboardingProfile['sexForCalculation'], heightCm: nutrition.data.height_cm ?? undefined, currentWeightKg: nutrition.data.current_weight_kg ?? undefined, targetWeightKg: nutrition.data.target_weight_kg ?? undefined, activityLevel: nutrition.data.activity_level ?? undefined, weeklyAverage: nutrition.data.weekly_average, flexibleDay: nutrition.data.flexible_day };
         if (household.data) {
-          const dependents = await supabase.from('household_dependents').select('*').eq('household_id', household.data.id).order('created_at');
+          let dependents = await supabase.from('household_dependents').select('*').eq('household_id', household.data.id).order('created_at');
+          // Older projects may not have received the household food-profile migration yet.
+          if (dependents.error && /avoided_foods|loved_foods|dietary_preferences|schema cache/i.test(dependents.error.message)) {
+            dependents = await supabase.from('household_dependents').select('id, display_name, member_type, allergies, preferences, created_at').eq('household_id', household.data.id).order('created_at');
+          }
           next = { ...next, householdName: household.data.name, householdMembers: (dependents.data ?? []).map(member => ({ id: member.id, name: member.display_name, type: member.member_type as 'adult' | 'child', allergies: member.allergies ?? [], preferences: member.loved_foods ?? member.preferences ?? [], avoids: member.avoided_foods ?? [], dietaryPreferences: member.dietary_preferences ?? [] })) };
         }
       }
@@ -131,7 +135,10 @@ export function OnboardingStoreProvider({ children }: PropsWithChildren) {
     const removed = await supabase.from('household_dependents').delete().eq('household_id', householdId!);
     if (removed.error) return removed.error.message;
     if (current.householdMembers.length) {
-      const inserted = await supabase.from('household_dependents').insert(current.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences, loved_foods: member.preferences, avoided_foods: member.avoids, dietary_preferences: member.dietaryPreferences })));
+      let inserted = await supabase.from('household_dependents').insert(current.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences, loved_foods: member.preferences, avoided_foods: member.avoids, dietary_preferences: member.dietaryPreferences })));
+      if (inserted.error && /avoided_foods|loved_foods|dietary_preferences|schema cache/i.test(inserted.error.message)) {
+        inserted = await supabase.from('household_dependents').insert(current.householdMembers.map(member => ({ household_id: householdId!, display_name: member.name, member_type: member.type, allergies: member.allergies, preferences: member.preferences })));
+      }
       if (inserted.error) return inserted.error.message;
     }
     return undefined;
