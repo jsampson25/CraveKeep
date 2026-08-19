@@ -38,7 +38,7 @@ function DietaryIcon({ name, color }: { name: string; color: string }) {
 
 export default function HouseholdMemberScreen() {
   const { memberId, type } = useLocalSearchParams<{ memberId?: string; type?: 'adult' | 'child' }>();
-  const { profile, update } = useOnboardingStore();
+  const { profile, update, saveHousehold } = useOnboardingStore();
   const existing = useMemo(() => profile.householdMembers.find(member => member.id === memberId), [memberId, profile.householdMembers]);
   const [step, setStep] = useState<Step>('profile');
   const [name, setName] = useState(existing?.name ?? '');
@@ -74,6 +74,12 @@ export default function HouseholdMemberScreen() {
     const members = existing ? profile.householdMembers.map(value => value.id === existing.id ? member : value) : [...profile.householdMembers, member];
     try {
       await update({ householdMembers: members });
+      const saveError = await saveHousehold();
+      if (saveError) {
+        setSaving(false);
+        setMessage(saveError);
+        return;
+      }
       setSaving(false);
       router.replace('/onboarding/household');
     } catch (reason) {
