@@ -69,12 +69,13 @@ export default function HouseholdMemberScreen() {
   const save = async () => {
     if (saving) return;
     setSaving(true);
-    setMessage('Saving member…');
+    setMessage('');
     const member = { id: existing?.id ?? `local-${Date.now()}`, name: name.trim(), type: memberType, allergies: memberAllergies, preferences: loves, avoids, dietaryPreferences: diet === 'No preference' ? [] : [diet] };
     const members = existing ? profile.householdMembers.map(value => value.id === existing.id ? member : value) : [...profile.householdMembers, member];
     try {
       await update({ householdMembers: members });
-      router.back();
+      setSaving(false);
+      router.replace('/onboarding/household');
     } catch (reason) {
       setSaving(false);
       setMessage(reason instanceof Error ? reason.message : 'We could not save this member. Please try again.');
