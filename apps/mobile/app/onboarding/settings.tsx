@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { OnboardingShell } from '@/components/onboarding-shell';
 import { MotionSlot } from '@/components/animations/MotionSlot';
 import { Button } from '@/components/ui';
 import { useOnboardingStore } from '@/data/onboarding-store';
 import { colors, radii, spacing, typography } from '@/theme';
+import readyMascot from '../../assets/onboarding/mascots/account-ready.png';
 
 const benefits = [
   { icon: 'sparkles-outline', title: 'Personalized recipes', detail: 'Just for you' },
@@ -37,7 +38,7 @@ export default function SettingsScreen() {
     <View style={styles.celebration}>
       <View style={styles.confettiOne} /><View style={styles.confettiTwo} /><View style={styles.confettiThree} />
       <View style={styles.check}><Ionicons color={colors.white} name="checkmark" size={31} /></View>
-      <MotionSlot name="saved-success" size={185} accessibilityLabel="CraveKeep mascot celebrating your completed setup" />
+      <<Image source={readyMascot} resizeMode="contain" style={styles.readyMascot} accessibilityLabel="CraveKeep mascot celebrating your completed setup" />
       <View style={styles.recipeCard}><Ionicons color={colors.coralDark} name="document-text-outline" size={24} /><Text style={styles.recipeText}>Made for {firstName}</Text></View>
     </View>
 
@@ -62,6 +63,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   heading: { color: colors.charcoal, ...typography.title, fontSize: 29, lineHeight: 32, textAlign: 'center' },
   subtitle: { marginTop: -spacing.md, color: colors.muted, lineHeight: 19, textAlign: 'center' },
+  readyMascot: { width: 185, height: 218 },
   celebration: { minHeight: 218, alignItems: 'center', justifyContent: 'flex-end', overflow: 'hidden' },
   check: { position: 'absolute', top: 2, zIndex: 2, width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.herb, shadowColor: colors.herb, shadowOpacity: 0.25, shadowRadius: 12, elevation: 3 },
   recipeCard: { position: 'absolute', right: 20, bottom: 26, zIndex: 2, padding: 9, alignItems: 'center', borderWidth: 1, borderColor: '#E8C697', borderRadius: radii.small, backgroundColor: '#FFF8EE', transform: [{ rotate: '4deg' }] },
