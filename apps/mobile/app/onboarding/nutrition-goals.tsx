@@ -124,7 +124,7 @@ export default function NutritionGoalsScreen(){
       fiber:recommendation.fiber+' g',calculationMode:customize?'manual':'calculated'
     });
     const saveError=await saveNutritionGoals();
-    if(saveError)setMessage(saveError);else router.push('/onboarding/settings');
+    if(saveError)setMessage(saveError);else router.push('/onboarding/stay-connected');
   };
 
   const title=step==='about'?<>Tell us <Text style={styles.accent}>about you</Text></>:step==='activity'?<>Activity & <Text style={styles.accent}>weight goal</Text></>:<>Your recommended <Text style={styles.accent}>nutrition goals</Text></>;
