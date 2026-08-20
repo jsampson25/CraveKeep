@@ -41,7 +41,14 @@ function DateWheel({values, value, onChange, format=(n:number)=>String(n)}:{
         onChange(values[i]);
       }}
     >
-      {values.map(v=><View key={v} style={styles.wheelRow}><Text style={styles.wheelText}>{format(v)}</Text></View>)}
+      {values.map((v,i)=><Pressable
+        key={v}
+        onPress={()=>{
+          onChange(v);
+          ref.current?.scrollTo({y:i*row,animated:true});
+        }}
+        style={styles.wheelRow}
+      ><Text style={styles.wheelText}>{format(v)}</Text></Pressable>)}
     </ScrollView>
   </View>;
 }
